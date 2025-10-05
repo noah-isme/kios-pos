@@ -51,6 +51,7 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 - `src/app/cashier/page.tsx` – UI kasir dengan integrasi tRPC dan pdf-lib.
 - `src/app/reports/daily/page.tsx` – Laporan penjualan harian.
 - `src/app/management/products/page.tsx` – CRUD produk/kategori.
+- `src/app/management/stock/page.tsx` – Penyesuaian stok, transfer, dan stock opname.
 - `src/app/docs/implementation/page.tsx` – Panduan implementasi langkah demi langkah.
 - `src/app/docs/persiapan-awal/page.tsx` – Checklist persiapan awal yang mendetail (tujuan, alur kasir, role, outlet).
 - `src/server/api` – Router tRPC (`sales`, `products`, `outlets`).
@@ -58,9 +59,11 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 
 ## Testing Manual
 
-- Gunakan halaman **Kasir** untuk mensimulasikan penjualan. Setelah checkout, PDF struk akan terbuka di tab baru.
+- Gunakan halaman **Kasir** untuk mensimulasikan penjualan (sertakan variasi metode bayar & refund). Setelah checkout, PDF struk akan terbuka di tab baru.
 - Halaman **Laporan Harian** menampilkan rekap penjualan berdasarkan data `Sale` dan `Payment`.
-- Halaman **Produk** menyediakan form sederhana untuk menambah/mengubah SKU.
+- Halaman **Produk** menyediakan form sederhana untuk menambah/mengubah SKU dan kategori.
+- Halaman **Manajemen Stok** mendukung penyesuaian cepat, transfer antar outlet, serta stock opname.
+
 
 ## Deploy
 
