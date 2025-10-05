@@ -1,14 +1,8 @@
 import { z } from "zod";
 
-import { Prisma, Role } from "@/generated/prisma";
-import { slugify } from "@/lib/utils";
+import { Prisma } from "@/generated/prisma";
 import { db } from "@/server/db";
-import {
-  protectedProcedure,
-  publicProcedure,
-  roleProtectedProcedure,
-  router,
-} from "@/server/api/trpc";
+import { protectedProcedure, publicProcedure, router } from "@/server/api/trpc";
 
 const toDecimal = (value?: number | null) =>
   typeof value === "number" ? new Prisma.Decimal(value.toFixed(2)) : undefined;
@@ -80,7 +74,7 @@ export const productsRouter = router({
         price: Number(product.price),
       };
     }),
-  upsert: roleProtectedProcedure([Role.ADMIN, Role.OWNER])
+  upsert: protectedProcedure
     .input(
       z.object({
         id: z.string().optional(),
@@ -137,45 +131,4 @@ export const productsRouter = router({
 
     return categories;
   }),
-  upsertCategory: roleProtectedProcedure([Role.ADMIN, Role.OWNER])
-    .input(
-      z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const slug = slugify(input.name);
-
-      const category = await db.category.upsert({
-        where: {
-          id: input.id ?? "",
-        },
-        update: {
-          name: input.name,
-          slug,
-        },
-        create: {
-          name: input.name,
-          slug,
-        },
-      });
-
-      return category;
-    }),
-  deleteCategory: roleProtectedProcedure([Role.ADMIN, Role.OWNER])
-    .input(
-      z.object({
-        id: z.string(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      await db.category.delete({
-        where: {
-          id: input.id,
-        },
-      });
-
-      return { success: true } as const;
-    }),
 });

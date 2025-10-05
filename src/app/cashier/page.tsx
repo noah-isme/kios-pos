@@ -41,37 +41,12 @@ type CartItem = {
   discount: number;
 };
 
-type PaymentEntry = {
-  method: PaymentMethod;
-  amount: number;
-  reference?: string;
-};
-
-const paymentLabels: Record<PaymentMethod, string> = {
-  [PaymentMethod.CASH]: "Tunai",
-  [PaymentMethod.CARD]: "Kartu",
-  [PaymentMethod.QRIS]: "QRIS",
-  [PaymentMethod.EWALLET]: "E-Wallet",
-};
-
-const paymentOptions: PaymentMethod[] = [
-  PaymentMethod.CASH,
-  PaymentMethod.CARD,
-  PaymentMethod.QRIS,
-  PaymentMethod.EWALLET,
-];
-
 export default function CashierPage() {
   const { data: outlets } = api.outlets.list.useQuery();
   const [selectedOutlet, setSelectedOutlet] = useState<string | undefined>();
   const [barcode, setBarcode] = useState("");
   const [manualDiscount, setManualDiscount] = useState(0);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [payments, setPayments] = useState<PaymentEntry[]>([
-    { method: PaymentMethod.CASH, amount: 0, reference: "" },
-  ]);
-  const [refundReceipt, setRefundReceipt] = useState("");
-  const [refundReason, setRefundReason] = useState("");
 
   useEffect(() => {
     if (!selectedOutlet && outlets?.length) {
@@ -88,7 +63,6 @@ export default function CashierPage() {
 
   const recordSale = api.sales.recordSale.useMutation();
   const printReceipt = api.sales.printReceipt.useMutation();
-  const refundSale = api.sales.refundSale.useMutation();
 
   const totals = useMemo(() => {
     const totalGross = cart.reduce(
@@ -105,68 +79,6 @@ export default function CashierPage() {
       totalNet,
     };
   }, [cart, manualDiscount]);
-
-  const paymentsTotal = useMemo(
-    () => payments.reduce((sum, payment) => sum + (Number.isNaN(payment.amount) ? 0 : payment.amount), 0),
-    [payments],
-  );
-
-  useEffect(() => {
-    setPayments((prev) => {
-      if (prev.length === 0) {
-        return [
-          {
-            method: PaymentMethod.CASH,
-            amount: totals.totalNet,
-            reference: "",
-          },
-        ];
-      }
-
-      const sum = prev.reduce((acc, payment) => acc + payment.amount, 0);
-      if (sum === 0 && totals.totalNet > 0) {
-        const [first, ...rest] = prev;
-        return [
-          {
-            ...first,
-            amount: totals.totalNet,
-          },
-          ...rest,
-        ];
-      }
-
-      return prev;
-    });
-  }, [totals.totalNet]);
-
-  const setPaymentValue = <Key extends keyof PaymentEntry>(
-    index: number,
-    key: Key,
-    value: PaymentEntry[Key],
-  ) => {
-    setPayments((prev) =>
-      prev.map((payment, idx) =>
-        idx === index
-          ? {
-              ...payment,
-              [key]: key === "amount" && typeof value === "number" ? Math.max(value, 0) : value,
-            }
-          : payment,
-      ),
-    );
-  };
-
-  const addPaymentMethod = () => {
-    const remaining = Math.max(totals.totalNet - paymentsTotal, 0);
-    setPayments((prev) => [
-      ...prev,
-      { method: PaymentMethod.CASH, amount: remaining, reference: "" },
-    ]);
-  };
-
-  const removePaymentMethod = (index: number) => {
-    setPayments((prev) => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== index)));
-  };
 
   const addProductToCart = async () => {
     if (!barcode.trim()) return;
@@ -237,11 +149,6 @@ export default function CashierPage() {
       return;
     }
 
-    if (Math.abs(paymentsTotal - totals.totalNet) > 0.01) {
-      toast.error("Nominal pembayaran belum seimbang dengan total tagihan");
-      return;
-    }
-
     try {
       const sale = await recordSale.mutateAsync({
         outletId: selectedOutlet,
@@ -253,11 +160,12 @@ export default function CashierPage() {
           unitPrice: item.price,
           discount: item.discount,
         })),
-        payments: payments.map((payment) => ({
-          method: payment.method,
-          amount: payment.amount,
-          reference: payment.reference || undefined,
-        })),
+        payments: [
+          {
+            method: PaymentMethod.CASH,
+            amount: totals.totalNet,
+          },
+        ],
       });
 
       toast.success("Transaksi tersimpan");
@@ -274,31 +182,9 @@ export default function CashierPage() {
 
       setCart([]);
       setManualDiscount(0);
-      setPayments([{ method: PaymentMethod.CASH, amount: 0, reference: "" }]);
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan transaksi");
-    }
-  };
-
-  const handleRefund = async () => {
-    if (!refundReceipt.trim()) {
-      toast.error("Masukkan nomor struk untuk refund");
-      return;
-    }
-
-    try {
-      const result = await refundSale.mutateAsync({
-        receiptNumber: refundReceipt.trim(),
-        reason: refundReason.trim() || undefined,
-      });
-
-      toast.success(`Refund berhasil untuk ${result.saleId}`);
-      setRefundReceipt("");
-      setRefundReason("");
-    } catch (error) {
-      console.error(error);
-      toast.error("Gagal melakukan refund");
     }
   };
 
@@ -441,91 +327,9 @@ export default function CashierPage() {
                 <span>Total Dibayar</span>
                 <span>{formatCurrency(totals.totalNet)}</span>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Total Pembayaran</span>
-                  <span>{formatCurrency(paymentsTotal)}</span>
-                </div>
-                <div className="space-y-2">
-                  {payments.map((payment, index) => (
-                    <div key={`${payment.method}-${index}`} className="rounded-md border p-3">
-                      <div className="flex flex-col gap-2 text-xs">
-                        <div className="flex items-center gap-2">
-                          <label className="w-24 font-semibold" htmlFor={`payment-method-${index}`}>
-                            Metode
-                          </label>
-                          <select
-                            id={`payment-method-${index}`}
-                            className="h-8 flex-1 rounded-md border border-input bg-background px-2"
-                            value={payment.method}
-                            onChange={(event) =>
-                              setPaymentValue(index, "method", event.target.value as PaymentMethod)
-                            }
-                          >
-                            {paymentOptions.map((method) => (
-                              <option key={method} value={method}>
-                                {paymentLabels[method]}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="w-24 font-semibold" htmlFor={`payment-amount-${index}`}>
-                            Nominal
-                          </label>
-                          <Input
-                            id={`payment-amount-${index}`}
-                            type="number"
-                            min={0}
-                            value={payment.amount}
-                            onChange={(event) =>
-                              setPaymentValue(index, "amount", Number(event.target.value || 0))
-                            }
-                            className="h-8 flex-1"
-                          />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="w-24 font-semibold" htmlFor={`payment-ref-${index}`}>
-                            Referensi
-                          </label>
-                          <Input
-                            id={`payment-ref-${index}`}
-                            value={payment.reference ?? ""}
-                            placeholder="ID transaksi / 4 digit akhir"
-                            onChange={(event) =>
-                              setPaymentValue(index, "reference", event.target.value)
-                            }
-                            className="h-8 flex-1"
-                          />
-                        </div>
-                        {payments.length > 1 && (
-                          <div className="flex justify-end">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removePaymentMethod(index)}
-                            >
-                              Hapus Metode
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  <Button type="button" variant="outline" className="w-full" onClick={addPaymentMethod}>
-                    Tambah Metode Pembayaran
-                  </Button>
-                </div>
-                <Badge
-                  variant={Math.abs(paymentsTotal - totals.totalNet) < 0.01 ? "secondary" : "destructive"}
-                  className="w-fit"
-                >
-                  {Math.abs(paymentsTotal - totals.totalNet) < 0.01
-                    ? "Pembayaran seimbang"
-                    : `Selisih ${formatCurrency(totals.totalNet - paymentsTotal)}`}
-                </Badge>
-              </div>
+              <Badge variant="secondary" className="w-fit">
+                Pembayaran: Tunai (mock)
+              </Badge>
               <Button
                 className={cn("w-full", recordSale.isLoading && "opacity-60")}
                 disabled={recordSale.isLoading}
@@ -544,40 +348,6 @@ export default function CashierPage() {
               <p>• Mulai shift dengan hitung kas fisik dan update float di modul outlet.</p>
               <p>• Gunakan retur dengan approval Admin untuk menghindari fraud.</p>
               <p>• Upload bukti pembayaran non-tunai ke Supabase Storage jika diperlukan.</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Proses Refund</CardTitle>
-              <CardDescription>Masukkan nomor struk dan alasan singkat.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="grid gap-2">
-                <Label htmlFor="refund-receipt">Nomor Struk</Label>
-                <Input
-                  id="refund-receipt"
-                  value={refundReceipt}
-                  onChange={(event) => setRefundReceipt(event.target.value)}
-                  placeholder="Contoh: POS-1700000000000"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="refund-reason">Alasan</Label>
-                <textarea
-                  id="refund-reason"
-                  value={refundReason}
-                  onChange={(event) => setRefundReason(event.target.value)}
-                  className="min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  placeholder="Barang rusak / retur pelanggan"
-                />
-              </div>
-              <Button
-                className={cn("w-full", refundSale.isLoading && "opacity-60")}
-                disabled={refundSale.isLoading}
-                onClick={() => void handleRefund()}
-              >
-                {refundSale.isLoading ? "Memproses..." : "Refund Transaksi"}
-              </Button>
             </CardContent>
           </Card>
         </div>

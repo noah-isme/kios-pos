@@ -2,10 +2,10 @@ import { TRPCError } from "@trpc/server";
 import { addDays, endOfDay, startOfDay } from "date-fns";
 import { z } from "zod";
 
-import { PaymentMethod, Prisma, Role, StockMovementType } from "@/generated/prisma";
+import { PaymentMethod, Prisma } from "@/generated/prisma";
 import { generateReceiptPdf } from "@/lib/pdf";
 import { db } from "@/server/db";
-import { protectedProcedure, roleProtectedProcedure, router } from "@/server/api/trpc";
+import { protectedProcedure, router } from "@/server/api/trpc";
 
 const toDecimal = (value: number) => new Prisma.Decimal(value.toFixed(2));
 
@@ -29,8 +29,7 @@ export const salesRouter = router({
             lte: rangeEnd,
           },
           outletId: input.outletId ?? undefined,
-          cashierId:
-            ctx.session?.user.role === Role.CASHIER ? ctx.session.user.id : undefined,
+          cashierId: ctx.session?.user.id,
         },
         include: {
           items: true,
@@ -104,7 +103,7 @@ export const salesRouter = router({
         totalItems: sale.items.reduce((sum, item) => sum + item.quantity, 0),
       }));
     }),
-  recordSale: roleProtectedProcedure([Role.CASHIER, Role.ADMIN, Role.OWNER])
+  recordSale: protectedProcedure
     .input(
       z.object({
         outletId: z.string(),
@@ -141,23 +140,7 @@ export const salesRouter = router({
         (sum, item) => sum + item.discount,
         0,
       );
-      const manualDiscount = input.discountTotal;
-      if (manualDiscount > totalGross) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Diskon melebihi total transaksi",
-        });
-      }
-
-      const netAfterDiscount = Math.max(totalGross - totalDiscount - manualDiscount, 0);
-      const paymentsTotal = input.payments.reduce((sum, payment) => sum + payment.amount, 0);
-
-      if (Math.abs(paymentsTotal - netAfterDiscount) > 0.01) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Jumlah pembayaran tidak sesuai total tagihan",
-        });
-      }
+      const netAfterDiscount = totalGross - totalDiscount - input.discountTotal;
 
       const sale = await db.$transaction(async (tx) => {
         const createdSale = await tx.sale.create({
@@ -167,7 +150,7 @@ export const salesRouter = router({
             cashierId: ctx.session?.user.id,
             soldAt: input.soldAt ? new Date(input.soldAt) : new Date(),
             totalGross: toDecimal(totalGross),
-            discountTotal: toDecimal(totalDiscount + manualDiscount),
+            discountTotal: toDecimal(totalDiscount + input.discountTotal),
             totalNet: toDecimal(netAfterDiscount),
             items: {
               create: input.items.map((item) => ({
@@ -235,85 +218,6 @@ export const salesRouter = router({
         totalNet: Number(sale.totalNet),
         soldAt: sale.soldAt.toISOString(),
       };
-    }),
-  refundSale: roleProtectedProcedure([Role.ADMIN, Role.OWNER])
-    .input(
-      z.object({
-        receiptNumber: z.string().min(1),
-        reason: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const sale = await db.sale.findUnique({
-        where: {
-          receiptNumber: input.receiptNumber,
-        },
-        include: {
-          items: true,
-        },
-      });
-
-      if (!sale) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Transaksi tidak ditemukan" });
-      }
-
-      if (sale.status === "REFUNDED") {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Transaksi sudah direfund" });
-      }
-
-      const refundAmount = Number(sale.totalNet);
-
-      await db.$transaction(async (tx) => {
-        await tx.sale.update({
-          where: { id: sale.id },
-          data: { status: "REFUNDED" },
-        });
-
-        await tx.refund.create({
-          data: {
-            saleId: sale.id,
-            amount: toDecimal(refundAmount),
-            reason: input.reason,
-            approvedById: ctx.session?.user.id,
-          },
-        });
-
-        for (const item of sale.items) {
-          const inventory = await tx.inventory.upsert({
-            where: {
-              productId_outletId: {
-                productId: item.productId,
-                outletId: sale.outletId,
-              },
-            },
-            update: {
-              quantity: {
-                increment: item.quantity,
-              },
-            },
-            create: {
-              productId: item.productId,
-              outletId: sale.outletId,
-              quantity: item.quantity,
-            },
-          });
-
-          await tx.stockMovement.create({
-            data: {
-              inventoryId: inventory.id,
-              type: StockMovementType.ADJUSTMENT,
-              quantity: item.quantity,
-              reference: sale.id,
-              note: `Refund ${sale.receiptNumber}`,
-            },
-          });
-        }
-      });
-
-      return {
-        saleId: sale.id,
-        amount: refundAmount,
-      } as const;
     }),
   printReceipt: protectedProcedure
     .input(

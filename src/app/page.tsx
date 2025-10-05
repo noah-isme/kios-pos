@@ -25,12 +25,6 @@ const quickActions = [
     icon: <Layers className="h-5 w-5" />,
   },
   {
-    title: "Manajemen Stok",
-    description: "Transfer antar outlet, koreksi stok, dan lakukan opname fisik.",
-    href: "/management/stock",
-    icon: <Settings2 className="h-5 w-5" />,
-  },
-  {
     title: "Laporan Harian",
     description: "Pantau total penjualan, item terjual, dan saldo kas harian.",
     href: "/reports/daily",

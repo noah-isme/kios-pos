@@ -12,10 +12,8 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 
 ## Fitur
 
-- Modul kasir end-to-end (scan barcode, diskon item, diskon tambahan, multi-metode pembayaran mock, cetak struk PDF).
-- Proses refund struk dengan restock otomatis dan pencatatan approval.
+- Modul kasir end-to-end (scan barcode, diskon item, diskon tambahan, pembayaran mock, cetak struk PDF).
 - Manajemen produk dan kategori dengan CRUD berbasis Prisma.
-- Manajemen stok outlet: penyesuaian, transfer antar outlet, dan stock opname.
 - Laporan penjualan harian (total transaksi, total item, total kas tunai, estimasi float keesokan hari).
 - Integrasi NextAuth dengan role Owner, Admin, Kasir (enum `Role` pada Prisma).
 - Template struk PDF siap cetak menggunakan `pdf-lib`.
@@ -65,6 +63,7 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 - Halaman **Laporan Harian** menampilkan rekap penjualan berdasarkan data `Sale` dan `Payment`.
 - Halaman **Produk** menyediakan form sederhana untuk menambah/mengubah SKU dan kategori.
 - Halaman **Manajemen Stok** mendukung penyesuaian cepat, transfer antar outlet, serta stock opname.
+
 
 ## Deploy
 

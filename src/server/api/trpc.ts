@@ -2,10 +2,13 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { Role } from "@/generated/prisma";
 import { getServerAuthSession } from "@/server/auth";
 
-export const createTRPCContext = async () => {
+type CreateContextOptions = {
+  headers: Headers;
+};
+
+export const createTRPCContext = async (_opts: CreateContextOptions) => {
   const session = await getServerAuthSession();
 
   return {
@@ -41,17 +44,3 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 export const router = t.router;
 export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
-
-const enforceRoles = (roles: Role[]) =>
-  t.middleware(({ ctx, next }) => {
-    const userRole = ctx.session?.user.role;
-
-    if (!userRole || !roles.includes(userRole)) {
-      throw new TRPCError({ code: "FORBIDDEN" });
-    }
-
-    return next({ ctx });
-  });
-
-export const roleProtectedProcedure = (roles: Role[]) =>
-  protectedProcedure.use(enforceRoles(roles));

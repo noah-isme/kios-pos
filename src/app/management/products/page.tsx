@@ -28,8 +28,6 @@ export default function ProductManagementPage() {
   const productsQuery = api.products.list.useQuery({ search });
   const upsertProduct = api.products.upsert.useMutation();
   const categoriesQuery = api.products.categories.useQuery();
-  const upsertCategory = api.products.upsertCategory.useMutation();
-  const deleteCategory = api.products.deleteCategory.useMutation();
 
   const [formState, setFormState] = useState({
     id: "",
@@ -40,7 +38,6 @@ export default function ProductManagementPage() {
     categoryId: "",
     costPrice: 0,
   });
-  const [categoryForm, setCategoryForm] = useState({ id: "", name: "" });
 
   const resetForm = () => {
     setFormState({ id: "", name: "", sku: "", barcode: "", price: 0, categoryId: "", costPrice: 0 });
@@ -74,40 +71,6 @@ export default function ProductManagementPage() {
     () => productsQuery.data?.find((product) => product.id === formState.id),
     [productsQuery.data, formState.id],
   );
-
-  const handleCategorySubmit = async () => {
-    if (!categoryForm.name.trim()) {
-      toast.error("Nama kategori wajib diisi");
-      return;
-    }
-
-    try {
-      await upsertCategory.mutateAsync({
-        id: categoryForm.id || undefined,
-        name: categoryForm.name.trim(),
-      });
-      toast.success("Kategori tersimpan");
-      await categoriesQuery.refetch();
-      setCategoryForm({ id: "", name: "" });
-    } catch (error) {
-      console.error(error);
-      toast.error("Gagal menyimpan kategori");
-    }
-  };
-
-  const handleCategoryDelete = async (id: string) => {
-    try {
-      await deleteCategory.mutateAsync({ id });
-      toast.success("Kategori dihapus");
-      await categoriesQuery.refetch();
-      if (formState.categoryId === id) {
-        setFormState((state) => ({ ...state, categoryId: "" }));
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Gagal menghapus kategori");
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -179,155 +142,88 @@ export default function ProductManagementPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{editingProduct ? "Ubah Produk" : "Tambah Produk"}</CardTitle>
-              <CardDescription>Data otomatis tersimpan ke Supabase melalui Prisma.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nama Produk</Label>
-                <Input
-                  id="name"
-                  value={formState.name}
-                  onChange={(event) => setFormState((state) => ({ ...state, name: event.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input
-                  id="sku"
-                  value={formState.sku}
-                  onChange={(event) => setFormState((state) => ({ ...state, sku: event.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="barcode">Barcode</Label>
-                <Input
-                  id="barcode"
-                  value={formState.barcode}
-                  onChange={(event) => setFormState((state) => ({ ...state, barcode: event.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="price">Harga Jual</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min={0}
-                  value={formState.price}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, price: Number(event.target.value || 0) }))
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="costPrice">Harga Pokok (opsional)</Label>
-                <Input
-                  id="costPrice"
-                  type="number"
-                  min={0}
-                  value={formState.costPrice}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, costPrice: Number(event.target.value || 0) }))
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="category">Kategori</Label>
-                <select
-                  id="category"
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={formState.categoryId}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, categoryId: event.target.value }))
-                  }
-                >
-                  <option value="">Pilih kategori</option>
-                  {categoriesQuery.data?.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2">
-                <Button className="flex-1" onClick={() => void handleSubmit()} disabled={upsertProduct.isLoading}>
-                  {upsertProduct.isLoading ? "Menyimpan..." : "Simpan"}
-                </Button>
-                <Button variant="outline" onClick={resetForm}>
-                  Reset
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Kategori Produk</CardTitle>
-              <CardDescription>Buat, ubah, atau hapus kategori untuk memudahkan pelaporan.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="grid gap-2">
-                <Label htmlFor="category-name">Nama Kategori</Label>
-                <Input
-                  id="category-name"
-                  value={categoryForm.name}
-                  onChange={(event) => setCategoryForm((state) => ({ ...state, name: event.target.value }))}
-                  placeholder="Contoh: Minuman"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1"
-                  onClick={() => void handleCategorySubmit()}
-                  disabled={upsertCategory.isLoading}
-                >
-                  {upsertCategory.isLoading ? "Menyimpan..." : categoryForm.id ? "Simpan Perubahan" : "Tambah Kategori"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setCategoryForm({ id: "", name: "" })}
-                  disabled={upsertCategory.isLoading}
-                >
-                  Reset
-                </Button>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase text-muted-foreground">Daftar Kategori</p>
-                <div className="space-y-1">
-                  {categoriesQuery.data?.map((category) => (
-                    <div
-                      key={category.id}
-                      className="flex items-center justify-between rounded-md border border-dashed px-3 py-2"
-                    >
-                      <button
-                        type="button"
-                        className="text-left text-sm font-medium"
-                        onClick={() => setCategoryForm({ id: category.id, name: category.name })}
-                      >
-                        {category.name}
-                      </button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => void handleCategoryDelete(category.id)}
-                        disabled={deleteCategory.isLoading}
-                      >
-                        Hapus
-                      </Button>
-                    </div>
-                  ))}
-                  {categoriesQuery.data?.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Belum ada kategori yang terdaftar.</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingProduct ? "Ubah Produk" : "Tambah Produk"}</CardTitle>
+            <CardDescription>Data otomatis tersimpan ke Supabase melalui Prisma.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nama Produk</Label>
+              <Input
+                id="name"
+                value={formState.name}
+                onChange={(event) => setFormState((state) => ({ ...state, name: event.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="sku">SKU</Label>
+              <Input
+                id="sku"
+                value={formState.sku}
+                onChange={(event) => setFormState((state) => ({ ...state, sku: event.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="barcode">Barcode</Label>
+              <Input
+                id="barcode"
+                value={formState.barcode}
+                onChange={(event) => setFormState((state) => ({ ...state, barcode: event.target.value }))}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="price">Harga Jual</Label>
+              <Input
+                id="price"
+                type="number"
+                min={0}
+                value={formState.price}
+                onChange={(event) =>
+                  setFormState((state) => ({ ...state, price: Number(event.target.value || 0) }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="costPrice">Harga Pokok (opsional)</Label>
+              <Input
+                id="costPrice"
+                type="number"
+                min={0}
+                value={formState.costPrice}
+                onChange={(event) =>
+                  setFormState((state) => ({ ...state, costPrice: Number(event.target.value || 0) }))
+                }
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="category">Kategori</Label>
+              <select
+                id="category"
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={formState.categoryId}
+                onChange={(event) =>
+                  setFormState((state) => ({ ...state, categoryId: event.target.value }))
+                }
+              >
+                <option value="">Pilih kategori</option>
+                {categoriesQuery.data?.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2">
+              <Button className="flex-1" onClick={() => void handleSubmit()} disabled={upsertProduct.isLoading}>
+                {upsertProduct.isLoading ? "Menyimpan..." : "Simpan"}
+              </Button>
+              <Button variant="outline" onClick={resetForm}>
+                Reset
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
