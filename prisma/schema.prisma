@@ -1,0 +1,226 @@
+// Prisma schema for the Kios POS application
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  CASHIER
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  QRIS
+  EWALLET
+}
+
+enum StockMovementType {
+  ADJUSTMENT
+  INITIAL
+  PURCHASE
+  SALE
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
+model User {
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  role           Role      @default(CASHIER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  sales          Sale[]    @relation("SaleCashier")
+  refundApprovals Refund[] @relation("RefundApprover")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Supplier {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Outlet {
+  id          String        @id @default(cuid())
+  name        String
+  code        String        @unique
+  address     String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  inventories Inventory[]
+  sales       Sale[]
+  dailySummaries DailyCashSummary[]
+}
+
+model Product {
+  id             String          @id @default(cuid())
+  name           String
+  sku            String          @unique
+  barcode        String?         @unique
+  description    String?
+  price          Decimal         @db.Decimal(12, 2)
+  costPrice      Decimal?        @db.Decimal(12, 2)
+  isActive       Boolean         @default(true)
+  categoryId     String?
+  supplierId     String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  supplier       Supplier?       @relation(fields: [supplierId], references: [id])
+  inventoryLines Inventory[]
+  saleItems      SaleItem[]
+}
+
+model Inventory {
+  id           String             @id @default(cuid())
+  productId    String
+  outletId     String
+  quantity     Int
+  costPrice    Decimal?           @db.Decimal(12, 2)
+  updatedAt    DateTime           @updatedAt
+  product      Product            @relation(fields: [productId], references: [id])
+  outlet       Outlet             @relation(fields: [outletId], references: [id])
+  movements    StockMovement[]
+
+  @@unique([productId, outletId])
+}
+
+model StockMovement {
+  id             String            @id @default(cuid())
+  inventoryId    String
+  type           StockMovementType
+  quantity       Int
+  reference      String?
+  note           String?
+  occurredAt     DateTime          @default(now())
+  inventory      Inventory         @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+}
+
+model Sale {
+  id             String       @id @default(cuid())
+  receiptNumber  String       @unique
+  outletId       String
+  cashierId      String?
+  totalGross     Decimal      @db.Decimal(12, 2)
+  discountTotal  Decimal      @db.Decimal(12, 2) @default(0)
+  totalNet       Decimal      @db.Decimal(12, 2)
+  soldAt         DateTime     @default(now())
+  status         String       @default("COMPLETED")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  outlet         Outlet       @relation(fields: [outletId], references: [id])
+  cashier        User?        @relation("SaleCashier", fields: [cashierId], references: [id])
+  items          SaleItem[]
+  payments       Payment[]
+  refunds        Refund[]
+}
+
+model SaleItem {
+  id          String   @id @default(cuid())
+  saleId      String
+  productId   String
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  discount    Decimal  @db.Decimal(12, 2) @default(0)
+  total       Decimal  @db.Decimal(12, 2)
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  saleId     String
+  method     PaymentMethod
+  amount     Decimal       @db.Decimal(12, 2)
+  paidAt     DateTime      @default(now())
+  reference  String?
+  sale       Sale          @relation(fields: [saleId], references: [id], onDelete: Cascade)
+}
+
+model Refund {
+  id            String   @id @default(cuid())
+  saleId        String
+  amount        Decimal  @db.Decimal(12, 2)
+  reason        String?
+  approvedById  String?
+  processedAt   DateTime @default(now())
+  sale          Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  approvedBy    User?    @relation("RefundApprover", fields: [approvedById], references: [id])
+}
+
+model DailyCashSummary {
+  id          String   @id @default(cuid())
+  outletId    String
+  businessDay DateTime
+  totalSales  Decimal  @db.Decimal(12, 2)
+  totalItems  Int
+  totalCash   Decimal  @db.Decimal(12, 2)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  outlet      Outlet   @relation(fields: [outletId], references: [id], onDelete: Cascade)
+
+  @@unique([outletId, businessDay])
+}
