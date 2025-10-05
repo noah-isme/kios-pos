@@ -52,6 +52,7 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 - `src/app/reports/daily/page.tsx` – Laporan penjualan harian.
 - `src/app/management/products/page.tsx` – CRUD produk/kategori.
 - `src/app/docs/implementation/page.tsx` – Panduan implementasi langkah demi langkah.
+- `src/app/docs/persiapan-awal/page.tsx` – Checklist persiapan awal yang mendetail (tujuan, alur kasir, role, outlet).
 - `src/server/api` – Router tRPC (`sales`, `products`, `outlets`).
 - `prisma/schema.prisma` – Skema database beserta enum Role dan PaymentMethod.
 

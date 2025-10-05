@@ -57,6 +57,9 @@ export default function Home() {
             <Button variant="outline" asChild>
               <Link href="/docs/implementation">Baca Panduan Implementasi</Link>
             </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/docs/persiapan-awal">Checklist Persiapan Awal</Link>
+            </Button>
           </div>
         </div>
         <Card className="self-center bg-secondary/30">

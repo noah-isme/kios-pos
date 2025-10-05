@@ -1,5 +1,8 @@
 import { Metadata } from "next";
 
+import Link from "next/link";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -74,6 +77,26 @@ export default function ImplementationGuidePage() {
           Checklist langkah demi langkah untuk memastikan POS berjalan stabil dari setup hingga evaluasi.
         </p>
       </header>
+      <Card>
+        <CardHeader>
+          <CardTitle>Detail Persiapan Awal</CardTitle>
+          <CardDescription>
+            Pastikan fondasi operasional lengkap sebelum konfigurasi teknis dengan mengikuti panduan rinci berikut.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            Dokumentasikan sasaran bisnis, alur kasir, role karyawan, dan daftar outlet secara eksplisit. Gunakan template
+            persiapan di dokumentasi untuk mencatat keputusan bersama pemangku kepentingan.
+          </p>
+          <p>
+            <Link className="font-medium text-primary underline-offset-4 hover:underline" href="/docs/persiapan-awal">
+              Buka panduan Persiapan Awal terperinci
+            </Link>{" "}
+            untuk menyalin checklist, form tanggung jawab role, serta contoh seed data Prisma.
+          </p>
+        </CardContent>
+      </Card>
       <div className="grid gap-4">
         {sections.map((section) => (
           <Card key={section.title}>
