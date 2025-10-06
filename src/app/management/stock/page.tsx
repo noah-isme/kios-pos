@@ -255,8 +255,8 @@ export default function StockManagementPage() {
                 placeholder="Contoh: koreksi stok akhir hari"
               />
             </div>
-            <Button className="w-full" onClick={() => void handleAdjust()} disabled={adjustStock.isLoading}>
-              {adjustStock.isLoading ? "Menyimpan..." : "Simpan Penyesuaian"}
+            <Button className="w-full" onClick={() => void handleAdjust()} disabled={adjustStock.isPending}>
+              {adjustStock.isPending ? "Menyimpan..." : "Simpan Penyesuaian"}
             </Button>
           </CardContent>
         </Card>
@@ -339,8 +339,8 @@ export default function StockManagementPage() {
                 placeholder="Contoh: mutasi stok ke cabang B"
               />
             </div>
-            <Button className="w-full" onClick={() => void handleTransfer()} disabled={transferStock.isLoading}>
-              {transferStock.isLoading ? "Memproses..." : "Transfer Stok"}
+            <Button className="w-full" onClick={() => void handleTransfer()} disabled={transferStock.isPending}>
+              {transferStock.isPending ? "Memproses..." : "Transfer Stok"}
             </Button>
           </CardContent>
         </Card>
@@ -389,8 +389,8 @@ export default function StockManagementPage() {
                 placeholder="Contoh: hasil hitung ulang malam"
               />
             </div>
-            <Button className="w-full" onClick={() => void handleOpname()} disabled={performOpname.isLoading}>
-              {performOpname.isLoading ? "Menyimpan..." : "Simpan Opname"}
+            <Button className="w-full" onClick={() => void handleOpname()} disabled={performOpname.isPending}>
+              {performOpname.isPending ? "Menyimpan..." : "Simpan Opname"}
             </Button>
           </CardContent>
         </Card>

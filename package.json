@@ -9,9 +9,10 @@
     "lint": "next lint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-  "db:migrate": "prisma migrate deploy",
-  "db:studio": "prisma studio",
-  "seed:products": "node ./scripts/seed-supabase.mjs"
+    "db:migrate": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "seed:products": "node ./scripts/seed-supabase.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.55.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.2",

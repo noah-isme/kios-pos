@@ -47,6 +47,8 @@ export default function CashierPage() {
   const [barcode, setBarcode] = useState("");
   const [manualDiscount, setManualDiscount] = useState(0);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
+  const [paymentReference, setPaymentReference] = useState("");
 
   useEffect(() => {
     if (!selectedOutlet && outlets?.length) {
@@ -85,16 +87,18 @@ export default function CashierPage() {
 
     const result = await productLookup.refetch();
 
-    if (!result.data) {
+    const product = result.data;
+
+    if (!product) {
       toast.error("Produk tidak ditemukan");
       return;
     }
 
     setCart((prev) => {
-      const existing = prev.find((item) => item.productId === result.data?.id);
+      const existing = prev.find((item) => item.productId === product.id);
       if (existing) {
         return prev.map((item) =>
-          item.productId === result.data?.id
+          item.productId === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         );
@@ -102,9 +106,9 @@ export default function CashierPage() {
       return [
         ...prev,
         {
-          productId: result.data.id,
-          name: result.data.name,
-          price: result.data.price,
+          productId: product.id,
+          name: product.name,
+          price: product.price,
           quantity: 1,
           discount: 0,
         },
@@ -149,6 +153,14 @@ export default function CashierPage() {
       return;
     }
 
+    const isNonCash = paymentMethod !== PaymentMethod.CASH;
+    const trimmedReference = paymentReference.trim();
+
+    if (isNonCash && !trimmedReference) {
+      toast.error("Masukkan referensi pembayaran non-tunai");
+      return;
+    }
+
     try {
       const sale = await recordSale.mutateAsync({
         outletId: selectedOutlet,
@@ -162,8 +174,9 @@ export default function CashierPage() {
         })),
         payments: [
           {
-            method: PaymentMethod.CASH,
+            method: paymentMethod,
             amount: totals.totalNet,
+            reference: isNonCash ? trimmedReference : undefined,
           },
         ],
       });
@@ -182,6 +195,8 @@ export default function CashierPage() {
 
       setCart([]);
       setManualDiscount(0);
+      setPaymentMethod(PaymentMethod.CASH);
+      setPaymentReference("");
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan transaksi");
@@ -327,15 +342,53 @@ export default function CashierPage() {
                 <span>Total Dibayar</span>
                 <span>{formatCurrency(totals.totalNet)}</span>
               </div>
-              <Badge variant="secondary" className="w-fit">
-                Pembayaran: Tunai (mock)
-              </Badge>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                    Metode Pembayaran
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Tunai", value: PaymentMethod.CASH },
+                      { label: "Non-Tunai Dummy", value: PaymentMethod.QRIS },
+                    ].map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        variant={paymentMethod === option.value ? "default" : "outline"}
+                        className={cn(
+                          "justify-start",
+                          paymentMethod === option.value ? "" : "bg-muted/40",
+                        )}
+                        onClick={() => setPaymentMethod(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                  {paymentMethod !== PaymentMethod.CASH && (
+                    <Input
+                      placeholder="Masukkan referensi pembayaran"
+                      value={paymentReference}
+                      onChange={(event) => setPaymentReference(event.target.value)}
+                      className="h-9"
+                    />
+                  )}
+                </div>
+                <Badge variant="secondary" className="w-fit">
+                  {paymentMethod === PaymentMethod.CASH
+                    ? "Pembayaran: Tunai"
+                    : `Pembayaran: Non-Tunai Dummy${
+                        paymentReference.trim() ? ` · Ref ${paymentReference.trim()}` : ""
+                      }`}
+                </Badge>
+              </div>
               <Button
-                className={cn("w-full", recordSale.isLoading && "opacity-60")}
-                disabled={recordSale.isLoading}
+                className={cn("w-full", recordSale.isPending && "opacity-60")}
+                disabled={recordSale.isPending}
                 onClick={() => void handleCheckout()}
               >
-                {recordSale.isLoading ? "Memproses..." : "Selesaikan & Cetak Struk"}
+                {recordSale.isPending ? "Memproses..." : "Selesaikan & Cetak Struk"}
               </Button>
             </CardContent>
           </Card>
