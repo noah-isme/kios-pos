@@ -282,7 +282,7 @@ export const salesRouter = router({
 
       return {
         filename: `${sale.receiptNumber}.pdf`,
-        base64: pdf.toString("base64"),
+        base64: Buffer.from(pdf).toString("base64"),
       };
     }),
   forecastNextDay: protectedProcedure
