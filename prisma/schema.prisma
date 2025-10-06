@@ -123,6 +123,13 @@ model Product {
   price          Decimal         @db.Decimal(12, 2)
   costPrice      Decimal?        @db.Decimal(12, 2)
   isActive       Boolean         @default(true)
+  defaultDiscountPercent Decimal? @db.Decimal(5, 2)
+  promoName      String?
+  promoPrice     Decimal?        @db.Decimal(12, 2)
+  promoStart     DateTime?
+  promoEnd       DateTime?
+  isTaxable      Boolean         @default(false)
+  taxRate        Decimal?        @db.Decimal(5, 2)
   categoryId     String?
   supplierId     String?
   createdAt      DateTime        @default(now())
@@ -165,6 +172,8 @@ model Sale {
   cashierId      String?
   totalGross     Decimal      @db.Decimal(12, 2)
   discountTotal  Decimal      @db.Decimal(12, 2) @default(0)
+  taxRate        Decimal?     @db.Decimal(5, 2)
+  taxAmount      Decimal?     @db.Decimal(12, 2)
   totalNet       Decimal      @db.Decimal(12, 2)
   soldAt         DateTime     @default(now())
   status         String       @default("COMPLETED")
@@ -184,6 +193,7 @@ model SaleItem {
   quantity    Int
   unitPrice   Decimal  @db.Decimal(12, 2)
   discount    Decimal  @db.Decimal(12, 2) @default(0)
+  taxAmount   Decimal? @db.Decimal(12, 2)
   total       Decimal  @db.Decimal(12, 2)
   sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product     Product  @relation(fields: [productId], references: [id])
@@ -223,4 +233,13 @@ model DailyCashSummary {
   outlet      Outlet   @relation(fields: [outletId], references: [id], onDelete: Cascade)
 
   @@unique([outletId, businessDay])
+}
+
+model TaxSetting {
+  id        String   @id @default(cuid())
+  name      String
+  rate      Decimal  @db.Decimal(5, 2)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

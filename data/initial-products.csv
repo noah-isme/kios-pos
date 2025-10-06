@@ -1,0 +1,9 @@
+name,sku,barcode,category,supplier,price,costPrice,stock,defaultDiscountPercent,promoName,promoPrice,promoStart,promoEnd,isTaxable,taxRate
+Beras Premium 5kg,BR-001,1234567890123,Sembako,PT Beras Sejahtera,98000,75000,40,5,Ramadhan Hemat,95000,2025-03-01,2025-04-15,true,11
+Minyak Goreng 1L,MG-101,2345678901234,Sembako,PT Minyak Abadi,16500,12500,60,,Lebaran Sale,15000,2025-03-15,2025-04-20,true,11
+Gula Pasir 1kg,GL-550,3456789012345,Sembako,PT Gula Nusantara,14500,11000,55,,,,,,true,11
+Roti Tawar,RT-210,4567890123456,Bakery,Rotiku Bakery,22000,16000,25,10,Buy 2 Get 3,20000,2025-04-01,2025-04-30,true,11
+Susu UHT 1L,SU-330,5678901234567,Minuman,PT Susu Murni,18500,14000,35,0,,,,,,true,11
+Air Mineral 600ml,AM-003,6789012345678,Minuman,PT Tirta Segar,4500,2500,120,,,,,,false,
+Kopi Bubuk 200g,KP-080,7890123456789,Sembako,Kopi Mantap,38000,27000,18,5,Paket Ngopi,36000,2025-03-20,2025-05-05,true,11
+Snack Kentang 70g,SN-775,8901234567890,Cemilan,Cemilan Bahagia,9500,6500,80,,,,,,false,

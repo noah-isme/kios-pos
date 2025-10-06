@@ -4,11 +4,7 @@ import { ZodError } from "zod";
 
 import { getServerAuthSession } from "@/server/auth";
 
-type CreateContextOptions = {
-  headers: Headers;
-};
-
-export const createTRPCContext = async (_opts: CreateContextOptions) => {
+export const createTRPCContext = async () => {
   const session = await getServerAuthSession();
 
   return {

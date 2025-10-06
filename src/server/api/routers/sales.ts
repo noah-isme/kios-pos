@@ -52,6 +52,7 @@ export const salesRouter = router({
           acc.totalNet += Number(sale.totalNet);
           acc.totalItems += totalItems;
           acc.totalCash += cashPaid;
+          acc.totalTax += sale.taxAmount ? Number(sale.taxAmount) : 0;
 
           return acc;
         },
@@ -61,6 +62,7 @@ export const salesRouter = router({
           totalNet: 0,
           totalItems: 0,
           totalCash: 0,
+          totalTax: 0,
         },
       );
 
@@ -110,6 +112,8 @@ export const salesRouter = router({
         receiptNumber: z.string(),
         soldAt: z.string().datetime().optional(),
         discountTotal: z.number().min(0).default(0),
+        applyTax: z.boolean().default(false),
+        taxRate: z.number().min(0).max(100).optional(),
         items: z
           .array(
             z.object({
@@ -117,6 +121,7 @@ export const salesRouter = router({
               quantity: z.number().int().positive(),
               unitPrice: z.number().min(0),
               discount: z.number().min(0).default(0),
+              taxable: z.boolean().optional(),
             }),
           )
           .min(1),
@@ -142,6 +147,19 @@ export const salesRouter = router({
       );
       const netAfterDiscount = totalGross - totalDiscount - input.discountTotal;
 
+      const applicableTaxRate = input.applyTax ? input.taxRate ?? 0 : 0;
+      const taxableBase = input.items.reduce((sum, item) => {
+        if (input.applyTax && (item.taxable ?? true)) {
+          return sum + item.unitPrice * item.quantity - item.discount;
+        }
+        return sum;
+      }, 0);
+
+      const adjustedTaxableBase = Math.max(taxableBase - input.discountTotal, 0);
+
+      const taxAmount = adjustedTaxableBase * (applicableTaxRate / 100);
+      const totalNetWithTax = netAfterDiscount + taxAmount;
+
       const sale = await db.$transaction(async (tx) => {
         const createdSale = await tx.sale.create({
           data: {
@@ -151,7 +169,9 @@ export const salesRouter = router({
             soldAt: input.soldAt ? new Date(input.soldAt) : new Date(),
             totalGross: toDecimal(totalGross),
             discountTotal: toDecimal(totalDiscount + input.discountTotal),
-            totalNet: toDecimal(netAfterDiscount),
+            totalNet: toDecimal(totalNetWithTax),
+            taxRate: applicableTaxRate ? toDecimal(applicableTaxRate) : undefined,
+            taxAmount: taxAmount ? toDecimal(taxAmount) : undefined,
             items: {
               create: input.items.map((item) => ({
                 productId: item.productId,
@@ -159,6 +179,13 @@ export const salesRouter = router({
                 unitPrice: toDecimal(item.unitPrice),
                 discount: toDecimal(item.discount),
                 total: toDecimal(item.unitPrice * item.quantity - item.discount),
+                taxAmount:
+                  input.applyTax && (item.taxable ?? true) && taxableBase > 0
+                    ? toDecimal(
+                        ((item.unitPrice * item.quantity - item.discount) / taxableBase) *
+                          taxAmount,
+                      )
+                    : undefined,
               })),
             },
             payments: {
@@ -217,6 +244,7 @@ export const salesRouter = router({
         receiptNumber: sale.receiptNumber,
         totalNet: Number(sale.totalNet),
         soldAt: sale.soldAt.toISOString(),
+        taxAmount: sale.taxAmount ? Number(sale.taxAmount) : null,
       };
     }),
   printReceipt: protectedProcedure

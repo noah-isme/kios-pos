@@ -1,6 +1,9 @@
 import { z } from "zod";
 
+import { TRPCError } from "@trpc/server";
+
 import { Prisma } from "@/generated/prisma";
+import { slugify } from "@/lib/utils";
 import { db } from "@/server/db";
 import { protectedProcedure, publicProcedure, router } from "@/server/api/trpc";
 
@@ -30,6 +33,7 @@ export const productsRouter = router({
         },
         include: {
           category: true,
+          supplier: true,
         },
         take: input.take,
         orderBy: {
@@ -45,8 +49,19 @@ export const productsRouter = router({
         price: Number(product.price),
         categoryId: product.categoryId,
         category: product.category?.name,
+        supplierId: product.supplierId,
+        supplier: product.supplier?.name ?? null,
         costPrice: product.costPrice ? Number(product.costPrice) : null,
         isActive: product.isActive,
+        defaultDiscountPercent: product.defaultDiscountPercent
+          ? Number(product.defaultDiscountPercent)
+          : null,
+        promoName: product.promoName,
+        promoPrice: product.promoPrice ? Number(product.promoPrice) : null,
+        promoStart: product.promoStart?.toISOString() ?? null,
+        promoEnd: product.promoEnd?.toISOString() ?? null,
+        isTaxable: product.isTaxable,
+        taxRate: product.taxRate ? Number(product.taxRate) : null,
       }));
     }),
   getByBarcode: publicProcedure
@@ -87,6 +102,13 @@ export const productsRouter = router({
         categoryId: z.string().optional(),
         supplierId: z.string().optional(),
         isActive: z.boolean().default(true),
+        defaultDiscountPercent: z.number().min(0).max(100).optional(),
+        promoName: z.string().max(120).optional(),
+        promoPrice: z.number().min(0).optional(),
+        promoStart: z.string().datetime().optional(),
+        promoEnd: z.string().datetime().optional(),
+        isTaxable: z.boolean().optional(),
+        taxRate: z.number().min(0).max(100).optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -104,6 +126,13 @@ export const productsRouter = router({
           categoryId: input.categoryId,
           supplierId: input.supplierId,
           isActive: input.isActive,
+          defaultDiscountPercent: toDecimal(input.defaultDiscountPercent ?? undefined),
+          promoName: input.promoName,
+          promoPrice: toDecimal(input.promoPrice ?? undefined),
+          promoStart: input.promoStart ? new Date(input.promoStart) : null,
+          promoEnd: input.promoEnd ? new Date(input.promoEnd) : null,
+          isTaxable: input.isTaxable ?? false,
+          taxRate: toDecimal(input.taxRate ?? undefined),
         },
         create: {
           name: input.name,
@@ -115,6 +144,13 @@ export const productsRouter = router({
           categoryId: input.categoryId,
           supplierId: input.supplierId,
           isActive: input.isActive,
+          defaultDiscountPercent: toDecimal(input.defaultDiscountPercent ?? undefined),
+          promoName: input.promoName,
+          promoPrice: toDecimal(input.promoPrice ?? undefined),
+          promoStart: input.promoStart ? new Date(input.promoStart) : undefined,
+          promoEnd: input.promoEnd ? new Date(input.promoEnd) : undefined,
+          isTaxable: input.isTaxable ?? false,
+          taxRate: toDecimal(input.taxRate ?? undefined),
         },
       });
 
@@ -131,4 +167,119 @@ export const productsRouter = router({
 
     return categories;
   }),
+  upsertCategory: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const slug = slugify(input.name);
+
+      const category = await db.category.upsert({
+        where: {
+          id: input.id ?? "",
+        },
+        update: {
+          name: input.name,
+          slug,
+        },
+        create: {
+          name: input.name,
+          slug,
+        },
+      });
+
+      return category;
+    }),
+  deleteCategory: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        await db.category.delete({
+          where: {
+            id: input.id,
+          },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Kategori masih digunakan oleh produk lain.",
+          });
+        }
+
+        throw error;
+      }
+
+      return { success: true } as const;
+    }),
+  suppliers: protectedProcedure.query(async () => {
+    const suppliers = await db.supplier.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return suppliers;
+  }),
+  upsertSupplier: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().optional(),
+        name: z.string().min(1),
+        email: z.string().email().optional(),
+        phone: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const supplier = await db.supplier.upsert({
+        where: {
+          id: input.id ?? "",
+        },
+        update: {
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+        },
+        create: {
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+        },
+      });
+
+      return supplier;
+    }),
+  deleteSupplier: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        await db.supplier.delete({
+          where: {
+            id: input.id,
+          },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Supplier masih digunakan oleh produk lain.",
+          });
+        }
+
+        throw error;
+      }
+
+      return { success: true } as const;
+    }),
 });
