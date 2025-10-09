@@ -50,7 +50,11 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
    
    SUPABASE_URL="https://your-project.supabase.co"
    SUPABASE_ANON_KEY="public-anon-key"
+   DISCOUNT_LIMIT_PERCENT=50
+   STORE_NPWP=""
    ```
+
+   > 💡 Saat variabel `NEXT_PUBLIC_SUPABASE_URL` atau `NEXT_PUBLIC_SUPABASE_ANON_KEY` kosong, aplikasi otomatis menjalankan mode mock berbasis **MSW**. Data contoh disimpan di IndexedDB sehingga halaman Kasir/Produk/Laporan langsung terisi untuk uji visual maupun E2E.
 
 2. Jalankan perintah Prisma untuk menghasilkan klien TypeScript:
 
@@ -103,15 +107,19 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 ## Testing Manual
 
 - Gunakan halaman **Kasir** untuk mensimulasikan penjualan (sertakan variasi metode bayar & refund). Setelah checkout, PDF struk akan terbuka di tab baru lengkap dengan breakdown diskon & PPN.
+- Tombol checkout akan menolak transaksi jika diskon total melebihi batas toko (`DISCOUNT_LIMIT_PERCENT`) atau nominal pembayaran kurang dari total — pesan kesalahan ditampilkan dalam Bahasa Indonesia.
 - Halaman **Laporan Harian** menampilkan rekap penjualan berdasarkan data `Sale` dan `Payment`.
 - Halaman **Produk** menyediakan panel lengkap untuk sinkronisasi SKU, kategori, supplier, promo, dan tarif PPN per produk.
 - Halaman **Manajemen Stok** mendukung penyesuaian cepat, transfer antar outlet, serta stock opname.
+- Untuk mencoba mock mode secara lokal cukup kosongkan variabel Supabase lalu jalankan `npm run dev`. Data tersimpan di IndexedDB/LocalStorage sehingga refresh halaman tetap mempertahankan perubahan kasir.
+- Struk PDF sekarang menyediakan preset lebar **58 mm** dan **80 mm** dengan metadata toko (nama, NPWP) serta QR Code nomor struk. Unduh kedua ukuran untuk memastikan layout tetap konsisten pada printer termal Anda.
 
 
 ## Deploy
 
 - Deploy aplikasi ke Vercel (`vercel --prod`) dan arahkan environment variables sesuai `.env`.
 - Pastikan Supabase menyediakan `DATABASE_URL`, `NEXTAUTH_SECRET`, kredensial SMTP, dan OAuth Google.
+- Sebelum melakukan deploy atau membuka pull request, jalankan `npm run verify` untuk memastikan lint, unit test, dan build lulus tanpa error.
 
 ## Langkah Lanjutan
 
