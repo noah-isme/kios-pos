@@ -210,6 +210,10 @@ export const ensurePaymentsCoverTotal = (
   }
 };
 
-export const normalizePaperSize = (paperSize: SalePaperSize): SalePaperSize => {
+export type NormalizedPaperSize = "58MM" | "80MM";
+
+export const normalizePaperSize = (
+  paperSize?: SalePaperSize,
+): NormalizedPaperSize => {
   return paperSize === "58MM" ? "58MM" : "80MM";
 };

@@ -244,51 +244,60 @@ const routeCall = async (
         return wrapError(call.id, "Transaksi tidak ditemukan");
       }
 
-      const pdfBytes = await generateReceiptPdf({
+      const pdfPayload: Parameters<typeof generateReceiptPdf>[0] = {
         sale: {
           id: sale.id,
+          receiptNumber: sale.receiptNumber,
           outletId: sale.outletId,
           cashierId: null,
-          totalGross: sale.totalGross as unknown as any,
-          discountTotal: sale.discountTotal as unknown as any,
+          totalGross: sale.totalGross,
+          discountTotal: sale.discountTotal,
           taxRate: null,
-          taxAmount: sale.taxAmount as unknown as any,
-          totalNet: sale.totalNet as unknown as any,
-          soldAt: new Date(sale.soldAt) as unknown as any,
-          receiptNumber: sale.receiptNumber,
+          taxAmount: sale.taxAmount,
+          totalNet: sale.totalNet,
+          soldAt: new Date(sale.soldAt),
           status: "COMPLETED",
-          createdAt: new Date(sale.soldAt) as unknown as any,
-          updatedAt: new Date(sale.soldAt) as unknown as any,
+          createdAt: new Date(sale.soldAt),
+          updatedAt: new Date(sale.soldAt),
           outlet: {
-            ...outlet,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          } as any,
-          cashier: { id: "mock-user", name: "Kasir Demo" } as any,
+            id: outlet.id,
+            name: outlet.name,
+            address: outlet.address ?? null,
+            npwp: null,
+          },
+          cashier: {
+            id: "mock-user",
+            name: "Kasir Demo",
+          },
         },
         items: sale.items.map((item) => ({
           id: item.id,
           saleId: sale.id,
           productId: item.productId,
           quantity: item.quantity,
-          unitPrice: item.unitPrice as unknown as any,
-          discount: item.discount as unknown as any,
-          total: item.total as unknown as any,
+          unitPrice: item.unitPrice,
+          discount: item.discount,
+          taxAmount: item.taxable ? item.total * 0.11 : 0,
+          total: item.total,
           product: {
             id: item.productId,
             name: item.productName,
             sku: "",
             barcode: "",
-            price: item.unitPrice as unknown as any,
-          } as any,
+            promoName: undefined,
+            promoPrice: undefined,
+          },
         })),
         payments: sale.payments.map((payment) => ({
           id: `${sale.id}-${payment.method}`,
           method: payment.method as PaymentMethod,
-          amount: payment.amount as unknown as any,
-        })) as any,
+          amount: payment.amount,
+          reference: payment.reference ?? null,
+        })),
         paperSize: input.paperSize,
-      });
+      };
+
+      const pdfBytes = await generateReceiptPdf(pdfPayload);
 
       return wrapData(call.id, {
         filename: `${sale.receiptNumber}.pdf`,

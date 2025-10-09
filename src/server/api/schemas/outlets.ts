@@ -36,7 +36,7 @@ export const adjustStockInputSchema = z.object({
   outletId: z.string().min(1, { message: "Outlet wajib diisi" }),
   productId: z.string().min(1, { message: "Produk wajib diisi" }),
   quantity: z
-    .number({ invalid_type_error: "Jumlah harus berupa angka" })
+    .number("Jumlah harus berupa angka")
     .int({ message: "Jumlah harus bilangan bulat" }),
   note: z.string().max(180).optional(),
 });
@@ -46,7 +46,7 @@ export const transferStockInputSchema = z.object({
   fromOutletId: z.string().min(1, { message: "Outlet asal wajib diisi" }),
   toOutletId: z.string().min(1, { message: "Outlet tujuan wajib diisi" }),
   quantity: z
-    .number({ invalid_type_error: "Jumlah harus berupa angka" })
+    .number("Jumlah harus berupa angka")
     .int({ message: "Jumlah harus bulat" })
     .positive({ message: "Jumlah minimal 1" }),
   note: z.string().max(180).optional(),

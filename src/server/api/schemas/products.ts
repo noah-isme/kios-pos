@@ -4,7 +4,7 @@ export const productListInputSchema = z.object({
   search: z.string().max(120, { message: "Pencarian maksimal 120 karakter" }).optional(),
   onlyActive: z.boolean().default(true),
   take: z
-    .number({ invalid_type_error: "Jumlah ambil harus berupa angka" })
+    .number("Jumlah ambil harus berupa angka")
     .int({ message: "Jumlah ambil harus bulat" })
     .min(1, { message: "Minimal 1 data" })
     .max(100, { message: "Maksimal 100 data" })

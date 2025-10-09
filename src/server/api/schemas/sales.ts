@@ -5,28 +5,26 @@ import { PaymentMethod } from "@/generated/prisma";
 export const saleItemInputSchema = z.object({
   productId: z.string().min(1, { message: "Produk wajib diisi" }),
   quantity: z
-    .number({ invalid_type_error: "Jumlah harus berupa angka" })
+    .number("Jumlah harus berupa angka")
     .int({ message: "Jumlah harus bilangan bulat" })
     .positive({ message: "Jumlah minimal 1" }),
   unitPrice: z
-    .number({ invalid_type_error: "Harga harus berupa angka" })
+    .number("Harga harus berupa angka")
     .min(0, { message: "Harga tidak boleh negatif" }),
   discount: z
-    .number({ invalid_type_error: "Diskon harus berupa angka" })
+    .number("Diskon harus berupa angka")
     .min(0, { message: "Diskon minimal 0" })
     .default(0),
   taxable: z.boolean().optional(),
 });
 
 export const salePaymentInputSchema = z.object({
-  method: z.nativeEnum(PaymentMethod, {
-    errorMap: () => ({ message: "Metode bayar tidak dikenal" }),
-  }),
+  method: z.nativeEnum(PaymentMethod, "Metode bayar tidak dikenal"),
   amount: z
-    .number({ invalid_type_error: "Nominal bayar harus berupa angka" })
+    .number("Nominal bayar harus berupa angka")
     .min(0, { message: "Nominal bayar tidak boleh negatif" }),
   reference: z
-    .string({ invalid_type_error: "Referensi harus berupa teks" })
+    .string("Referensi harus berupa teks")
     .min(1, { message: "Referensi wajib diisi" })
     .optional(),
 });
@@ -37,12 +35,12 @@ export const recordSaleInputSchema = z
     receiptNumber: z.string().min(1, { message: "Nomor struk wajib diisi" }),
     soldAt: z.string().datetime().optional(),
     discountTotal: z
-      .number({ invalid_type_error: "Diskon tambahan harus berupa angka" })
+      .number("Diskon tambahan harus berupa angka")
       .min(0, { message: "Diskon tambahan minimal 0" })
       .default(0),
     applyTax: z.boolean().default(false),
     taxRate: z
-      .number({ invalid_type_error: "Tarif PPN harus berupa angka" })
+      .number("Tarif PPN harus berupa angka")
       .min(0, { message: "Tarif PPN minimal 0%" })
       .max(100, { message: "Tarif PPN maksimal 100%" })
       .optional(),
@@ -119,7 +117,7 @@ export const forecastOutputSchema = z.object({
 
 export const listRecentInputSchema = z.object({
   limit: z
-    .number({ invalid_type_error: "Batas harus berupa angka" })
+    .number("Batas harus berupa angka")
     .int({ message: "Batas harus bilangan bulat" })
     .min(1, { message: "Minimal 1 transaksi" })
     .max(50, { message: "Maksimal 50 transaksi" })
