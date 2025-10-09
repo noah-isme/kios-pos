@@ -22,9 +22,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PaymentMethod } from "@/generated/prisma";
+import type { PaymentMethod } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/client";
+
+const DEFAULT_PAYMENT_METHOD: PaymentMethod = "CASH";
+const QRIS_PAYMENT_METHOD: PaymentMethod = "QRIS";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -47,7 +50,7 @@ export default function CashierPage() {
   const [barcode, setBarcode] = useState("");
   const [manualDiscount, setManualDiscount] = useState(0);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(DEFAULT_PAYMENT_METHOD);
   const [paymentReference, setPaymentReference] = useState("");
 
   useEffect(() => {
@@ -153,7 +156,7 @@ export default function CashierPage() {
       return;
     }
 
-    const isNonCash = paymentMethod !== PaymentMethod.CASH;
+    const isNonCash = paymentMethod !== DEFAULT_PAYMENT_METHOD;
     const trimmedReference = paymentReference.trim();
 
     if (isNonCash && !trimmedReference) {
@@ -195,7 +198,7 @@ export default function CashierPage() {
 
       setCart([]);
       setManualDiscount(0);
-      setPaymentMethod(PaymentMethod.CASH);
+      setPaymentMethod(DEFAULT_PAYMENT_METHOD);
       setPaymentReference("");
     } catch (error) {
       console.error(error);
@@ -349,8 +352,8 @@ export default function CashierPage() {
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: "Tunai", value: PaymentMethod.CASH },
-                      { label: "Non-Tunai Dummy", value: PaymentMethod.QRIS },
+                      { label: "Tunai", value: DEFAULT_PAYMENT_METHOD },
+                      { label: "Non-Tunai Dummy", value: QRIS_PAYMENT_METHOD },
                     ].map((option) => (
                       <Button
                         key={option.value}
@@ -366,7 +369,7 @@ export default function CashierPage() {
                       </Button>
                     ))}
                   </div>
-                  {paymentMethod !== PaymentMethod.CASH && (
+                  {paymentMethod !== DEFAULT_PAYMENT_METHOD && (
                     <Input
                       placeholder="Masukkan referensi pembayaran"
                       value={paymentReference}
@@ -376,7 +379,7 @@ export default function CashierPage() {
                   )}
                 </div>
                 <Badge variant="secondary" className="w-fit">
-                  {paymentMethod === PaymentMethod.CASH
+                  {paymentMethod === DEFAULT_PAYMENT_METHOD
                     ? "Pembayaran: Tunai"
                     : `Pembayaran: Non-Tunai Dummy${
                         paymentReference.trim() ? ` · Ref ${paymentReference.trim()}` : ""

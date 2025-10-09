@@ -119,6 +119,7 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 
 - Deploy aplikasi ke Vercel (`vercel --prod`) dan arahkan environment variables sesuai `.env`.
 - Pastikan Supabase menyediakan `DATABASE_URL`, `NEXTAUTH_SECRET`, kredensial SMTP, dan OAuth Google.
+- Sebelum melakukan deploy atau membuka pull request, jalankan `npm run verify` untuk memastikan lint, unit test, dan build lulus tanpa error.
 
 ## Langkah Lanjutan
 
