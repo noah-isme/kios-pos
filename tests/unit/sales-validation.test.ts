@@ -6,7 +6,7 @@ import {
   normalizePaperSize,
 } from "@/server/api/services/sales-validation";
 
-import { PaymentMethod } from "@/server/db/enums";
+import { PaymentMethod } from "@/generated/prisma";
 
 describe("sales validation", () => {
   it("calculates totals for exclusive tax", () => {

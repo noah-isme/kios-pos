@@ -1,4 +1,4 @@
-import { PaymentMethod } from "@/server/db/enums";
+import { PaymentMethod } from "@/generated/prisma";
 import { SalePaperSize } from "@/server/api/schemas/sales";
 
 export class SaleValidationError extends Error {

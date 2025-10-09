@@ -14,8 +14,7 @@
     "db:studio": "prisma studio",
     "seed:products": "node ./scripts/seed-supabase.mjs",
     "test:e2e": "playwright test",
-    "test:unit": "vitest run",
-    "verify": "npm run lint && npm run test:unit && CI=1 npm run build"
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -39,7 +38,6 @@
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",
     "pdf-lib": "^1.17.1",
-    "prisma": "^6.16.3",
     "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",

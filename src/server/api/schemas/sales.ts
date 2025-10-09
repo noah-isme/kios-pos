@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PaymentMethod } from "@/server/db/enums";
+import { PaymentMethod } from "@/generated/prisma";
 
 export const saleItemInputSchema = z.object({
   productId: z.string().min(1, { message: "Produk wajib diisi" }),
