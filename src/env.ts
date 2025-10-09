@@ -14,6 +14,13 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().email().optional(),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_ANON_KEY: z.string().optional(),
+  STORE_NPWP: z.string().optional(),
+  DISCOUNT_LIMIT_PERCENT: z
+    .coerce
+    .number()
+    .min(0)
+    .max(100)
+    .default(50),
 });
 
 const parsed = envSchema.safeParse({
@@ -30,6 +37,8 @@ const parsed = envSchema.safeParse({
   EMAIL_FROM: process.env.EMAIL_FROM,
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+  STORE_NPWP: process.env.STORE_NPWP,
+  DISCOUNT_LIMIT_PERCENT: process.env.DISCOUNT_LIMIT_PERCENT,
 });
 
 if (!parsed.success) {

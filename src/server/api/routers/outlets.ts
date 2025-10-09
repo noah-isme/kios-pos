@@ -3,26 +3,34 @@ import { z } from "zod";
 
 import { db } from "@/server/db";
 import { protectedProcedure, router } from "@/server/api/trpc";
+import {
+  outletListOutputSchema,
+  outletUpsertInputSchema,
+} from "@/server/api/schemas/outlets";
 
 export const outletsRouter = router({
-  list: protectedProcedure.query(async () => {
-    const outlets = await db.outlet.findMany({
-      orderBy: {
-        name: "asc",
-      },
-    });
+  list: protectedProcedure
+    .output(outletListOutputSchema)
+    .query(async () => {
+      const outlets = await db.outlet.findMany({
+        orderBy: {
+          name: "asc",
+        },
+      });
 
-    return outlets;
-  }),
+      return outletListOutputSchema.parse(
+        outlets.map((outlet) => ({
+          id: outlet.id,
+          name: outlet.name,
+          code: outlet.code,
+          address: outlet.address ?? null,
+          createdAt: outlet.createdAt.toISOString(),
+          updatedAt: outlet.updatedAt.toISOString(),
+        })),
+      );
+    }),
   upsert: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-        code: z.string().min(1),
-        address: z.string().optional(),
-      }),
-    )
+    .input(outletUpsertInputSchema)
     .mutation(async ({ input }) => {
       const outlet = await db.outlet.upsert({
         where: {

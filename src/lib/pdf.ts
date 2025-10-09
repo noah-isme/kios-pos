@@ -1,25 +1,95 @@
+import QRCode from "qrcode";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-import type {
-  Outlet,
-  Payment,
-  Product,
-  Sale,
-  SaleItem,
-  User,
-} from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
+import { env } from "@/env";
+
+type DecimalLike = number | string | Prisma.Decimal;
+
+type ReceiptSale = {
+  id: string;
+  receiptNumber: string;
+  outletId: string;
+  cashierId: string | null;
+  totalGross: DecimalLike;
+  discountTotal: DecimalLike;
+  taxRate: DecimalLike | null;
+  taxAmount: DecimalLike | null;
+  totalNet: DecimalLike;
+  soldAt: Date | string;
+  status: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  outlet: {
+    id: string;
+    name: string;
+    address?: string | null;
+    npwp?: string | null;
+  } & Record<string, unknown>;
+  cashier: ({
+    id: string;
+    name: string | null;
+  } & Record<string, unknown>) | null;
+} & Record<string, unknown>;
+
+type ReceiptItem = {
+  id: string;
+  saleId: string;
+  productId: string;
+  quantity: number;
+  unitPrice: DecimalLike;
+  discount: DecimalLike | null;
+  taxAmount?: DecimalLike | null;
+  total: DecimalLike;
+  product: {
+    id: string;
+    name: string;
+    sku?: string | null;
+    barcode?: string | null;
+    promoName?: string | null;
+    promoPrice?: DecimalLike | null;
+  } & Record<string, unknown>;
+} & Record<string, unknown>;
+
+type ReceiptPayment = {
+  id: string;
+  method: string;
+  amount: DecimalLike;
+  reference?: string | null;
+} & Record<string, unknown>;
 
 type ReceiptInput = {
-  sale: Sale & {
-    outlet: Outlet;
-    cashier: User | null;
-  };
-  items: Array<
-    SaleItem & {
-      product: Product;
-    }
-  >;
-  payments: Payment[];
+  sale: ReceiptSale;
+  items: ReceiptItem[];
+  payments: ReceiptPayment[];
+  paperSize?: "58MM" | "80MM";
+};
+
+const mmToPt = (mm: number) => (mm / 25.4) * 72;
+
+const PAPER_PRESETS: Record<"58MM" | "80MM", { width: number; height: number }> = {
+  "58MM": { width: mmToPt(58), height: mmToPt(260) },
+  "80MM": { width: mmToPt(80), height: mmToPt(300) },
+};
+
+const toNumber = (value: DecimalLike | null | undefined) => {
+  if (value == null) {
+    return 0;
+  }
+
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    return Number(value);
+  }
+
+  if ("toNumber" in value && typeof value.toNumber === "function") {
+    return value.toNumber();
+  }
+
+  return Number(value.toString());
 };
 
 const formatCurrency = (value: number) =>
@@ -35,9 +105,15 @@ const formatDateTime = (value: Date) =>
     timeStyle: "short",
   });
 
-export const generateReceiptPdf = async ({ sale, items, payments }: ReceiptInput) => {
+export const generateReceiptPdf = async ({
+  sale,
+  items,
+  payments,
+  paperSize = "80MM",
+}: ReceiptInput) => {
+  const preset = PAPER_PRESETS[paperSize] ?? PAPER_PRESETS["80MM"];
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([270, 480]);
+  const page = pdfDoc.addPage([preset.width, preset.height]);
   const font = await pdfDoc.embedFont(StandardFonts.Courier);
 
   const drawText = (text: string, x: number, y: number, size = 10) => {
@@ -61,25 +137,54 @@ export const generateReceiptPdf = async ({ sale, items, payments }: ReceiptInput
     });
   };
 
-  let cursorY = 460;
+  const now = new Date();
+  pdfDoc.setTitle(`${sale.outlet.name} · ${sale.receiptNumber}`);
+  pdfDoc.setCreator("Kios POS");
+  pdfDoc.setProducer("Kios POS");
+  pdfDoc.setCreationDate(now);
+  pdfDoc.setModificationDate(now);
+  const outletNpwp = sale.outlet.npwp ?? env.STORE_NPWP;
+  if (outletNpwp) {
+    pdfDoc.setSubject(`NPWP ${outletNpwp}`);
+  }
+  pdfDoc.setKeywords([sale.receiptNumber, sale.outlet.name]);
+
+  let cursorY = preset.height - 24;
   const lineHeight = 14;
-  const leftMargin = 20;
-  const rightMargin = 250;
+  const leftMargin = 16;
+  const rightMargin = preset.width - 16;
 
   const soldAt = sale.soldAt instanceof Date ? sale.soldAt : new Date(sale.soldAt);
-  const subtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0);
-  const itemDiscountTotal = items.reduce((sum, item) => sum + Number(item.discount ?? 0), 0);
-  const totalDiscountRecorded = Number(sale.discountTotal ?? 0);
+  const subtotal = items.reduce((sum, item) => sum + toNumber(item.unitPrice) * item.quantity, 0);
+  const itemDiscountTotal = items.reduce((sum, item) => sum + toNumber(item.discount ?? 0), 0);
+  const totalDiscountRecorded = toNumber(sale.discountTotal ?? 0);
   const orderLevelDiscount = Math.max(totalDiscountRecorded - itemDiscountTotal, 0);
-  const taxAmount = Number(sale.taxAmount ?? 0);
-  const totalNet = Number(sale.totalNet);
+  const taxAmount = toNumber(sale.taxAmount ?? 0);
+  const totalNet = toNumber(sale.totalNet);
 
   drawText(sale.outlet.name, leftMargin, cursorY, 12);
+  if (outletNpwp) {
+    cursorY -= lineHeight;
+    drawText(`NPWP: ${outletNpwp}`, leftMargin, cursorY, 9);
+  }
   cursorY -= lineHeight;
   if (sale.outlet.address) {
-    drawText(sale.outlet.address, leftMargin, cursorY);
+    drawText(sale.outlet.address, leftMargin, cursorY, 9);
     cursorY -= lineHeight;
   }
+
+  const qrSize = paperSize === "58MM" ? 70 : 88;
+  const qrDataUrl = await QRCode.toDataURL(sale.receiptNumber, {
+    margin: 0,
+    scale: 6,
+  });
+  const qrImage = await pdfDoc.embedPng(qrDataUrl);
+  page.drawImage(qrImage, {
+    x: rightMargin - qrSize,
+    y: cursorY - qrSize + 8,
+    width: qrSize,
+    height: qrSize,
+  });
 
   drawText(`Nomor Struk: ${sale.receiptNumber}`, leftMargin, cursorY);
   cursorY -= lineHeight;
@@ -92,10 +197,10 @@ export const generateReceiptPdf = async ({ sale, items, payments }: ReceiptInput
 
   items.forEach((item) => {
     const productName = item.product.name.substring(0, 28);
-    const lineTotal = Number(item.total ?? 0);
-    const unitPrice = Number(item.unitPrice ?? 0);
-    const discount = Number(item.discount ?? 0);
-    const taxPerItem = Number(item.taxAmount ?? 0);
+    const lineTotal = toNumber(item.total ?? 0);
+    const unitPrice = toNumber(item.unitPrice ?? 0);
+    const discount = toNumber(item.discount ?? 0);
+    const taxPerItem = toNumber(item.taxAmount ?? 0);
 
     drawText(productName, leftMargin, cursorY);
     drawRightAligned(formatCurrency(lineTotal), rightMargin, cursorY);
