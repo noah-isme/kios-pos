@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { addDays, endOfDay, startOfDay } from "date-fns";
 
-import { PaymentMethod, Prisma } from "@/generated/prisma";
+import { Prisma } from "@prisma/client";
+import { PaymentMethod } from "@/server/db/enums";
 import { env } from "@/env";
 import { generateReceiptPdf } from "@/lib/pdf";
 import {

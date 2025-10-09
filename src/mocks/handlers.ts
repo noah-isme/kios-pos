@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
 import superjson from "superjson";
 
-import { PaymentMethod } from "@/generated/prisma";
+import type { PaymentMethod } from "@prisma/client";
 import { generateReceiptPdf } from "@/lib/pdf";
 import {
   MockDatabase,
@@ -12,6 +12,8 @@ import {
   readMockDb,
   writeMockDb,
 } from "@/mocks/storage";
+
+const CASH_PAYMENT_METHOD: PaymentMethod = "CASH";
 
 const wrapData = (id: number | string, data: unknown) => ({
   id,
@@ -210,7 +212,7 @@ const routeCall = async (
           acc.totalNet += sale.totalNet;
           acc.totalItems += sale.items.reduce((sum, item) => sum + item.quantity, 0);
           acc.totalCash += sale.payments
-            .filter((payment) => payment.method === PaymentMethod.CASH)
+            .filter((payment) => payment.method === CASH_PAYMENT_METHOD)
             .reduce((sum, payment) => sum + payment.amount, 0);
           return acc;
         },

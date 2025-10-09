@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@prisma/client";
 import { slugify } from "@/lib/utils";
 import {
   categoryListOutputSchema,

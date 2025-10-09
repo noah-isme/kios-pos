@@ -7,7 +7,7 @@ import type { Adapter } from "next-auth/adapters";
 
 import { env } from "@/env";
 import { db } from "@/server/db";
-import { Role } from "@/generated/prisma";
+import { Role } from "@/server/db/enums";
 
 const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
   ? nodemailer.createTransport({

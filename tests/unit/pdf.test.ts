@@ -1,7 +1,7 @@
 import { PDFDocument } from "pdf-lib";
 
 import { generateReceiptPdf } from "@/lib/pdf";
-import { PaymentMethod } from "@/generated/prisma";
+import { PaymentMethod } from "@/server/db/enums";
 
 describe("generateReceiptPdf", () => {
   const baseSale = {
