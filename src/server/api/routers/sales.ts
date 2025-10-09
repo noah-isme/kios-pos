@@ -1,9 +1,28 @@
 import { TRPCError } from "@trpc/server";
 import { addDays, endOfDay, startOfDay } from "date-fns";
-import { z } from "zod";
 
 import { PaymentMethod, Prisma } from "@/generated/prisma";
+import { env } from "@/env";
 import { generateReceiptPdf } from "@/lib/pdf";
+import {
+  dailySummaryInputSchema,
+  dailySummaryOutputSchema,
+  forecastInputSchema,
+  forecastOutputSchema,
+  listRecentInputSchema,
+  recentSalesOutputSchema,
+  recordSaleInputSchema,
+  recordSaleOutputSchema,
+  printReceiptInputSchema,
+  printReceiptOutputSchema,
+} from "@/server/api/schemas/sales";
+import {
+  SaleValidationError,
+  calculateFinancials,
+  ensurePaymentsCoverTotal,
+  enforceDiscountLimit,
+  normalizePaperSize,
+} from "@/server/api/services/sales-validation";
 import { db } from "@/server/db";
 import { protectedProcedure, router } from "@/server/api/trpc";
 
@@ -11,12 +30,8 @@ const toDecimal = (value: number) => new Prisma.Decimal(value.toFixed(2));
 
 export const salesRouter = router({
   getDailySummary: protectedProcedure
-    .input(
-      z.object({
-        date: z.string().optional(),
-        outletId: z.string().optional(),
-      }),
-    )
+    .input(dailySummaryInputSchema)
+    .output(dailySummaryOutputSchema)
     .query(async ({ input, ctx }) => {
       const baseDate = input.date ? new Date(input.date) : new Date();
       const rangeStart = startOfDay(baseDate);
@@ -66,7 +81,7 @@ export const salesRouter = router({
         },
       );
 
-      return {
+      return dailySummaryOutputSchema.parse({
         date: rangeStart.toISOString(),
         totals,
         sales: sales.map((sale) => ({
@@ -77,14 +92,11 @@ export const salesRouter = router({
           soldAt: sale.soldAt.toISOString(),
           paymentMethods: sale.payments.map((payment) => payment.method),
         })),
-      };
+      });
     }),
   listRecent: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().int().min(1).max(50).default(10),
-      }),
-    )
+    .input(listRecentInputSchema)
+    .output(recentSalesOutputSchema)
     .query(async ({ input }) => {
       const sales = await db.sale.findMany({
         take: input.limit,
@@ -96,82 +108,55 @@ export const salesRouter = router({
         },
       });
 
-      return sales.map((sale) => ({
-        id: sale.id,
-        outletId: sale.outletId,
-        receiptNumber: sale.receiptNumber,
-        soldAt: sale.soldAt.toISOString(),
-        totalNet: Number(sale.totalNet),
-        totalItems: sale.items.reduce((sum, item) => sum + item.quantity, 0),
-      }));
+      return recentSalesOutputSchema.parse(
+        sales.map((sale) => ({
+          id: sale.id,
+          outletId: sale.outletId,
+          receiptNumber: sale.receiptNumber,
+          soldAt: sale.soldAt.toISOString(),
+          totalNet: Number(sale.totalNet),
+          totalItems: sale.items.reduce((sum, item) => sum + item.quantity, 0),
+        })),
+      );
     }),
   recordSale: protectedProcedure
-    .input(
-      z.object({
-        outletId: z.string(),
-        receiptNumber: z.string(),
-        soldAt: z.string().datetime().optional(),
-        discountTotal: z.number().min(0).default(0),
-        applyTax: z.boolean().default(false),
-        taxRate: z.number().min(0).max(100).optional(),
-        items: z
-          .array(
-            z.object({
-              productId: z.string(),
-              quantity: z.number().int().positive(),
-              unitPrice: z.number().min(0),
-              discount: z.number().min(0).default(0),
-              taxable: z.boolean().optional(),
-            }),
-          )
-          .min(1),
-        payments: z
-          .array(
-            z.object({
-              method: z.nativeEnum(PaymentMethod),
-              amount: z.number().min(0),
-              reference: z.string().optional(),
-            }),
-          )
-          .min(1),
-      }),
-    )
+    .input(recordSaleInputSchema)
+    .output(recordSaleOutputSchema)
     .mutation(async ({ input, ctx }) => {
-      const totalGross = input.items.reduce(
-        (sum, item) => sum + item.unitPrice * item.quantity,
-        0,
-      );
-      const totalDiscount = input.items.reduce(
-        (sum, item) => sum + item.discount,
-        0,
-      );
-      const netAfterDiscount = totalGross - totalDiscount - input.discountTotal;
+      try {
+        const financials = calculateFinancials({
+          items: input.items,
+          discountTotal: input.discountTotal,
+          applyTax: input.applyTax,
+          taxRate: input.taxRate,
+          taxMode: input.taxMode,
+        });
 
-      const applicableTaxRate = input.applyTax ? input.taxRate ?? 0 : 0;
-      const taxableBase = input.items.reduce((sum, item) => {
-        if (input.applyTax && (item.taxable ?? true)) {
-          return sum + item.unitPrice * item.quantity - item.discount;
-        }
-        return sum;
-      }, 0);
+        enforceDiscountLimit(
+          financials.totalGross,
+          financials.totalDiscount,
+          env.DISCOUNT_LIMIT_PERCENT,
+        );
 
-      const adjustedTaxableBase = Math.max(taxableBase - input.discountTotal, 0);
+        ensurePaymentsCoverTotal(input.payments, financials.totalNet);
 
-      const taxAmount = adjustedTaxableBase * (applicableTaxRate / 100);
-      const totalNetWithTax = netAfterDiscount + taxAmount;
-
-      const sale = await db.$transaction(async (tx) => {
-        const createdSale = await tx.sale.create({
-          data: {
-            receiptNumber: input.receiptNumber,
-            outletId: input.outletId,
-            cashierId: ctx.session?.user.id,
-            soldAt: input.soldAt ? new Date(input.soldAt) : new Date(),
-            totalGross: toDecimal(totalGross),
-            discountTotal: toDecimal(totalDiscount + input.discountTotal),
-            totalNet: toDecimal(totalNetWithTax),
-            taxRate: applicableTaxRate ? toDecimal(applicableTaxRate) : undefined,
-            taxAmount: taxAmount ? toDecimal(taxAmount) : undefined,
+        const sale = await db.$transaction(async (tx) => {
+          const createdSale = await tx.sale.create({
+            data: {
+              receiptNumber: input.receiptNumber,
+              outletId: input.outletId,
+              cashierId: ctx.session?.user.id,
+              soldAt: input.soldAt ? new Date(input.soldAt) : new Date(),
+            totalGross: toDecimal(financials.totalGross),
+            discountTotal: toDecimal(financials.totalDiscount),
+            totalNet: toDecimal(financials.totalNet),
+            taxRate:
+              input.applyTax && input.taxRate
+                ? toDecimal(input.taxRate)
+                : undefined,
+            taxAmount: financials.taxAmount
+              ? toDecimal(financials.taxAmount)
+              : undefined,
             items: {
               create: input.items.map((item) => ({
                 productId: item.productId,
@@ -180,10 +165,11 @@ export const salesRouter = router({
                 discount: toDecimal(item.discount),
                 total: toDecimal(item.unitPrice * item.quantity - item.discount),
                 taxAmount:
-                  input.applyTax && (item.taxable ?? true) && taxableBase > 0
+                  input.applyTax && (item.taxable ?? true) && financials.taxableBase > 0
                     ? toDecimal(
-                        ((item.unitPrice * item.quantity - item.discount) / taxableBase) *
-                          taxAmount,
+                        ((item.unitPrice * item.quantity - item.discount) /
+                          financials.taxableBase) *
+                          financials.taxAmount,
                       )
                     : undefined,
               })),
@@ -237,22 +223,29 @@ export const salesRouter = router({
         );
 
         return createdSale;
-      });
+        });
 
-      return {
-        id: sale.id,
-        receiptNumber: sale.receiptNumber,
-        totalNet: Number(sale.totalNet),
-        soldAt: sale.soldAt.toISOString(),
-        taxAmount: sale.taxAmount ? Number(sale.taxAmount) : null,
-      };
+        return recordSaleOutputSchema.parse({
+          id: sale.id,
+          receiptNumber: sale.receiptNumber,
+          totalNet: Number(sale.totalNet),
+          soldAt: sale.soldAt.toISOString(),
+          taxAmount: sale.taxAmount ? Number(sale.taxAmount) : null,
+        });
+      } catch (error) {
+        if (error instanceof SaleValidationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
     }),
   printReceipt: protectedProcedure
-    .input(
-      z.object({
-        saleId: z.string(),
-      }),
-    )
+    .input(printReceiptInputSchema)
+    .output(printReceiptOutputSchema)
     .mutation(async ({ input }) => {
       const sale = await db.sale.findUnique({
         where: {
@@ -274,23 +267,22 @@ export const salesRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Transaksi tidak ditemukan" });
       }
 
+      const paperSize = normalizePaperSize(input.paperSize);
       const pdf = await generateReceiptPdf({
         sale,
         items: sale.items,
         payments: sale.payments,
+        paperSize,
       });
 
-      return {
+      return printReceiptOutputSchema.parse({
         filename: `${sale.receiptNumber}.pdf`,
         base64: Buffer.from(pdf).toString("base64"),
-      };
+      });
     }),
   forecastNextDay: protectedProcedure
-    .input(
-      z.object({
-        outletId: z.string(),
-      }),
-    )
+    .input(forecastInputSchema)
+    .output(forecastOutputSchema)
     .query(async ({ input }) => {
       const today = startOfDay(new Date());
       const weekAgo = addDays(today, -7);
@@ -322,8 +314,8 @@ export const salesRouter = router({
 
       const averageDailySales = Number(summary._sum.totalNet) / 7;
 
-      return {
+      return forecastOutputSchema.parse({
         suggestedFloat: Number(averageDailySales.toFixed(2)),
-      };
+      });
     }),
 });

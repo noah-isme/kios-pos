@@ -1,9 +1,24 @@
-import { z } from "zod";
-
 import { TRPCError } from "@trpc/server";
 
 import { Prisma } from "@/generated/prisma";
 import { slugify } from "@/lib/utils";
+import {
+  categoryListOutputSchema,
+  categorySchema,
+  deleteCategoryInputSchema,
+  deleteSupplierInputSchema,
+  productByBarcodeInputSchema,
+  productByBarcodeOutputSchema,
+  productListInputSchema,
+  productListOutputSchema,
+  productUpsertInputSchema,
+  productUpsertOutputSchema,
+  supplierListOutputSchema,
+  supplierSchema,
+  upsertCategoryInputSchema,
+  upsertSupplierInputSchema,
+  simpleSuccessSchema,
+} from "@/server/api/schemas/products";
 import { db } from "@/server/db";
 import { protectedProcedure, publicProcedure, router } from "@/server/api/trpc";
 
@@ -12,13 +27,8 @@ const toDecimal = (value?: number | null) =>
 
 export const productsRouter = router({
   list: protectedProcedure
-    .input(
-      z.object({
-        search: z.string().optional(),
-        onlyActive: z.boolean().default(true),
-        take: z.number().int().min(1).max(100).default(50),
-      }),
-    )
+    .input(productListInputSchema)
+    .output(productListOutputSchema)
     .query(async ({ input }) => {
       const products = await db.product.findMany({
         where: {
@@ -41,35 +51,34 @@ export const productsRouter = router({
         },
       });
 
-      return products.map((product) => ({
-        id: product.id,
-        name: product.name,
-        sku: product.sku,
-        barcode: product.barcode,
-        price: Number(product.price),
-        categoryId: product.categoryId,
-        category: product.category?.name,
-        supplierId: product.supplierId,
-        supplier: product.supplier?.name ?? null,
-        costPrice: product.costPrice ? Number(product.costPrice) : null,
-        isActive: product.isActive,
-        defaultDiscountPercent: product.defaultDiscountPercent
-          ? Number(product.defaultDiscountPercent)
-          : null,
-        promoName: product.promoName,
-        promoPrice: product.promoPrice ? Number(product.promoPrice) : null,
-        promoStart: product.promoStart?.toISOString() ?? null,
-        promoEnd: product.promoEnd?.toISOString() ?? null,
-        isTaxable: product.isTaxable,
-        taxRate: product.taxRate ? Number(product.taxRate) : null,
-      }));
+      return productListOutputSchema.parse(
+        products.map((product) => ({
+          id: product.id,
+          name: product.name,
+          sku: product.sku,
+          barcode: product.barcode,
+          price: Number(product.price),
+          categoryId: product.categoryId,
+          category: product.category?.name ?? null,
+          supplierId: product.supplierId,
+          supplier: product.supplier?.name ?? null,
+          costPrice: product.costPrice ? Number(product.costPrice) : null,
+          isActive: product.isActive,
+          defaultDiscountPercent: product.defaultDiscountPercent
+            ? Number(product.defaultDiscountPercent)
+            : null,
+          promoName: product.promoName,
+          promoPrice: product.promoPrice ? Number(product.promoPrice) : null,
+          promoStart: product.promoStart?.toISOString() ?? null,
+          promoEnd: product.promoEnd?.toISOString() ?? null,
+          isTaxable: product.isTaxable,
+          taxRate: product.taxRate ? Number(product.taxRate) : null,
+        })),
+      );
     }),
   getByBarcode: publicProcedure
-    .input(
-      z.object({
-        barcode: z.string(),
-      }),
-    )
+    .input(productByBarcodeInputSchema)
+    .output(productByBarcodeOutputSchema)
     .query(async ({ input }) => {
       const product = await db.product.findFirst({
         where: {
@@ -79,38 +88,19 @@ export const productsRouter = router({
       });
 
       if (!product) {
-        return null;
-      }
+      return productByBarcodeOutputSchema.parse(null);
+    }
 
-      return {
+      return productByBarcodeOutputSchema.parse({
         id: product.id,
         name: product.name,
         sku: product.sku,
         price: Number(product.price),
-      };
+      });
     }),
   upsert: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-        sku: z.string().min(1),
-        barcode: z.string().optional(),
-        description: z.string().optional(),
-        price: z.number().min(0),
-        costPrice: z.number().min(0).optional(),
-        categoryId: z.string().optional(),
-        supplierId: z.string().optional(),
-        isActive: z.boolean().default(true),
-        defaultDiscountPercent: z.number().min(0).max(100).optional(),
-        promoName: z.string().max(120).optional(),
-        promoPrice: z.number().min(0).optional(),
-        promoStart: z.string().datetime().optional(),
-        promoEnd: z.string().datetime().optional(),
-        isTaxable: z.boolean().optional(),
-        taxRate: z.number().min(0).max(100).optional(),
-      }),
-    )
+    .input(productUpsertInputSchema)
+    .output(productUpsertOutputSchema)
     .mutation(async ({ input }) => {
       const product = await db.product.upsert({
         where: {
@@ -154,9 +144,9 @@ export const productsRouter = router({
         },
       });
 
-      return {
+      return productUpsertOutputSchema.parse({
         id: product.id,
-      };
+      });
     }),
   categories: protectedProcedure.query(async () => {
     const categories = await db.category.findMany({
@@ -165,15 +155,19 @@ export const productsRouter = router({
       },
     });
 
-    return categories;
+    return categoryListOutputSchema.parse(
+      categories.map((category) => ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        createdAt: category.createdAt.toISOString(),
+        updatedAt: category.updatedAt.toISOString(),
+      })),
+    );
   }),
   upsertCategory: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-      }),
-    )
+    .input(upsertCategoryInputSchema)
+    .output(categorySchema)
     .mutation(async ({ input }) => {
       const slug = slugify(input.name);
 
@@ -191,14 +185,17 @@ export const productsRouter = router({
         },
       });
 
-      return category;
+      return categorySchema.parse({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        createdAt: category.createdAt.toISOString(),
+        updatedAt: category.updatedAt.toISOString(),
+      });
     }),
   deleteCategory: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      }),
-    )
+    .input(deleteCategoryInputSchema)
+    .output(simpleSuccessSchema)
     .mutation(async ({ input }) => {
       try {
         await db.category.delete({
@@ -217,7 +214,7 @@ export const productsRouter = router({
         throw error;
       }
 
-      return { success: true } as const;
+      return simpleSuccessSchema.parse({ success: true });
     }),
   suppliers: protectedProcedure.query(async () => {
     const suppliers = await db.supplier.findMany({
@@ -226,17 +223,20 @@ export const productsRouter = router({
       },
     });
 
-    return suppliers;
+    return supplierListOutputSchema.parse(
+      suppliers.map((supplier) => ({
+        id: supplier.id,
+        name: supplier.name,
+        email: supplier.email ?? null,
+        phone: supplier.phone ?? null,
+        createdAt: supplier.createdAt.toISOString(),
+        updatedAt: supplier.updatedAt.toISOString(),
+      })),
+    );
   }),
   upsertSupplier: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-        email: z.string().email().optional(),
-        phone: z.string().optional(),
-      }),
-    )
+    .input(upsertSupplierInputSchema)
+    .output(supplierSchema)
     .mutation(async ({ input }) => {
       const supplier = await db.supplier.upsert({
         where: {
@@ -254,14 +254,18 @@ export const productsRouter = router({
         },
       });
 
-      return supplier;
+      return supplierSchema.parse({
+        id: supplier.id,
+        name: supplier.name,
+        email: supplier.email ?? null,
+        phone: supplier.phone ?? null,
+        createdAt: supplier.createdAt.toISOString(),
+        updatedAt: supplier.updatedAt.toISOString(),
+      });
     }),
   deleteSupplier: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      }),
-    )
+    .input(deleteSupplierInputSchema)
+    .output(simpleSuccessSchema)
     .mutation(async ({ input }) => {
       try {
         await db.supplier.delete({
@@ -280,6 +284,6 @@ export const productsRouter = router({
         throw error;
       }
 
-      return { success: true } as const;
+      return simpleSuccessSchema.parse({ success: true });
     }),
 });

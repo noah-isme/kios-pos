@@ -1,3 +1,4 @@
+import QRCode from "qrcode";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 import type {
@@ -8,6 +9,7 @@ import type {
   SaleItem,
   User,
 } from "@/generated/prisma";
+import { env } from "@/env";
 
 type ReceiptInput = {
   sale: Sale & {
@@ -20,6 +22,14 @@ type ReceiptInput = {
     }
   >;
   payments: Payment[];
+  paperSize?: "58MM" | "80MM";
+};
+
+const mmToPt = (mm: number) => (mm / 25.4) * 72;
+
+const PAPER_PRESETS: Record<"58MM" | "80MM", { width: number; height: number }> = {
+  "58MM": { width: mmToPt(58), height: mmToPt(260) },
+  "80MM": { width: mmToPt(80), height: mmToPt(300) },
 };
 
 const formatCurrency = (value: number) =>
@@ -35,9 +45,15 @@ const formatDateTime = (value: Date) =>
     timeStyle: "short",
   });
 
-export const generateReceiptPdf = async ({ sale, items, payments }: ReceiptInput) => {
+export const generateReceiptPdf = async ({
+  sale,
+  items,
+  payments,
+  paperSize = "80MM",
+}: ReceiptInput) => {
+  const preset = PAPER_PRESETS[paperSize] ?? PAPER_PRESETS["80MM"];
   const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage([270, 480]);
+  const page = pdfDoc.addPage([preset.width, preset.height]);
   const font = await pdfDoc.embedFont(StandardFonts.Courier);
 
   const drawText = (text: string, x: number, y: number, size = 10) => {
@@ -61,10 +77,22 @@ export const generateReceiptPdf = async ({ sale, items, payments }: ReceiptInput
     });
   };
 
-  let cursorY = 460;
+  const now = new Date();
+  pdfDoc.setTitle(`${sale.outlet.name} · ${sale.receiptNumber}`);
+  pdfDoc.setCreator("Kios POS");
+  pdfDoc.setProducer("Kios POS");
+  pdfDoc.setCreationDate(now);
+  pdfDoc.setModificationDate(now);
+  const outletNpwp = (sale.outlet as Outlet & { npwp?: string }).npwp ?? env.STORE_NPWP;
+  if (outletNpwp) {
+    pdfDoc.setSubject(`NPWP ${outletNpwp}`);
+  }
+  pdfDoc.setKeywords([sale.receiptNumber, sale.outlet.name]);
+
+  let cursorY = preset.height - 24;
   const lineHeight = 14;
-  const leftMargin = 20;
-  const rightMargin = 250;
+  const leftMargin = 16;
+  const rightMargin = preset.width - 16;
 
   const soldAt = sale.soldAt instanceof Date ? sale.soldAt : new Date(sale.soldAt);
   const subtotal = items.reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0);
@@ -75,11 +103,28 @@ export const generateReceiptPdf = async ({ sale, items, payments }: ReceiptInput
   const totalNet = Number(sale.totalNet);
 
   drawText(sale.outlet.name, leftMargin, cursorY, 12);
+  if (outletNpwp) {
+    cursorY -= lineHeight;
+    drawText(`NPWP: ${outletNpwp}`, leftMargin, cursorY, 9);
+  }
   cursorY -= lineHeight;
   if (sale.outlet.address) {
-    drawText(sale.outlet.address, leftMargin, cursorY);
+    drawText(sale.outlet.address, leftMargin, cursorY, 9);
     cursorY -= lineHeight;
   }
+
+  const qrSize = paperSize === "58MM" ? 70 : 88;
+  const qrDataUrl = await QRCode.toDataURL(sale.receiptNumber, {
+    margin: 0,
+    scale: 6,
+  });
+  const qrImage = await pdfDoc.embedPng(qrDataUrl);
+  page.drawImage(qrImage, {
+    x: rightMargin - qrSize,
+    y: cursorY - qrSize + 8,
+    width: qrSize,
+    height: qrSize,
+  });
 
   drawText(`Nomor Struk: ${sale.receiptNumber}`, leftMargin, cursorY);
   cursorY -= lineHeight;
