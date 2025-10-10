@@ -1,7 +1,7 @@
 import QRCode from "qrcode";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@/server/db/enums";
 import { env } from "@/env";
 
 type DecimalLike = number | string | Prisma.Decimal;

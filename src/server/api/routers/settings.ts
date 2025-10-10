@@ -1,4 +1,4 @@
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@/server/db/enums";
 import {
   activateTaxSettingInputSchema,
   activeTaxSettingOutputSchema,
