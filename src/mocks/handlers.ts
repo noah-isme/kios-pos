@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
 import superjson from "superjson";
 
-import { PaymentMethod } from "@/generated/prisma";
+import { PaymentMethod } from "@/server/db/enums";
 import { generateReceiptPdf } from "@/lib/pdf";
 import {
   MockDatabase,
