@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { PrismaClient, Prisma } from "@prisma/client";
+import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 const DEFAULT_OUTLET_CODE = process.env.SEED_OUTLET_CODE ?? "MAIN";
@@ -24,13 +25,15 @@ const seedUsers = async () => {
   ];
 
   for (const u of users) {
+    const passwordHash = await bcrypt.hash('password', 10);
     await prisma.user.upsert({
       where: { email: u.email },
-      update: { name: u.name, role: u.role },
+      update: { name: u.name, role: u.role, passwordHash },
       create: {
         name: u.name,
         email: u.email,
         role: u.role,
+        passwordHash,
       },
     });
   }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LogOut, Menu } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,10 @@ export function SiteHeader({ className }: { className?: string }) {
             type="button"
             variant="ghost"
             className="gap-2"
-            onClick={() => signOut()}
+            onClick={() => {
+              // Navigate to the logout page which submits the POST to signout
+              window.location.href = '/auth/logout';
+            }}
           >
             <LogOut className="h-4 w-4" />
             Keluar

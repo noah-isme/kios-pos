@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
   const onEmailSignIn = async (e: React.FormEvent) => {
@@ -18,15 +19,24 @@ export default function LoginPage() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await signIn("email", { email, redirect: false });
-      // next-auth returns an object when redirect: false
-      // If email provider is configured to use jsonTransport, link will be logged to server console.
-      if ((res as any)?.ok) {
-        setMessage("Magic link dikirim ke email (cek konsol jika menggunakan jsonTransport).");
-      } else if ((res as any)?.error) {
-        setMessage(`Gagal mengirim magic link: ${(res as any).error}`);
+      if (password) {
+        // use credentials provider
+        const res = await signIn('credentials', { redirect: false, email, password });
+        if ((res as any)?.error) {
+          setMessage(`Gagal login: ${(res as any).error}`);
+        } else {
+          // successful sign in will redirect automatically if redirect omitted in client
+          window.location.href = '/';
+        }
       } else {
-        setMessage("Permintaan dikirim. Periksa email Anda.");
+        const res = await signIn("email", { email, redirect: false });
+        if ((res as any)?.ok) {
+          setMessage("Magic link dikirim ke email (cek konsol jika menggunakan jsonTransport).");
+        } else if ((res as any)?.error) {
+          setMessage(`Gagal mengirim magic link: ${(res as any).error}`);
+        } else {
+          setMessage("Permintaan dikirim. Periksa email Anda.");
+        }
       }
     } catch (err: any) {
       setMessage(err?.message ?? String(err));
@@ -46,7 +56,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md p-6 rounded-md border bg-card">
         <h1 className="text-2xl font-semibold mb-4">Masuk ke Kios POS</h1>
 
-        <form onSubmit={onEmailSignIn} className="space-y-4">
+  <form onSubmit={onEmailSignIn} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <Input
@@ -58,6 +68,16 @@ export default function LoginPage() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-1">Password (opsional)</label>
+            <Input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+
           <div className="flex items-center gap-2">
             <Button type="submit" disabled={loading}>
               {loading ? "Mengirim..." : "Kirim magic link"}
@@ -66,12 +86,7 @@ export default function LoginPage() {
           </div>
         </form>
 
-        <div className="my-4 border-t pt-4">
-          <p className="text-sm mb-2">Atau masuk pakai</p>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={onGoogle} disabled={loading}>Google</Button>
-          </div>
-        </div>
+        {/* credentials only - no magic link / providers */}
 
         {message ? (
           <div className="mt-4 text-sm text-muted-foreground">{message}</div>

@@ -1,7 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import nodemailer from "nodemailer";
-import EmailProvider from "next-auth/providers/email";
-import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from 'bcryptjs';
 import NextAuth, { getServerSession, type NextAuthOptions, type Session } from "next-auth";
 import type { Adapter } from "next-auth/adapters";
 
@@ -9,24 +8,7 @@ import { env } from "@/env";
 import { db } from "@/server/db";
 import { Role } from "@/server/db/enums";
 
-const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
-  ? nodemailer.createTransport({
-      host: env.EMAIL_SERVER_HOST,
-      port: env.EMAIL_SERVER_PORT,
-      secure: env.EMAIL_SERVER_PORT === 465,
-      auth: {
-        user: env.EMAIL_SERVER_USER,
-        pass: env.EMAIL_SERVER_PASSWORD,
-      },
-    })
-  : nodemailer.createTransport({
-      jsonTransport: true,
-    });
-
-const emailTransportUsesJson = Boolean(
-  (emailTransport.options as { jsonTransport?: boolean }).jsonTransport,
-);
-
+// Credentials-only auth (email + password). Email/Google providers removed.
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db) as Adapter,
   session: {
@@ -37,26 +19,22 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/login",
   },
   providers: [
-    EmailProvider({
-      from: env.EMAIL_FROM ?? "no-reply@localhost",
-      sendVerificationRequest: async ({ identifier, url }) => {
-        await emailTransport.sendMail({
-          to: identifier,
-          from: env.EMAIL_FROM ?? "no-reply@localhost",
-          subject: "Masuk ke Kios POS",
-          text: `Klik tautan berikut untuk masuk: ${url}`,
-          html: `<p>Klik tautan berikut untuk masuk:</p><p><a href="${url}">${url}</a></p>`,
-        });
-
-        if (emailTransportUsesJson) {
-          console.info(`[auth] Magic link untuk ${identifier}: ${url}`);
-        }
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+        const user = await db.user.findUnique({ where: { email: credentials.email } });
+        if (!user || !user.passwordHash) return null;
+        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!valid) return null;
+        return { id: user.id, name: user.name ?? undefined, email: user.email ?? undefined, role: user.role };
       },
     }),
-    GoogleProvider({
-      clientId: env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
+    // Removed EmailProvider and GoogleProvider
   ],
   callbacks: {
     async session({ session, user }) {
