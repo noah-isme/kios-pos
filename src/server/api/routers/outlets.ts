@@ -271,4 +271,26 @@ export const outletsRouter = router({
         return results;
       });
     }),
+  lowStock: protectedProcedure
+    .input(
+      z.object({
+        outletId: z.string(),
+        threshold: z.number().int().min(0).default(5),
+      }),
+    )
+    .query(async ({ input }) => {
+      const inventory = await db.inventory.findMany({
+        where: { outletId: input.outletId, quantity: { lt: input.threshold } },
+        include: { product: true },
+        orderBy: { quantity: 'asc' },
+        take: 20,
+      });
+
+      return inventory.map((row) => ({
+        productId: row.productId,
+        productName: row.product.name,
+        sku: row.product.sku,
+        quantity: row.quantity,
+      }));
+    }),
 });

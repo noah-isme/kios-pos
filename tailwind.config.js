@@ -7,22 +7,25 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Use CSS variables so runtime theming (dark mode / dynamic palettes) is respected
+        white: '#ffffff',
+        'off-white': '#F7F8FA',
+        primary: '#2563EB',
+        success: '#16A34A',
+        // Keep old accent variables for backward compat
         'accent-amber-50': 'var(--accent-amber-50)',
         'accent-amber-100': 'var(--accent-amber-100)',
         'accent-amber-200': 'var(--accent-amber-200)',
         'accent-amber-700': 'var(--accent-amber-700)',
-        'accent-sky-50': 'var(--accent-sky-50)',
-        'accent-sky-100': 'var(--accent-sky-100)',
-        'accent-sky-200': 'var(--accent-sky-200)',
-        'accent-sky-700': 'var(--accent-sky-700)',
-        'accent-emerald-50': 'var(--accent-emerald-50)',
-        'accent-emerald-100': 'var(--accent-emerald-100)',
-        'accent-emerald-200': 'var(--accent-emerald-200)',
-        'accent-emerald-700': 'var(--accent-emerald-700)',
       },
       backgroundImage: {
         'accent-amber-gradient': 'linear-gradient(135deg, var(--tw-gradient-stops))',
+      },
+      fontFamily: {
+        sans: ['Inter', 'Poppins', 'ui-sans-serif', 'system-ui'],
+      },
+      gridTemplateColumns: {
+        // 12 column layout
+        '12': 'repeat(12, minmax(0, 1fr))',
       },
       keyframes: {
         shimmer: {

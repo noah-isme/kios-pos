@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import Link from "next/link";
 import { LogOut, Menu } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -16,15 +17,23 @@ const navItems = [
 
 export function SiteHeader({ className }: { className?: string }) {
   const { data: session } = useSession();
+  const [time, setTime] = React.useState(() => new Date());
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    const id = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  React.useEffect(() => {
+    // mark client-mounted so we don't render time on the server and cause
+    // a mismatch between server and client HTML during hydration
+    setMounted(true);
+  }, []);
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur",
-        className,
-      )}
-    >
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
+    <header className={cn("fixed inset-x-0 top-0 z-50 border-b border-border bg-white/95 backdrop-blur", className)}>
+      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Link href="/" className="text-lg font-semibold">
             Kios POS
@@ -41,27 +50,18 @@ export function SiteHeader({ className }: { className?: string }) {
             </MotionList>
           </nav>
         </div>
-        <div className="flex items-center gap-2">
-          {session?.user?.name && (
-            <span className="hidden text-sm text-muted-foreground md:inline">
-              {session.user.name}
-            </span>
-          )}
-          <Button variant="outline" size="icon" className="md:hidden" aria-label="Menu">
-            <Menu className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="gap-2"
-            onClick={() => {
-              // Navigate to the logout page which submits the POST to signout
-              window.location.href = '/auth/logout';
-            }}
-          >
-            <LogOut className="h-4 w-4" />
-            Keluar
-          </Button>
+
+        <div className="flex items-center gap-4">
+          <div className="hidden flex-col text-right text-xs text-muted-foreground sm:flex">
+            <span className="text-sm text-foreground">{session?.user?.name ?? 'Kasir'}</span>
+            <span>{mounted ? time.toLocaleTimeString() : "--:--:--"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="pill" size="sm" onClick={() => (window.location.href = '/auth/logout')}>
+              <LogOut className="h-4 w-4" />
+              Keluar
+            </Button>
+          </div>
         </div>
       </div>
     </header>

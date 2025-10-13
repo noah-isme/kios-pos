@@ -105,33 +105,22 @@ export default function Home() {
       </section>
 
       <section className="grid gap-6">
-        <MotionList variants={containerCards} className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-          {quickActions.map((action) => (
-            <MotionItem key={action.href} className="flex justify-center px-2" variants={cardVariant}>
-              {/* Make the whole card focusable by wrapping in a Link */}
-              <Link href={action.href} className="w-full">
-                <Card tabIndex={0} aria-describedby={`${action.href}-desc`} className={`card-focusable relative w-full max-w-[16rem] sm:max-w-[18rem] md:max-w-[20rem] lg:max-w-[22rem] xl:max-w-[24rem] 2xl:max-w-[28rem] p-4 sm:p-5 flex flex-col justify-between transform transition-all duration-150 motion-reduce:transform-none motion-reduce:shadow-none hover:-translate-y-1 hover:shadow-lg ${action.accent === 'amber' ? 'accent-amber' : action.accent === 'sky' ? 'accent-sky' : 'accent-emerald'}`}>
-                  <div className={`card-gradient-shimmer accent-gradient rounded-lg p-3 -mx-4 -mt-4 mb-2 sm:-mx-5 sm:-mt-5 sm:mb-3`} />
-                  <CardHeader className="flex flex-row items-start gap-3">
-                    <div className={`rounded-md p-2 mt-1 accent-icon`}>{action.icon}</div>
-                    <div>
-                      <CardTitle className="text-sm sm:text-base md:text-lg lg:text-xl font-semibold xl:text-2xl">{action.title}</CardTitle>
-                      <CardDescription id={`${action.href}-desc`} className="text-[11px] sm:text-xs md:text-sm text-muted-foreground">{action.description}</CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-3">
-                    <div className="flex justify-end">
-                      <span className="inline-flex items-center gap-2 text-sm" aria-hidden>
-                        Lihat Detail
-                        <ArrowRight className="h-4 w-4" />
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </MotionItem>
-          ))}
-        </MotionList>
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Menu Cepat</CardTitle>
+            <CardDescription>Semua menu utama sekarang tersedia di Dashboard.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Button asChild>
+                <Link href="/dashboard">Buka Dashboard</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/cashier">Buka Kasir</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">

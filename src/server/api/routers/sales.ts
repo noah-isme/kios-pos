@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { addDays, endOfDay, startOfDay } from "date-fns";
 
 import { PaymentMethod, Prisma } from "@/server/db/enums";
@@ -317,5 +318,37 @@ export const salesRouter = router({
       return forecastOutputSchema.parse({
         suggestedFloat: Number(averageDailySales.toFixed(2)),
       });
+    }),
+  getLastNDays: protectedProcedure
+    .input(
+      z.object({
+        days: z.number().int().min(1).max(30).default(7),
+      }),
+    )
+    .query(async ({ input }) => {
+      const days = input.days;
+      const results: Array<{ date: string; totalNet: number; count: number }> = [];
+
+      for (let i = days - 1; i >= 0; i--) {
+        const date = addDays(startOfDay(new Date()), -i);
+        const rangeStart = startOfDay(date);
+        const rangeEnd = endOfDay(date);
+
+        const sales = await db.sale.findMany({
+          where: {
+            soldAt: {
+              gte: rangeStart,
+              lte: rangeEnd,
+            },
+          },
+          include: { items: true },
+        });
+
+        const totalNet = sales.reduce((acc, s) => acc + Number(s.totalNet), 0);
+
+        results.push({ date: rangeStart.toISOString(), totalNet, count: sales.length });
+      }
+
+      return results;
     }),
 });

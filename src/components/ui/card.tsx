@@ -15,7 +15,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
       className={cn(
-        "rounded-xl border border-border bg-card text-card-foreground shadow-sm",
+        "rounded-lg border border-transparent bg-[color:var(--card)] text-card-foreground",
         className,
       )}
       {...(props as any)}
