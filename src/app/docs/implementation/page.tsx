@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import MotionList, { MotionItem } from "@/components/ui/motion-list";
 
 export const metadata: Metadata = {
   title: "Panduan Implementasi POS",
@@ -103,11 +104,13 @@ export default function ImplementationGuidePage() {
               <CardTitle>{section.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+              <MotionList as="ul" className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
                 {section.items.map((item) => (
-                  <li key={item}>{item}</li>
+                  <MotionItem as="li" key={item} className="list-item">
+                    {item}
+                  </MotionItem>
                 ))}
-              </ul>
+              </MotionList>
             </CardContent>
           </Card>
         ))}

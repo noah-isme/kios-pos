@@ -877,3 +877,7 @@ prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", 
 prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
 prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
  GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 400ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /cashier 200 in 372ms

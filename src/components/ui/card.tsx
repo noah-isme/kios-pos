@@ -1,20 +1,30 @@
+"use client";
+
 import * as React from "react";
+import { motion } from 'framer-motion';
 
 import { cn } from "@/lib/utils";
 
+const MotionDiv = motion.div;
+
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div
+    <MotionDiv
       ref={ref}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
       className={cn(
         "rounded-xl border border-border bg-card text-card-foreground shadow-sm",
         className,
       )}
-      {...props}
+      {...(props as any)}
     />
   ),
 );
 Card.displayName = "Card";
+
+const MotionCard = Card;
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { LogOut, Menu } from "lucide-react";
 import { useSession } from "next-auth/react";
 
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
+import MotionList, { MotionItem } from "@/components/ui/motion-list";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -29,11 +30,15 @@ export function SiteHeader({ className }: { className?: string }) {
             Kios POS
           </Link>
           <nav className="hidden gap-1 md:flex">
-            {navItems.map((item) => (
-              <Button key={item.href} variant="ghost" asChild>
-                <Link href={item.href}>{item.label}</Link>
-              </Button>
-            ))}
+            <MotionList as="div" className="flex gap-1">
+              {navItems.map((item) => (
+                <MotionItem key={item.href} as="div" className="inline-block">
+                  <Button variant="ghost" asChild>
+                    <Link href={item.href}>{item.label}</Link>
+                  </Button>
+                </MotionItem>
+              ))}
+            </MotionList>
           </nav>
         </div>
         <div className="flex items-center gap-2">

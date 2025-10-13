@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,7 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MotionTableBody, MotionTableRow } from "@/components/ui/motion-table";
 import { api } from "@/trpc/client";
 
 const formatCurrency = (value: number) =>
@@ -54,7 +55,7 @@ export default function DailyReportPage() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="card-focusable">
           <CardHeader>
             <CardTitle>Total Transaksi</CardTitle>
             <CardDescription>{format(new Date(selectedDate), "PPP", { locale: localeId })}</CardDescription>
@@ -63,7 +64,7 @@ export default function DailyReportPage() {
             {summaryQuery.isLoading ? "…" : summaryQuery.data?.sales.length ?? 0}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-focusable">
           <CardHeader>
             <CardTitle>Total Item</CardTitle>
             <CardDescription>Terjual sepanjang hari</CardDescription>
@@ -72,7 +73,7 @@ export default function DailyReportPage() {
             {summaryQuery.isLoading ? "…" : totals?.totalItems ?? 0}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-focusable">
           <CardHeader>
             <CardTitle>Total Penjualan</CardTitle>
             <CardDescription>Setelah diskon</CardDescription>
@@ -81,7 +82,7 @@ export default function DailyReportPage() {
             {summaryQuery.isLoading ? "…" : formatCurrency(totals?.totalNet ?? 0)}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-focusable">
           <CardHeader>
             <CardTitle>Kas Masuk</CardTitle>
             <CardDescription>Tunai & setoran kasir</CardDescription>
@@ -107,23 +108,23 @@ export default function DailyReportPage() {
                 <TableHead className="text-right">Total</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <MotionTableBody>
               {summaryQuery.data?.sales.map((sale) => (
-                <TableRow key={sale.id}>
+                <MotionTableRow key={sale.id} className="border-b">
                   <TableCell className="font-medium">{sale.receiptNumber}</TableCell>
                   <TableCell>{format(new Date(sale.soldAt), "HH:mm")}</TableCell>
                   <TableCell>{sale.paymentMethods.join(", ")}</TableCell>
                   <TableCell className="text-right">{formatCurrency(sale.totalNet)}</TableCell>
-                </TableRow>
+                </MotionTableRow>
               ))}
               {summaryQuery.data?.sales.length === 0 && (
-                <TableRow>
+                <MotionTableRow>
                   <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
                     Belum ada transaksi.
                   </TableCell>
-                </TableRow>
+                </MotionTableRow>
               )}
-            </TableBody>
+            </MotionTableBody>
           </Table>
         </CardContent>
       </Card>

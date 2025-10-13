@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,12 +16,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { MotionTableBody, MotionTableRow } from "@/components/ui/motion-table";
 import type { PaymentMethod } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/client";
@@ -266,9 +266,9 @@ export default function CashierPage() {
                   <TableHead className="w-16" />
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <MotionTableBody>
                 {cart.map((item) => (
-                  <TableRow key={item.productId}>
+                  <MotionTableRow key={item.productId} className="border-b">
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>
                       <Input
@@ -307,9 +307,9 @@ export default function CashierPage() {
                         Hapus
                       </Button>
                     </TableCell>
-                  </TableRow>
+                  </MotionTableRow>
                 ))}
-              </TableBody>
+              </MotionTableBody>
             </Table>
           </CardContent>
         </Card>

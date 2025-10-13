@@ -1,6 +1,9 @@
+"use client";
+
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
+import { motion } from 'framer-motion';
 
 import { cn } from "@/lib/utils";
 
@@ -50,4 +53,22 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+// Motion-enabled button wrapper
+const MotionButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp: any = asChild ? Slot : motion.button;
+    return (
+      <Comp
+        initial={{ scale: 1 }}
+        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.02 }}
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...(props as any)}
+      />
+    );
+  },
+);
+MotionButton.displayName = 'MotionButton';
+
+export { Button, MotionButton, buttonVariants };
