@@ -24,14 +24,43 @@ jobs:
         with:
           version: 8
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pnpm-store
+            .pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
         run: pnpm run db:generate
 
-      - name: Run lint, tests and build
-        run: pnpm run verify
+      - name: Start Postgres service
+        uses: harmon758/postgres-action@v2
+        with:
+          postgresql version: '15'
+          postgresql db: 'testdb'
+          postgresql user: 'postgres'
+          postgresql password: 'postgres'
+
+      - name: Run database migrations
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/testdb
+        run: pnpm run db:push
+
+      - name: Run lint
+        run: pnpm run lint
+
+      - name: Run unit tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/testdb
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        run: pnpm run test:unit
+
+      - name: Build
+        run: pnpm run build
