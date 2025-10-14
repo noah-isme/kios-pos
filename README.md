@@ -114,6 +114,22 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 - Untuk mencoba mock mode secara lokal cukup kosongkan variabel Supabase lalu jalankan `pnpm run dev`. Data tersimpan di IndexedDB/LocalStorage sehingga refresh halaman tetap mempertahankan perubahan kasir.
 - Struk PDF sekarang menyediakan preset lebar **58 mm** dan **80 mm** dengan metadata toko (nama, NPWP) serta QR Code nomor struk. Unduh kedua ukuran untuk memastikan layout tetap konsisten pada printer termal Anda.
 
+## End-to-end tests (Playwright)
+
+To run the Playwright E2E suite locally you need to install the browser binaries once and then run the tests. Recommended steps:
+
+```bash
+# install required browsers (one-time)
+pnpm exec playwright install --with-deps
+
+# run chromium E2E
+pnpm exec playwright test --project=chromium
+```
+
+Notes:
+- CI already runs the Playwright browser install step before executing tests. If you add or change Playwright versions, re-run the install command.
+- If your environment blocks downloads, install only chromium with `pnpm exec playwright install chromium`.
+
 
 ## Deploy
 

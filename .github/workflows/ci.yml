@@ -83,3 +83,13 @@ jobs:
 
       - name: Build
         run: pnpm run build
+
+      - name: Install Playwright browsers
+        # Install browsers required by Playwright so CI won't fail with missing executables
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run E2E tests (Playwright)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/testdb
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+        run: pnpm exec playwright test --project=chromium --reporter=list
