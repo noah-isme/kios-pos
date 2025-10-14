@@ -5,6 +5,14 @@ import { mockAuthSession, setupTrpcMock } from "./mocks";
 
 test.beforeEach(async ({ page }) => {
   await mockAuthSession(page);
+  // Auto-accept native confirm dialogs triggered by delete actions
+  page.on("dialog", (dialog) => {
+    try {
+      dialog.accept();
+    } catch (e) {
+      // ignore
+    }
+  });
 });
 
 test("delete category and undo prevents server delete", async ({ page }) => {
@@ -15,6 +23,7 @@ test("delete category and undo prevents server delete", async ({ page }) => {
   let deleteCalls = 0;
 
   await setupTrpcMock(page, {
+    "products.list": () => [],
     "products.categories": () => categories,
     "products.deleteCategory": async ({ input }) => {
       deleteCalls += 1;
@@ -25,14 +34,16 @@ test("delete category and undo prevents server delete", async ({ page }) => {
   await page.goto("/management/products");
   await expect(page.getByRole("heading", { name: "Manajemen Produk" })).toBeVisible();
 
-  // Ensure category is visible
-  await expect(page.getByText("Minuman")).toBeVisible();
+  // Ensure category is visible (target the category item label to avoid matching option elements)
+  await expect(page.locator('p.text-sm.font-medium', { hasText: 'Minuman' })).toBeVisible();
 
-  // Click Hapus on the category
+  // Click Hapus on the category (confirm dialog is auto-accepted)
   await page.getByRole("button", { name: "Hapus" }).click();
 
-  // Click Undo in the toast
-  await page.getByRole("button", { name: "Undo" }).click();
+  // Wait for the undo toast/button to appear and click it
+  const undoBtn = page.getByRole("button", { name: "Undo" });
+  await expect(undoBtn).toBeVisible();
+  await undoBtn.click();
 
   // Wait a short while to allow any scheduled delete to run if it were going to
   await page.waitForTimeout(1500);
@@ -48,6 +59,7 @@ test("delete supplier without undo triggers server delete", async ({ page }) => 
   let deleteCalls = 0;
 
   await setupTrpcMock(page, {
+    "products.list": () => [],
     "products.suppliers": () => suppliers,
     "products.deleteSupplier": async ({ input }) => {
       deleteCalls += 1;
@@ -57,10 +69,10 @@ test("delete supplier without undo triggers server delete", async ({ page }) => 
 
   await page.goto("/management/products");
 
-  // Ensure supplier visible
-  await expect(page.getByText("PT Supplier")).toBeVisible();
+  // Ensure supplier visible (target the supplier item label to avoid matching option elements)
+  await expect(page.locator('p.text-sm.font-medium', { hasText: 'PT Supplier' })).toBeVisible();
 
-  // Click Hapus on supplier
+  // Click Hapus on supplier (confirm dialog is auto-accepted)
   await page.getByRole("button", { name: "Hapus" }).click();
 
   // Do not click undo — wait for scheduled delete (delete-queue default 6s)

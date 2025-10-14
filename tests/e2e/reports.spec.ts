@@ -44,13 +44,16 @@ test("menampilkan ringkasan laporan harian dengan metode bayar campuran", async 
   const totalTransaksiValue = page
     .getByRole("heading", { name: "Total Transaksi" })
     .locator("xpath=../..//div[contains(@class,'font-semibold')]");
+  // Wait for the value to render (some UIs render a placeholder like "…")
+  await expect(totalTransaksiValue).not.toHaveText("…");
   await expect(totalTransaksiValue).toHaveText("1");
 
   const totalPenjualanValue = page
     .getByRole("heading", { name: "Total Penjualan" })
     .locator("xpath=../..//div[contains(@class,'font-semibold')]");
-  await expect(totalPenjualanValue).toContainText("Rp150.000");
+  // Allow possible non-breaking spaces in currency rendering (e.g. "Rp 150.000")
+  await expect(totalPenjualanValue).toContainText(/Rp\s*150\.000/);
   await expect(page.getByRole("cell", { name: "POS-0001" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "CASH, QRIS" })).toBeVisible();
-  await expect(page.getByText(/Sarankan setoran kas awal sebesar/)).toContainText("Rp75.000");
+  await expect(page.getByText(/Sarankan setoran kas awal sebesar/)).toContainText(/Rp\s*75\.000/);
 });
