@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
+import { useUndoToast } from "@/components/ui/undo-toast";
 import {
   Card,
   CardContent,
@@ -13,14 +14,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { motion } from "framer-motion";
+import { listVariants, rowVariant, fadeVariant } from "@/components/ui/motion-variants";
+import MotionList, { MotionItem } from "@/components/ui/motion-list";
+
+const MotionTbody = motion.tbody;
+const MotionTr = motion.tr;
+const MotionDiv = motion.div;
 import { api } from "@/trpc/client";
 
 const formatCurrency = (value: number) =>
@@ -112,12 +113,72 @@ export default function ProductManagementPage() {
   const categoriesQuery = api.products.categories.useQuery();
   const suppliersQuery = api.products.suppliers.useQuery();
   const upsertCategory = api.products.upsertCategory.useMutation();
-  const deleteCategory = api.products.deleteCategory.useMutation();
+  const ctx = api.useContext();
+
+  const deleteCategory = api.products.deleteCategory.useMutation({
+    // noop: we handle scheduling manually in handler
+  });
   const upsertSupplier = api.products.upsertSupplier.useMutation();
-  const deleteSupplier = api.products.deleteSupplier.useMutation();
+  const deleteSupplier = api.products.deleteSupplier.useMutation({
+    // noop: we handle scheduling manually in handler
+  });
+  
+
+  // show undo toast after delete mutation
+  const showUndoForCategory = (previous: unknown) => {
+    toast.success(
+      "Kategori dihapus",
+      {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (!previous) return;
+            // re-create the first deleted item from snapshot
+            const arr = Array.isArray(previous) ? previous : (previous as unknown[]);
+            const item = arr.find(Boolean) as Record<string, unknown> | undefined;
+            if (!item) return;
+            try {
+              await upsertCategory.mutateAsync({ id: item.id as string, name: item.name as string });
+              await categoriesQuery.refetch();
+              toast.success("Pembatalan berhasil");
+            } catch (err) {
+              toast.error("Gagal mengembalikan kategori");
+            }
+          },
+        },
+      },
+    );
+  };
+
+  const showUndoForSupplier = (previous: unknown) => {
+    toast.success(
+      "Supplier dihapus",
+      {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            if (!previous) return;
+            const arr = Array.isArray(previous) ? previous : (previous as unknown[]);
+            const item = arr.find(Boolean) as Record<string, unknown> | undefined;
+            if (!item) return;
+            try {
+              await upsertSupplier.mutateAsync({ id: item.id as string, name: item.name as string, email: item.email as string ?? undefined, phone: item.phone as string ?? undefined });
+              await suppliersQuery.refetch();
+              toast.success("Pembatalan berhasil");
+            } catch (err) {
+              toast.error("Gagal mengembalikan supplier");
+            }
+          },
+        },
+      },
+    );
+  };
   const taxSettingsQuery = api.settings.listTaxSettings.useQuery();
   const upsertTaxSetting = api.settings.upsertTaxSetting.useMutation();
   const activateTaxSetting = api.settings.activateTaxSetting.useMutation();
+
+  // move hook to top-level of component to comply with hooks rules
+  const showUndo = useUndoToast();
 
   const [formState, setFormState] = useState<ProductFormState>(emptyProductForm);
   const [categoryDraft, setCategoryDraft] = useState(emptyCategoryDraft);
@@ -207,15 +268,31 @@ export default function ProductManagementPage() {
       return;
     }
 
+    // optimistic remove + schedule server delete with undo
     try {
-      await deleteCategory.mutateAsync({ id });
-      await categoriesQuery.refetch();
-      toast.success("Kategori dihapus");
+      const { optimisticOnMutate } = await import("@/lib/optimistic");
+      const snapshot = await optimisticOnMutate(ctx, "categories", id);
+
+      // schedule server delete
+      const { scheduleDelete, cancelScheduledDelete } = await import("@/lib/delete-queue");
+      scheduleDelete(`category:${id}`, async () => {
+        await deleteCategory.mutateAsync({ id });
+      });
+
+      const undone = await showUndo({ label: "Kategori dihapus", seconds: 6, onUndo: async () => {
+        cancelScheduledDelete(`category:${id}`);
+        if (snapshot?.previous) {
+          ctx.products.categories.setData(undefined, () => snapshot.previous);
+        }
+      } });
+
+      if (!undone) {
+        await ctx.products.categories.invalidate();
+        toast.success("Kategori dihapus");
+      }
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : "Kategori masih digunakan oleh produk.",
-      );
+      toast.error(error instanceof Error ? error.message : "Kategori masih digunakan oleh produk.");
     }
   };
 
@@ -247,14 +324,28 @@ export default function ProductManagementPage() {
     }
 
     try {
-      await deleteSupplier.mutateAsync({ id });
-      await suppliersQuery.refetch();
-      toast.success("Supplier dihapus");
+      const { optimisticOnMutate } = await import("@/lib/optimistic");
+      const snapshot = await optimisticOnMutate(ctx, "suppliers", id);
+
+      const { scheduleDelete, cancelScheduledDelete } = await import("@/lib/delete-queue");
+      scheduleDelete(`supplier:${id}`, async () => {
+        await deleteSupplier.mutateAsync({ id });
+      });
+
+      const undone = await showUndo({ label: "Supplier dihapus", seconds: 6, onUndo: async () => {
+        cancelScheduledDelete(`supplier:${id}`);
+        if (snapshot?.previous) {
+          ctx.products.suppliers.setData(undefined, () => snapshot.previous);
+        }
+      } });
+
+      if (!undone) {
+        await ctx.products.suppliers.invalidate();
+        toast.success("Supplier dihapus");
+      }
     } catch (error) {
       console.error(error);
-      toast.error(
-        error instanceof Error ? error.message : "Supplier masih digunakan oleh produk.",
-      );
+      toast.error(error instanceof Error ? error.message : "Supplier masih digunakan oleh produk.");
     }
   };
 
@@ -326,9 +417,23 @@ export default function ProductManagementPage() {
                   <TableHead />
                 </TableRow>
               </TableHeader>
-              <TableBody>
+
+              {/* Motion-enabled table body with staggered rows */}
+              <MotionTbody
+                initial="hidden"
+                animate="show"
+                variants={{
+                  hidden: {},
+                  show: { transition: { staggerChildren: 0.03 } },
+                }}
+                className="[&_tr:last-child]:border-0"
+              >
                 {productsQuery.data?.map((product) => (
-                  <TableRow key={product.id}>
+                  <MotionTr
+                    key={product.id}
+                    variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.2 } } }}
+                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                  >
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.sku}</TableCell>
                     <TableCell>{product.barcode ?? "-"}</TableCell>
@@ -379,16 +484,17 @@ export default function ProductManagementPage() {
                         Edit
                       </Button>
                     </TableCell>
-                  </TableRow>
+                  </MotionTr>
                 ))}
+
                 {productsQuery.data?.length === 0 && (
-                  <TableRow>
+                  <MotionTr variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
                     <TableCell colSpan={9} className="text-center text-sm text-muted-foreground">
                       Belum ada produk yang sesuai filter.
                     </TableCell>
-                  </TableRow>
+                  </MotionTr>
                 )}
-              </TableBody>
+              </MotionTbody>
             </Table>
           </CardContent>
         </Card>
@@ -597,7 +703,7 @@ export default function ProductManagementPage() {
               <CardTitle>Kategori Produk</CardTitle>
               <CardDescription>Kelola klasifikasi untuk laporan dan filter kasir.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+              <CardContent className="space-y-4">
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
                   placeholder="Nama kategori"
@@ -621,35 +727,37 @@ export default function ProductManagementPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                {categoriesQuery.data?.map((category) => (
-                  <div
-                    key={category.id}
-                    className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{category.name}</p>
-                      <p className="text-xs text-muted-foreground">{category.slug}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setCategoryDraft({ id: category.id, name: category.name })
-                        }
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => void handleCategoryDelete(category.id)}
-                      >
-                        Hapus
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                <MotionList className="space-y-2">
+                  {categoriesQuery.data?.map((category) => (
+                    <MotionItem
+                      key={category.id}
+                      className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{category.name}</p>
+                        <p className="text-xs text-muted-foreground">{category.slug}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setCategoryDraft({ id: category.id, name: category.name })
+                          }
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => void handleCategoryDelete(category.id)}
+                        >
+                          Hapus
+                        </Button>
+                      </div>
+                    </MotionItem>
+                  ))}
+                </MotionList>
                 {categoriesQuery.data?.length === 0 && (
                   <p className="text-sm text-muted-foreground">Belum ada kategori.</p>
                 )}
@@ -700,44 +808,46 @@ export default function ProductManagementPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                {suppliersQuery.data?.map((supplier) => (
-                  <div
-                    key={supplier.id}
-                    className="flex flex-col gap-2 rounded-md border border-dashed border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{supplier.name}</p>
-                      {(supplier.email || supplier.phone) && (
-                        <p className="text-xs text-muted-foreground">
-                          {[supplier.email, supplier.phone].filter(Boolean).join(" · ")}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setSupplierDraft({
-                            id: supplier.id,
-                            name: supplier.name,
-                            email: supplier.email ?? "",
-                            phone: supplier.phone ?? "",
-                          })
-                        }
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => void handleSupplierDelete(supplier.id)}
-                      >
-                        Hapus
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                <MotionList className="space-y-2">
+                  {suppliersQuery.data?.map((supplier) => (
+                    <MotionItem
+                      key={supplier.id}
+                      className="flex flex-col gap-2 rounded-md border border-dashed border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{supplier.name}</p>
+                        {(supplier.email || supplier.phone) && (
+                          <p className="text-xs text-muted-foreground">
+                            {[supplier.email, supplier.phone].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setSupplierDraft({
+                              id: supplier.id,
+                              name: supplier.name,
+                              email: supplier.email ?? "",
+                              phone: supplier.phone ?? "",
+                            })
+                          }
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => void handleSupplierDelete(supplier.id)}
+                        >
+                          Hapus
+                        </Button>
+                      </div>
+                    </MotionItem>
+                  ))}
+                </MotionList>
                 {suppliersQuery.data?.length === 0 && (
                   <p className="text-sm text-muted-foreground">Belum ada supplier.</p>
                 )}
@@ -752,7 +862,7 @@ export default function ProductManagementPage() {
                 Simpan tarif PPN nasional atau outlet tertentu dan pilih mana yang aktif untuk kasir.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+              <CardContent className="space-y-4">
               <div className="grid gap-2 md:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="taxName">Nama Tarif</Label>
@@ -803,46 +913,48 @@ export default function ProductManagementPage() {
                 )}
               </div>
               <div className="space-y-2">
-                {taxSettingsQuery.data?.map((setting) => (
-                  <div
-                    key={setting.id}
-                    className="flex flex-col gap-2 rounded-md border border-dashed border-border px-3 py-2 lg:flex-row lg:items-center lg:justify-between"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">
-                        {setting.name} · {formatPercent(setting.rate)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {setting.isActive ? "Aktif" : "Nonaktif"} · diperbarui {formatDate(setting.updatedAt)}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setTaxDraft({
-                            id: setting.id,
-                            name: setting.name,
-                            rate: String(setting.rate),
-                            isActive: setting.isActive,
-                          })
-                        }
-                      >
-                        Edit
-                      </Button>
-                      {!setting.isActive && (
+                <MotionList className="space-y-2">
+                  {taxSettingsQuery.data?.map((setting) => (
+                    <MotionItem
+                      key={setting.id}
+                      className="flex flex-col gap-2 rounded-md border border-dashed border-border px-3 py-2 lg:flex-row lg:items-center lg:justify-between"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">
+                          {setting.name} · {formatPercent(setting.rate)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {setting.isActive ? "Aktif" : "Nonaktif"} · diperbarui {formatDate(setting.updatedAt)}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
                         <Button
-                          variant="secondary"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => void handleActivateTax(setting.id)}
+                          onClick={() =>
+                            setTaxDraft({
+                              id: setting.id,
+                              name: setting.name,
+                              rate: String(setting.rate),
+                              isActive: setting.isActive,
+                            })
+                          }
                         >
-                          Aktifkan
+                          Edit
                         </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        {!setting.isActive && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => void handleActivateTax(setting.id)}
+                          >
+                            Aktifkan
+                          </Button>
+                        )}
+                      </div>
+                    </MotionItem>
+                  ))}
+                </MotionList>
                 {taxSettingsQuery.data?.length === 0 && (
                   <p className="text-sm text-muted-foreground">Belum ada tarif PPN tersimpan.</p>
                 )}

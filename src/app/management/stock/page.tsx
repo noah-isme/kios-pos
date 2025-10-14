@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { MotionTableBody, MotionTableRow } from "@/components/ui/motion-table";
 import { api } from "@/trpc/client";
 
 const formatNumber = (value: number) =>
@@ -183,7 +184,7 @@ export default function StockManagementPage() {
             </select>
           </div>
 
-          <Table>
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Produk</TableHead>
@@ -191,22 +192,22 @@ export default function StockManagementPage() {
                 <TableHead className="text-right">Qty</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {inventoryQuery.data?.map((row) => (
-                <TableRow key={row.productId}>
-                  <TableCell className="font-medium">{row.productName}</TableCell>
-                  <TableCell>{row.sku}</TableCell>
-                  <TableCell className="text-right">{formatNumber(row.quantity)}</TableCell>
-                </TableRow>
-              ))}
-              {inventoryQuery.data?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
-                    Belum ada data stok untuk outlet ini.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
+              <MotionTableBody>
+                {inventoryQuery.data?.map((row) => (
+                  <MotionTableRow key={row.productId} className="border-b transition-colors hover:bg-muted/50">
+                    <TableCell className="font-medium">{row.productName}</TableCell>
+                    <TableCell>{row.sku}</TableCell>
+                    <TableCell className="text-right">{formatNumber(row.quantity)}</TableCell>
+                  </MotionTableRow>
+                ))}
+                {inventoryQuery.data?.length === 0 && (
+                  <MotionTableRow>
+                    <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
+                      Belum ada data stok untuk outlet ini.
+                    </TableCell>
+                  </MotionTableRow>
+                )}
+              </MotionTableBody>
           </Table>
         </CardContent>
       </Card>
@@ -255,8 +256,8 @@ export default function StockManagementPage() {
                 placeholder="Contoh: koreksi stok akhir hari"
               />
             </div>
-            <Button className="w-full" onClick={() => void handleAdjust()} disabled={adjustStock.isLoading}>
-              {adjustStock.isLoading ? "Menyimpan..." : "Simpan Penyesuaian"}
+            <Button className="w-full" onClick={() => void handleAdjust()} disabled={adjustStock.isPending}>
+              {adjustStock.isPending ? "Menyimpan..." : "Simpan Penyesuaian"}
             </Button>
           </CardContent>
         </Card>
@@ -339,8 +340,8 @@ export default function StockManagementPage() {
                 placeholder="Contoh: mutasi stok ke cabang B"
               />
             </div>
-            <Button className="w-full" onClick={() => void handleTransfer()} disabled={transferStock.isLoading}>
-              {transferStock.isLoading ? "Memproses..." : "Transfer Stok"}
+            <Button className="w-full" onClick={() => void handleTransfer()} disabled={transferStock.isPending}>
+              {transferStock.isPending ? "Memproses..." : "Transfer Stok"}
             </Button>
           </CardContent>
         </Card>
@@ -389,8 +390,8 @@ export default function StockManagementPage() {
                 placeholder="Contoh: hasil hitung ulang malam"
               />
             </div>
-            <Button className="w-full" onClick={() => void handleOpname()} disabled={performOpname.isLoading}>
-              {performOpname.isLoading ? "Menyimpan..." : "Simpan Opname"}
+            <Button className="w-full" onClick={() => void handleOpname()} disabled={performOpname.isPending}>
+              {performOpname.isPending ? "Menyimpan..." : "Simpan Opname"}
             </Button>
           </CardContent>
         </Card>

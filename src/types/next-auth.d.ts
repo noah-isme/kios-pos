@@ -1,5 +1,5 @@
 import { type DefaultSession } from "next-auth";
-import { Role } from "@/generated/prisma";
+import type { Role } from "@prisma/client";
 
 declare module "next-auth" {
   interface Session {

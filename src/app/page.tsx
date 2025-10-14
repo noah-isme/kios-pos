@@ -2,7 +2,9 @@ import { ArrowRight, BarChart3, Layers, ReceiptText, Settings2 } from "lucide-re
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
+import MotionList, { MotionItem } from "@/components/ui/motion-list";
+import { cardVariant, containerCards } from "@/components/ui/motion-variants";
 import {
   Card,
   CardContent,
@@ -11,24 +13,42 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+const ACCENT_CLASSES: Record<string, { icon: string; gradient: string }> = {
+  amber: {
+    icon: 'bg-accent-amber-100 text-accent-amber-700',
+    gradient: 'from-accent-amber-50 via-accent-amber-100 to-accent-amber-200',
+  },
+  sky: {
+    icon: 'bg-accent-sky-100 text-accent-sky-700',
+    gradient: 'from-accent-sky-50 via-accent-sky-100 to-accent-sky-200',
+  },
+  emerald: {
+    icon: 'bg-accent-emerald-100 text-accent-emerald-700',
+    gradient: 'from-accent-emerald-50 via-accent-emerald-100 to-accent-emerald-200',
+  },
+};
+
 const quickActions = [
   {
     title: "Buka Kasir",
     description: "Mulai transaksi, scan barcode, terapkan diskon, dan cetak struk PDF.",
     href: "/cashier",
     icon: <ReceiptText className="h-5 w-5" />,
+    accent: 'amber',
   },
   {
     title: "Kelola Produk",
     description: "Tambah SKU, atur kategori, dan sinkronkan stok antar outlet.",
     href: "/management/products",
     icon: <Layers className="h-5 w-5" />,
+    accent: 'sky',
   },
   {
     title: "Laporan Harian",
     description: "Pantau total penjualan, item terjual, dan saldo kas harian.",
     href: "/reports/daily",
     icon: <BarChart3 className="h-5 w-5" />,
+    accent: 'emerald',
   },
 ];
 
@@ -84,26 +104,23 @@ export default function Home() {
         </Card>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {quickActions.map((action) => (
-          <Card key={action.href} className="flex flex-col justify-between">
-            <CardHeader className="flex flex-row items-center gap-3">
-              <div className="rounded-md bg-primary/10 p-2 text-primary">{action.icon}</div>
-              <div>
-                <CardTitle className="text-lg">{action.title}</CardTitle>
-                <CardDescription>{action.description}</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Button variant="ghost" asChild className="gap-2">
-                <Link href={action.href}>
-                  Lihat Detail
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+      <section className="grid gap-6">
+        <Card className="p-6">
+          <CardHeader>
+            <CardTitle>Menu Cepat</CardTitle>
+            <CardDescription>Semua menu utama sekarang tersedia di Dashboard.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Button asChild>
+                <Link href="/dashboard">Buka Dashboard</Link>
               </Button>
-            </CardContent>
-          </Card>
-        ))}
+              <Button variant="outline" asChild>
+                <Link href="/cashier">Buka Kasir</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">

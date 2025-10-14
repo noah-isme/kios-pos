@@ -1,21 +1,13 @@
+import * as React from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-
+import ClientSidebarLoader from "@/components/layout/client-sidebar-loader";
 import { Providers } from "@/app/providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getServerAuthSession } from "@/server/auth";
+import PageTransition from '@/components/ui/page-transition';
+import PageProgress from '@/components/ui/page-progress';
 
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Kios POS",
@@ -32,13 +24,29 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="antialiased font-sans">
         <Providers session={session}>
-          <div className="flex min-h-screen flex-col bg-background text-foreground">
-            <SiteHeader />
-            <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8">
-              {children}
-            </main>
+          <div className="min-h-screen bg-background text-foreground">
+            <div className="fixed inset-x-0 top-0 z-50">
+              <SiteHeader />
+            </div>
+
+            <div className="mx-auto mt-16 grid max-w-7xl grid-cols-12 gap-6 px-4 py-8">
+              {/* Sidebar (col-span 2) + Content (col-span 10) */}
+              <div className="col-span-12 md:col-span-2">
+                {/* Sidebar will render only on md+ */}
+                <div className="hidden md:block">
+                  <ClientSidebarLoader />
+                </div>
+              </div>
+
+              <main className="col-span-12 md:col-span-10">
+                <PageProgress />
+                <PageTransition keyProp={typeof children === 'object' ? undefined : undefined}>
+                  {children}
+                </PageTransition>
+              </main>
+            </div>
           </div>
         </Providers>
       </body>

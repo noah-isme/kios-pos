@@ -1,0 +1,883 @@
+
+> kios-pos@0.1.0 dev /home/noah/project/kios-pos
+> next dev --turbopack
+
+   ▲ Next.js 15.5.4 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.174.198.42:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1434ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 3.3s
+ POST /api/auth/callback/email 405 in 4921ms
+ POST /api/auth/signin/email 405 in 317ms
+ GET /api/auth/csrf 405 in 317ms
+ GET /api/auth/csrf 405 in 304ms
+ GET /api/auth/callback/email?token=ffdedc2ca80aa0709fc01b14b536d3191ff1bf61cd9b1ac88d735cf4a1bd03ea&email=owner%40example.com 405 in 308ms
+ ○ Compiling /api/trpc/[trpc] ...
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 401 in 4409ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 401 in 592ms
+ ✓ Compiled /api/trpc/[trpc] in 9.4s
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /reports/daily 200 in 8975ms
+ ○ Compiling /icon ...
+ ✓ Compiled /icon in 798ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 401 in 736ms
+ GET /icon?685b99ad0025d104 200 in 1355ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 401 in 399ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 401 in 374ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 401 in 376ms
+ ○ Compiling /management/products ...
+ ✓ Compiled /management/products in 1429ms
+ GET /management/products 200 in 1549ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 363ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 433ms
+ GET /api/trpc/products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 434ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 407ms
+ GET /api/trpc/products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 396ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ ○ Compiling /cashier ...
+ ✓ Compiled /cashier in 1159ms
+ GET /cashier 200 in 1273ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 377ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 393ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 642ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 389ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1106ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET / 200 in 1568ms
+ GET /cashier 200 in 120ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 406ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 292ms
+ GET /management/products 200 in 107ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 367ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 432ms
+ GET /api/trpc/products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 438ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 420ms
+ GET /api/auth/csrf 405 in 357ms
+ POST /api/auth/_log 405 in 344ms
+ POST /api/auth/signout 405 in 346ms
+ GET /api/auth/csrf 405 in 342ms
+ POST /api/auth/_log 405 in 300ms
+ POST /api/auth/signout 405 in 304ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%7D 401 in 387ms
+ GET /api/trpc/products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 389ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/auth/csrf 405 in 345ms
+ POST /api/auth/_log 405 in 310ms
+ POST /api/auth/signout 405 in 316ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 453ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories,products.suppliers?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 460ms
+ GET /api/trpc/settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 463ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /management/products 200 in 686ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /management/products 200 in 188ms
+ ✓ Compiled /api/dev/auto-login in 283ms
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Session" ("id","sessionToken","userId","expires") VALUES ($1,$2,$3,$4) RETURNING "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires"
+ GET /api/dev/auto-login?email=owner%40example.com 302 in 601ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 401 in 966ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Session" ("id","sessionToken","userId","expires") VALUES ($1,$2,$3,$4) RETURNING "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires"
+ GET /api/dev/auto-login?email=owner@example.com 302 in 325ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 961ms
+ GET /cashier 200 in 133ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 368ms
+ GET /management/products 200 in 136ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 398ms
+ GET /cashier 200 in 103ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 369ms
+ GET /management/products 200 in 109ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 384ms
+ GET /reports/daily 200 in 113ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE ("public"."Sale"."soldAt" >= $1 AND "public"."Sale"."soldAt" <= $2 AND "public"."Sale"."cashierId" = $3) ORDER BY "public"."Sale"."soldAt" DESC OFFSET $4
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 200 in 354ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE ("public"."Sale"."soldAt" >= $1 AND "public"."Sale"."soldAt" <= $2 AND "public"."Sale"."cashierId" = $3) ORDER BY "public"."Sale"."soldAt" DESC OFFSET $4
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 200 in 355ms
+ GET /management/products 200 in 114ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 384ms
+ GET /api/auth/session 405 in 480ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 604ms
+ POST /api/auth/_log 405 in 382ms
+ GET /api/auth/session 405 in 386ms
+ GET /api/auth/session 405 in 365ms
+ POST /api/auth/_log 405 in 359ms
+ POST /api/auth/_log 405 in 346ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 386ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 389ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 550ms
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 1361ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/login 200 in 1701ms
+ GET /api/auth/session 405 in 391ms
+ POST /api/auth/_log 405 in 318ms
+ GET /api/auth/session 405 in 321ms
+ GET /api/auth/session 405 in 317ms
+ POST /api/auth/_log 405 in 316ms
+ POST /api/auth/_log 405 in 271ms
+ GET /api/auth/providers 405 in 364ms
+ POST /api/auth/_log 405 in 312ms
+ GET /api/auth/error 405 in 306ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 505ms
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ⨯ ./src/server/auth.ts:6:1
+Module not found: Can't resolve 'bcryptjs'
+[0m [90m 4 |[39m [36mimport[39m [33mGoogleProvider[39m [36mfrom[39m [32m"next-auth/providers/google"[39m[33m;[39m
+ [90m 5 |[39m [36mimport[39m [33mCredentialsProvider[39m [36mfrom[39m [32m"next-auth/providers/credentials"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+ [90m   |[39m [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 7 |[39m [36mimport[39m [33mNextAuth[39m[33m,[39m { getServerSession[33m,[39m type [33mNextAuthOptions[39m[33m,[39m type [33mSession[39m } [36mfrom[39m [32m"next-auth"[39m[33m;[39m
+ [90m 8 |[39m [36mimport[39m type { [33mAdapter[39m } [36mfrom[39m [32m"next-auth/adapters"[39m[33m;[39m
+ [90m 9 |[39m[0m
+
+
+
+Import trace:
+  Server Component:
+    ./src/server/auth.ts
+    ./src/app/layout.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+ ✓ Compiled in 2.7s
+ ✓ Compiled /auth/login in 134ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/login 200 in 1867ms
+ GET /api/auth/session 405 in 792ms
+ POST /api/auth/_log 405 in 398ms
+ ✓ Compiled in 2.9s
+ ✓ Compiled /auth/login in 104ms
+ ⨯ ReferenceError: nodemailer is not defined
+    at __TURBOPACK__module__evaluation__ (src/server/auth.ts:12:5)
+    at __TURBOPACK__module__evaluation__ (src/app/layout.tsx:4:1)
+    at __TURBOPACK__module__evaluation__ (.next/server/chunks/ssr/[root-of-the-server]__5ee3ea4d._.js:11:47)
+    at Object.<anonymous> (.next/server/app/auth/login/page.js:21:3)
+  10 |
+  11 | const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
+> 12 |   ? nodemailer.createTransport({
+     |     ^
+  13 |       host: env.EMAIL_SERVER_HOST,
+  14 |       port: env.EMAIL_SERVER_PORT,
+  15 |       secure: env.EMAIL_SERVER_PORT === 465, {
+  page: '/auth/login'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 3.3s
+ GET /auth/login 500 in 6391ms
+ ⨯ ReferenceError: nodemailer is not defined
+    at __TURBOPACK__module__evaluation__ (src/server/auth.ts:12:5)
+    at __TURBOPACK__module__evaluation__ (src/app/layout.tsx:4:1)
+    at __TURBOPACK__module__evaluation__ (.next/server/chunks/ssr/[root-of-the-server]__5ee3ea4d._.js:11:47)
+    at Object.<anonymous> (.next/server/app/auth/login/page.js:21:3)
+  10 |
+  11 | const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
+> 12 |   ? nodemailer.createTransport({
+     |     ^
+  13 |       host: env.EMAIL_SERVER_HOST,
+  14 |       port: env.EMAIL_SERVER_PORT,
+  15 |       secure: env.EMAIL_SERVER_PORT === 465, {
+  page: '/auth/login'
+}
+ GET /auth/login 500 in 187ms
+ ⨯ ReferenceError: nodemailer is not defined
+    at __TURBOPACK__module__evaluation__ (src/server/auth.ts:12:5)
+    at __TURBOPACK__module__evaluation__ (src/app/layout.tsx:4:1)
+    at __TURBOPACK__module__evaluation__ (.next/server/chunks/ssr/[root-of-the-server]__5ee3ea4d._.js:11:47)
+    at Object.<anonymous> (.next/server/app/auth/login/page.js:21:3)
+  10 |
+  11 | const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
+> 12 |   ? nodemailer.createTransport({
+     |     ^
+  13 |       host: env.EMAIL_SERVER_HOST,
+  14 |       port: env.EMAIL_SERVER_PORT,
+  15 |       secure: env.EMAIL_SERVER_PORT === 465, {
+  page: '/auth/login'
+}
+ GET /auth/login 500 in 229ms
+ ⨯ ReferenceError: nodemailer is not defined
+    at __TURBOPACK__module__evaluation__ (src/server/auth.ts:12:5)
+    at __TURBOPACK__module__evaluation__ (src/app/layout.tsx:4:1)
+    at __TURBOPACK__module__evaluation__ (.next/server/chunks/ssr/[root-of-the-server]__5ee3ea4d._.js:11:47)
+    at Object.<anonymous> (.next/server/app/auth/login/page.js:21:3)
+  10 |
+  11 | const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
+> 12 |   ? nodemailer.createTransport({
+     |     ^
+  13 |       host: env.EMAIL_SERVER_HOST,
+  14 |       port: env.EMAIL_SERVER_PORT,
+  15 |       secure: env.EMAIL_SERVER_PORT === 465, {
+  page: '/auth/login'
+}
+ GET /auth/login 500 in 218ms
+ ⨯ ReferenceError: nodemailer is not defined
+    at __TURBOPACK__module__evaluation__ (src/server/auth.ts:12:5)
+    at __TURBOPACK__module__evaluation__ (src/app/layout.tsx:4:1)
+    at __TURBOPACK__module__evaluation__ (.next/server/chunks/ssr/[root-of-the-server]__5ee3ea4d._.js:11:47)
+    at Object.<anonymous> (.next/server/app/auth/login/page.js:21:3)
+  10 |
+  11 | const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
+> 12 |   ? nodemailer.createTransport({
+     |     ^
+  13 |       host: env.EMAIL_SERVER_HOST,
+  14 |       port: env.EMAIL_SERVER_PORT,
+  15 |       secure: env.EMAIL_SERVER_PORT === 465, {
+  page: '/auth/login'
+}
+ GET /auth/login 500 in 215ms
+ ⨯ ReferenceError: nodemailer is not defined
+    at __TURBOPACK__module__evaluation__ (src/server/auth.ts:12:5)
+    at __TURBOPACK__module__evaluation__ (src/app/layout.tsx:4:1)
+    at __TURBOPACK__module__evaluation__ (.next/server/chunks/ssr/[root-of-the-server]__5ee3ea4d._.js:11:47)
+    at Object.<anonymous> (.next/server/app/auth/login/page.js:21:3)
+  10 |
+  11 | const emailTransport = env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD
+> 12 |   ? nodemailer.createTransport({
+     |     ^
+  13 |       host: env.EMAIL_SERVER_HOST,
+  14 |       port: env.EMAIL_SERVER_PORT,
+  15 |       secure: env.EMAIL_SERVER_PORT === 465, {
+  page: '/auth/login'
+}
+ GET /auth/login 500 in 251ms
+ ✓ Compiled in 284ms
+ ✓ Compiled / in 73ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 1175ms
+ GET /api/auth/csrf 405 in 532ms
+ POST /api/auth/_log 405 in 334ms
+ POST /api/auth/signout 405 in 342ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 334ms
+ ✓ Compiled /cashier in 61ms
+ GET /cashier 200 in 357ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 747ms
+ ✓ Compiled /management/products in 31ms
+ GET /management/products 200 in 339ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 409ms
+ GET /cashier 200 in 91ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 371ms
+ GET /api/auth/csrf 405 in 393ms
+ POST /api/auth/_log 405 in 304ms
+ POST /api/auth/signout 405 in 307ms
+ ✓ Compiled /auth/login in 42ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/login 200 in 885ms
+ GET /api/auth/providers 405 in 440ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /api/auth/_log 405 in 394ms
+ GET / 200 in 475ms
+ GET /cashier 200 in 88ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 394ms
+ GET /management/products 200 in 84ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 380ms
+ GET /cashier 200 in 110ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 393ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE ("public"."Product"."barcode" = $1 AND "public"."Product"."isActive" = $2) LIMIT $3 OFFSET $4
+ GET /api/trpc/products.getByBarcode?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22barcode%22%3A%226789012345678%22%7D%7D%7D 200 in 372ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query INSERT INTO "public"."Sale" ("id","receiptNumber","outletId","cashierId","totalGross","discountTotal","totalNet","soldAt","status","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING "public"."Sale"."id"
+prisma:query INSERT INTO "public"."SaleItem" ("id","saleId","productId","quantity","unitPrice","discount","total") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."SaleItem"."id"
+prisma:query INSERT INTO "public"."Payment" ("id","saleId","method","amount","paidAt") VALUES ($1,$2,CAST($3::text AS "public"."PaymentMethod"),$4,$5) RETURNING "public"."Payment"."id"
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE "public"."Sale"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SaleItem"."id", "public"."SaleItem"."saleId", "public"."SaleItem"."productId", "public"."SaleItem"."quantity", "public"."SaleItem"."unitPrice", "public"."SaleItem"."discount", "public"."SaleItem"."taxAmount", "public"."SaleItem"."total" FROM "public"."SaleItem" WHERE "public"."SaleItem"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Payment"."id", "public"."Payment"."saleId", "public"."Payment"."method"::text, "public"."Payment"."amount", "public"."Payment"."paidAt", "public"."Payment"."reference" FROM "public"."Payment" WHERE "public"."Payment"."saleId" IN ($1) OFFSET $2
+prisma:query INSERT INTO "public"."Inventory" ("id","productId","outletId","quantity","costPrice","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT ("productId","outletId") DO UPDATE SET "quantity" = ("public"."Inventory"."quantity" - $7), "updatedAt" = $8 WHERE (("public"."Inventory"."productId" = $9 AND "public"."Inventory"."outletId" = $10) AND 1=1) RETURNING "public"."Inventory"."id", "public"."Inventory"."productId", "public"."Inventory"."outletId", "public"."Inventory"."quantity", "public"."Inventory"."costPrice", "public"."Inventory"."updatedAt"
+prisma:query INSERT INTO "public"."StockMovement" ("id","inventoryId","type","quantity","reference","note","occurredAt") VALUES ($1,$2,CAST($3::text AS "public"."StockMovementType"),$4,$5,$6,$7) RETURNING "public"."StockMovement"."id", "public"."StockMovement"."inventoryId", "public"."StockMovement"."type"::text, "public"."StockMovement"."quantity", "public"."StockMovement"."reference", "public"."StockMovement"."note", "public"."StockMovement"."occurredAt"
+prisma:query COMMIT
+ POST /api/trpc/sales.recordSale?batch=1 200 in 424ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE ("public"."Sale"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SaleItem"."id", "public"."SaleItem"."saleId", "public"."SaleItem"."productId", "public"."SaleItem"."quantity", "public"."SaleItem"."unitPrice", "public"."SaleItem"."discount", "public"."SaleItem"."taxAmount", "public"."SaleItem"."total" FROM "public"."SaleItem" WHERE "public"."SaleItem"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Payment"."id", "public"."Payment"."saleId", "public"."Payment"."method"::text, "public"."Payment"."amount", "public"."Payment"."paidAt", "public"."Payment"."reference" FROM "public"."Payment" WHERE "public"."Payment"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE "public"."Outlet"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /api/trpc/sales.printReceipt?batch=1 200 in 422ms
+ GET /api/auth/session 405 in 425ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 546ms
+ POST /api/auth/_log 405 in 336ms
+ GET /api/auth/session 405 in 339ms
+ POST /api/auth/_log 405 in 267ms
+ GET /api/auth/csrf 405 in 393ms
+ POST /api/auth/_log 405 in 287ms
+ POST /api/auth/signout 405 in 291ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 824ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 434ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 427ms
+ ✓ Compiled in 2.1s
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 479ms
+ POST /api/auth/signout 405 in 412ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 1196ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 609ms
+ GET /api/auth/session 405 in 937ms
+ GET /api/auth/session 405 in 522ms
+ POST /api/auth/_log 405 in 542ms
+ GET /api/auth/session 405 in 748ms
+ POST /api/auth/_log 405 in 742ms
+ GET /api/auth/session 405 in 562ms
+ POST /api/auth/_log 405 in 551ms
+ POST /api/auth/_log 405 in 431ms
+ ✓ Compiled in 191ms
+ POST /api/auth/signout 405 in 463ms
+ GET /api/auth/signout 405 in 370ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 1311ms
+ POST /api/auth/signout 405 in 368ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /cashier 200 in 597ms
+ ✓ Compiled in 210ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /cashier 200 in 142ms
+ ✓ Compiled in 209ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 1168ms
+ ○ Compiling /auth/logout ...
+ ✓ Compiled /auth/logout in 2.5s
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/logout 200 in 2705ms
+ POST /api/auth/signout 405 in 537ms
+ ✓ Compiled in 115ms
+ ○ Compiling middleware ...
+ ✓ Compiled middleware in 1733ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET / 200 in 359ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/login 200 in 214ms
+ GET /api/auth/providers 405 in 399ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /api/auth/_log 405 in 363ms
+ GET / 200 in 466ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/logout 200 in 158ms
+ POST /api/auth/signout 405 in 371ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 700ms
+ ✓ Compiled in 175ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 440ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/logout 200 in 678ms
+ GET /api/auth/csrf 405 in 394ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/login 200 in 210ms
+ GET /api/auth/providers 405 in 375ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /api/auth/_log 405 in 365ms
+ GET / 200 in 516ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/logout 200 in 182ms
+ GET /api/auth/csrf 405 in 379ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /auth/login 200 in 195ms
+ GET /api/auth/providers 405 in 393ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /api/auth/_log 405 in 350ms
+ GET / 200 in 394ms
+ GET /cashier 200 in 96ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 377ms
+ GET /management/products 200 in 131ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 425ms
+ ✓ Compiled /reports/daily in 55ms
+ GET /reports/daily 200 in 380ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE ("public"."Sale"."soldAt" >= $1 AND "public"."Sale"."soldAt" <= $2 AND "public"."Sale"."cashierId" = $3) ORDER BY "public"."Sale"."soldAt" DESC OFFSET $4
+prisma:query SELECT "public"."SaleItem"."id", "public"."SaleItem"."saleId", "public"."SaleItem"."productId", "public"."SaleItem"."quantity", "public"."SaleItem"."unitPrice", "public"."SaleItem"."discount", "public"."SaleItem"."taxAmount", "public"."SaleItem"."total" FROM "public"."SaleItem" WHERE "public"."SaleItem"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Payment"."id", "public"."Payment"."saleId", "public"."Payment"."method"::text, "public"."Payment"."amount", "public"."Payment"."paidAt", "public"."Payment"."reference" FROM "public"."Payment" WHERE "public"."Payment"."saleId" IN ($1) OFFSET $2
+ GET /api/trpc/sales.getDailySummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%7D 200 in 397ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT SUM("public"."Sale"."totalNet") AS "_sum$totalNet", COUNT(*) AS "_count$_all", "public"."Sale"."outletId" FROM "public"."Sale" WHERE ("public"."Sale"."soldAt" >= $1 AND "public"."Sale"."soldAt" < $2 AND "public"."Sale"."outletId" = $3) GROUP BY "public"."Sale"."outletId" OFFSET $4
+ GET /api/trpc/sales.forecastNextDay?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22outletId%22%3A%22cmgncgzo60001jyvuu13tewid%22%7D%7D%7D 200 in 295ms
+ GET /management/products 200 in 111ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 379ms
+ GET /cashier 200 in 92ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 392ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE ("public"."Product"."barcode" = $1 AND "public"."Product"."isActive" = $2) LIMIT $3 OFFSET $4
+ GET /api/trpc/products.getByBarcode?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22barcode%22%3A%221234567890123%22%7D%7D%7D 200 in 384ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query BEGIN
+prisma:query INSERT INTO "public"."Sale" ("id","receiptNumber","outletId","cashierId","totalGross","discountTotal","totalNet","soldAt","status","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING "public"."Sale"."id"
+prisma:query INSERT INTO "public"."SaleItem" ("id","saleId","productId","quantity","unitPrice","discount","total") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."SaleItem"."id"
+prisma:query INSERT INTO "public"."Payment" ("id","saleId","method","amount","paidAt") VALUES ($1,$2,CAST($3::text AS "public"."PaymentMethod"),$4,$5) RETURNING "public"."Payment"."id"
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE "public"."Sale"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SaleItem"."id", "public"."SaleItem"."saleId", "public"."SaleItem"."productId", "public"."SaleItem"."quantity", "public"."SaleItem"."unitPrice", "public"."SaleItem"."discount", "public"."SaleItem"."taxAmount", "public"."SaleItem"."total" FROM "public"."SaleItem" WHERE "public"."SaleItem"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Payment"."id", "public"."Payment"."saleId", "public"."Payment"."method"::text, "public"."Payment"."amount", "public"."Payment"."paidAt", "public"."Payment"."reference" FROM "public"."Payment" WHERE "public"."Payment"."saleId" IN ($1) OFFSET $2
+prisma:query INSERT INTO "public"."Inventory" ("id","productId","outletId","quantity","costPrice","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT ("productId","outletId") DO UPDATE SET "quantity" = ("public"."Inventory"."quantity" - $7), "updatedAt" = $8 WHERE (("public"."Inventory"."productId" = $9 AND "public"."Inventory"."outletId" = $10) AND 1=1) RETURNING "public"."Inventory"."id", "public"."Inventory"."productId", "public"."Inventory"."outletId", "public"."Inventory"."quantity", "public"."Inventory"."costPrice", "public"."Inventory"."updatedAt"
+prisma:query INSERT INTO "public"."StockMovement" ("id","inventoryId","type","quantity","reference","note","occurredAt") VALUES ($1,$2,CAST($3::text AS "public"."StockMovementType"),$4,$5,$6,$7) RETURNING "public"."StockMovement"."id", "public"."StockMovement"."inventoryId", "public"."StockMovement"."type"::text, "public"."StockMovement"."quantity", "public"."StockMovement"."reference", "public"."StockMovement"."note", "public"."StockMovement"."occurredAt"
+prisma:query COMMIT
+ POST /api/trpc/sales.recordSale?batch=1 200 in 395ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE ("public"."Sale"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."SaleItem"."id", "public"."SaleItem"."saleId", "public"."SaleItem"."productId", "public"."SaleItem"."quantity", "public"."SaleItem"."unitPrice", "public"."SaleItem"."discount", "public"."SaleItem"."taxAmount", "public"."SaleItem"."total" FROM "public"."SaleItem" WHERE "public"."SaleItem"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Payment"."id", "public"."Payment"."saleId", "public"."Payment"."method"::text, "public"."Payment"."amount", "public"."Payment"."paidAt", "public"."Payment"."reference" FROM "public"."Payment" WHERE "public"."Payment"."saleId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE "public"."Outlet"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ POST /api/trpc/sales.printReceipt?batch=1 200 in 394ms
+ GET /api/auth/session 405 in 444ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 555ms
+ POST /api/auth/_log 405 in 274ms
+ GET /reports/daily 200 in 112ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT SUM("public"."Sale"."totalNet") AS "_sum$totalNet", COUNT(*) AS "_count$_all", "public"."Sale"."outletId" FROM "public"."Sale" WHERE ("public"."Sale"."soldAt" >= $1 AND "public"."Sale"."soldAt" < $2 AND "public"."Sale"."outletId" = $3) GROUP BY "public"."Sale"."outletId" OFFSET $4
+prisma:query SELECT "public"."Sale"."id", "public"."Sale"."receiptNumber", "public"."Sale"."outletId", "public"."Sale"."cashierId", "public"."Sale"."totalGross", "public"."Sale"."discountTotal", "public"."Sale"."taxRate", "public"."Sale"."taxAmount", "public"."Sale"."totalNet", "public"."Sale"."soldAt", "public"."Sale"."status", "public"."Sale"."createdAt", "public"."Sale"."updatedAt" FROM "public"."Sale" WHERE ("public"."Sale"."soldAt" >= $1 AND "public"."Sale"."soldAt" <= $2 AND "public"."Sale"."cashierId" = $3) ORDER BY "public"."Sale"."soldAt" DESC OFFSET $4
+prisma:query SELECT "public"."SaleItem"."id", "public"."SaleItem"."saleId", "public"."SaleItem"."productId", "public"."SaleItem"."quantity", "public"."SaleItem"."unitPrice", "public"."SaleItem"."discount", "public"."SaleItem"."taxAmount", "public"."SaleItem"."total" FROM "public"."SaleItem" WHERE "public"."SaleItem"."saleId" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."Payment"."id", "public"."Payment"."saleId", "public"."Payment"."method"::text, "public"."Payment"."amount", "public"."Payment"."paidAt", "public"."Payment"."reference" FROM "public"."Payment" WHERE "public"."Payment"."saleId" IN ($1,$2) OFFSET $3
+ GET /api/trpc/sales.getDailySummary,sales.forecastNextDay?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22date%22%3A%222025-10-12%22%7D%7D%2C%221%22%3A%7B%22json%22%3A%7B%22outletId%22%3A%22cmgncgzo60001jyvuu13tewid%22%7D%7D%7D 200 in 385ms
+ GET /management/products 200 in 107ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT 1
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE 1=1 ORDER BY "public"."Category"."name" ASC OFFSET $1
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE 1=1 ORDER BY "public"."Supplier"."name" ASC OFFSET $1
+prisma:query SELECT "public"."TaxSetting"."id", "public"."TaxSetting"."name", "public"."TaxSetting"."rate", "public"."TaxSetting"."isActive", "public"."TaxSetting"."createdAt", "public"."TaxSetting"."updatedAt" FROM "public"."TaxSetting" WHERE 1=1 ORDER BY "public"."TaxSetting"."createdAt" ASC OFFSET $1
+prisma:query SELECT "public"."Product"."id", "public"."Product"."name", "public"."Product"."sku", "public"."Product"."barcode", "public"."Product"."description", "public"."Product"."price", "public"."Product"."costPrice", "public"."Product"."isActive", "public"."Product"."defaultDiscountPercent", "public"."Product"."promoName", "public"."Product"."promoPrice", "public"."Product"."promoStart", "public"."Product"."promoEnd", "public"."Product"."isTaxable", "public"."Product"."taxRate", "public"."Product"."categoryId", "public"."Product"."supplierId", "public"."Product"."createdAt", "public"."Product"."updatedAt" FROM "public"."Product" WHERE "public"."Product"."isActive" = $1 ORDER BY "public"."Product"."name" ASC LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."name", "public"."Category"."slug", "public"."Category"."createdAt", "public"."Category"."updatedAt" FROM "public"."Category" WHERE "public"."Category"."id" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Supplier"."id", "public"."Supplier"."name", "public"."Supplier"."email", "public"."Supplier"."phone", "public"."Supplier"."createdAt", "public"."Supplier"."updatedAt" FROM "public"."Supplier" WHERE "public"."Supplier"."id" IN ($1,$2,$3,$4,$5,$6,$7,$8) OFFSET $9
+ GET /api/trpc/products.list,products.categories,products.suppliers,settings.listTaxSettings?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22search%22%3A%22%22%7D%7D%2C%221%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%222%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%2C%223%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 392ms
+ GET /cashier 200 in 85ms
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Outlet"."id", "public"."Outlet"."name", "public"."Outlet"."code", "public"."Outlet"."address", "public"."Outlet"."createdAt", "public"."Outlet"."updatedAt" FROM "public"."Outlet" WHERE 1=1 ORDER BY "public"."Outlet"."name" ASC OFFSET $1
+ GET /api/trpc/outlets.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%2C%22meta%22%3A%7B%22values%22%3A%5B%22undefined%22%5D%7D%7D%7D 200 in 400ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Session"."id", "public"."Session"."sessionToken", "public"."Session"."userId", "public"."Session"."expires" FROM "public"."Session" WHERE ("public"."Session"."sessionToken" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE "public"."User"."id" IN ($1) OFFSET $2
+ GET /cashier 200 in 372ms

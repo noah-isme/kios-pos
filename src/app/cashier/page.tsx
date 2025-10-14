@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { MotionButton as Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,15 +16,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PaymentMethod } from "@/generated/prisma";
+import { MotionTableBody, MotionTableRow } from "@/components/ui/motion-table";
+import type { PaymentMethod } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/client";
+
+const DEFAULT_PAYMENT_METHOD: PaymentMethod = "CASH";
+const QRIS_PAYMENT_METHOD: PaymentMethod = "QRIS";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -47,6 +50,8 @@ export default function CashierPage() {
   const [barcode, setBarcode] = useState("");
   const [manualDiscount, setManualDiscount] = useState(0);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(DEFAULT_PAYMENT_METHOD);
+  const [paymentReference, setPaymentReference] = useState("");
 
   useEffect(() => {
     if (!selectedOutlet && outlets?.length) {
@@ -85,16 +90,18 @@ export default function CashierPage() {
 
     const result = await productLookup.refetch();
 
-    if (!result.data) {
+    const product = result.data;
+
+    if (!product) {
       toast.error("Produk tidak ditemukan");
       return;
     }
 
     setCart((prev) => {
-      const existing = prev.find((item) => item.productId === result.data?.id);
+      const existing = prev.find((item) => item.productId === product.id);
       if (existing) {
         return prev.map((item) =>
-          item.productId === result.data?.id
+          item.productId === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         );
@@ -102,9 +109,9 @@ export default function CashierPage() {
       return [
         ...prev,
         {
-          productId: result.data.id,
-          name: result.data.name,
-          price: result.data.price,
+          productId: product.id,
+          name: product.name,
+          price: product.price,
           quantity: 1,
           discount: 0,
         },
@@ -149,6 +156,14 @@ export default function CashierPage() {
       return;
     }
 
+    const isNonCash = paymentMethod !== DEFAULT_PAYMENT_METHOD;
+    const trimmedReference = paymentReference.trim();
+
+    if (isNonCash && !trimmedReference) {
+      toast.error("Masukkan referensi pembayaran non-tunai");
+      return;
+    }
+
     try {
       const sale = await recordSale.mutateAsync({
         outletId: selectedOutlet,
@@ -162,8 +177,9 @@ export default function CashierPage() {
         })),
         payments: [
           {
-            method: PaymentMethod.CASH,
+            method: paymentMethod,
             amount: totals.totalNet,
+            reference: isNonCash ? trimmedReference : undefined,
           },
         ],
       });
@@ -182,6 +198,8 @@ export default function CashierPage() {
 
       setCart([]);
       setManualDiscount(0);
+      setPaymentMethod(DEFAULT_PAYMENT_METHOD);
+      setPaymentReference("");
     } catch (error) {
       console.error(error);
       toast.error("Gagal menyimpan transaksi");
@@ -248,9 +266,9 @@ export default function CashierPage() {
                   <TableHead className="w-16" />
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <MotionTableBody>
                 {cart.map((item) => (
-                  <TableRow key={item.productId}>
+                  <MotionTableRow key={item.productId} className="border-b">
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell>
                       <Input
@@ -289,9 +307,9 @@ export default function CashierPage() {
                         Hapus
                       </Button>
                     </TableCell>
-                  </TableRow>
+                  </MotionTableRow>
                 ))}
-              </TableBody>
+              </MotionTableBody>
             </Table>
           </CardContent>
         </Card>
@@ -327,15 +345,53 @@ export default function CashierPage() {
                 <span>Total Dibayar</span>
                 <span>{formatCurrency(totals.totalNet)}</span>
               </div>
-              <Badge variant="secondary" className="w-fit">
-                Pembayaran: Tunai (mock)
-              </Badge>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                    Metode Pembayaran
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: "Tunai", value: DEFAULT_PAYMENT_METHOD },
+                      { label: "Non-Tunai Dummy", value: QRIS_PAYMENT_METHOD },
+                    ].map((option) => (
+                      <Button
+                        key={option.value}
+                        type="button"
+                        variant={paymentMethod === option.value ? "default" : "outline"}
+                        className={cn(
+                          "justify-start",
+                          paymentMethod === option.value ? "" : "bg-muted/40",
+                        )}
+                        onClick={() => setPaymentMethod(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                  {paymentMethod !== DEFAULT_PAYMENT_METHOD && (
+                    <Input
+                      placeholder="Masukkan referensi pembayaran"
+                      value={paymentReference}
+                      onChange={(event) => setPaymentReference(event.target.value)}
+                      className="h-9"
+                    />
+                  )}
+                </div>
+                <Badge variant="secondary" className="w-fit">
+                  {paymentMethod === DEFAULT_PAYMENT_METHOD
+                    ? "Pembayaran: Tunai"
+                    : `Pembayaran: Non-Tunai Dummy${
+                        paymentReference.trim() ? ` · Ref ${paymentReference.trim()}` : ""
+                      }`}
+                </Badge>
+              </div>
               <Button
-                className={cn("w-full", recordSale.isLoading && "opacity-60")}
-                disabled={recordSale.isLoading}
+                className={cn("w-full", recordSale.isPending && "opacity-60")}
+                disabled={recordSale.isPending}
                 onClick={() => void handleCheckout()}
               >
-                {recordSale.isLoading ? "Memproses..." : "Selesaikan & Cetak Struk"}
+                {recordSale.isPending ? "Memproses..." : "Selesaikan & Cetak Struk"}
               </Button>
             </CardContent>
           </Card>

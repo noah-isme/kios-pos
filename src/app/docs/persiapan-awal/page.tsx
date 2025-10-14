@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import MotionList, { MotionItem } from "@/components/ui/motion-list";
 
 export const metadata: Metadata = {
   title: "Persiapan Awal POS",
@@ -56,20 +57,29 @@ export default function PersiapanAwalPage() {
         </p>
       </header>
       <section className="grid gap-4">
-        {goals.map((goal) => (
-          <Card key={goal.title}>
-            <CardHeader>
-              <CardTitle>{goal.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-                {goal.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))}
+        {goals.map((goal, i) => {
+          const titleId = `goal-title-${i}`;
+          const descrId = `goal-desc-${i}`;
+          return (
+            <Card key={goal.title} aria-labelledby={titleId} aria-describedby={descrId} className="card-focusable" tabIndex={0}>
+              <CardHeader>
+                <CardTitle id={titleId}>{goal.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p id={descrId} className="sr-only">
+                  {`Rincian ${goal.title}: ${goal.items.slice(0, 3).join(', ')}.`}
+                </p>
+                <MotionList as="ul" className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+                  {goal.items.map((item) => (
+                    <MotionItem as="li" key={item} className="list-item">
+                      {item}
+                    </MotionItem>
+                  ))}
+                </MotionList>
+              </CardContent>
+            </Card>
+          );
+        })}
       </section>
       <section>
         <Card>
