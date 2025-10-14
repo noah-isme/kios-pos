@@ -1,3 +1,6 @@
+type TRPCContextLike = Record<string, { cancel: () => Promise<void>; getData: () => unknown; setData: (arg: unknown, fn?: (old: unknown) => unknown) => void; invalidate: () => Promise<void> }>;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function optimisticOnMutate(ctx: any, key: string, id: string) {
   // cancel any outgoing refetches
   await ctx.products[key].cancel();
@@ -6,7 +9,7 @@ export async function optimisticOnMutate(ctx: any, key: string, id: string) {
   return { previous };
 }
 
-export function optimisticOnError(ctx: any, key: string, error: any, variables: any, context: any) {
+export function optimisticOnError(ctx: any, key: string, _error: any, _variables: any, context: any) {
   if (context?.previous) {
     ctx.products[key].setData(undefined, () => context.previous);
   }

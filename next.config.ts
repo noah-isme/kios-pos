@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // NOTE: temporarily ignore ESLint during production builds so we can generate
-  // a Vercel-compatible build quickly. This should be removed and lints fixed
-  // before final production deployment.
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // ESLint will run during builds. Fix lint issues reported by the build
+  // (no-explicit-any, no-var, etc.) before deploying to production.
 };
 
 export default nextConfig;

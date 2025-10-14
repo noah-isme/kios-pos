@@ -9,11 +9,11 @@ const MotionDiv = motion.div;
 type MotionListProps = React.PropsWithChildren<{
   as?: React.ElementType;
   className?: string;
-  variants?: any;
+  variants?: Record<string, unknown> | unknown;
 }>;
 
 export function MotionList({ as: As = "div", children, className, variants = listVariants }: MotionListProps) {
-  const Comp: any = MotionDiv;
+  const Comp = MotionDiv as unknown as React.ElementType;
   return (
     <AnimatePresence>
       <Comp
@@ -30,8 +30,14 @@ export function MotionList({ as: As = "div", children, className, variants = lis
   );
 }
 
-export function MotionItem({ children, className, variants = rowVariant, as: As = "div" }: any) {
-  const Comp: any = MotionDiv;
+type MotionItemProps = React.PropsWithChildren<{
+  as?: React.ElementType;
+  className?: string;
+  variants?: Record<string, unknown> | unknown;
+}>;
+
+export function MotionItem({ children, className, variants = rowVariant, as: As = "div" }: MotionItemProps) {
+  const Comp = MotionDiv as unknown as React.ElementType;
   return (
     <Comp as={As} variants={variants} initial="hidden" animate="show" exit="exit" className={className}>
       {children}

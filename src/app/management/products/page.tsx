@@ -19,10 +19,9 @@ import { motion } from "framer-motion";
 import { listVariants, rowVariant, fadeVariant } from "@/components/ui/motion-variants";
 import MotionList, { MotionItem } from "@/components/ui/motion-list";
 
-// framer-motion typings expect React 18; cast to any to avoid type conflicts with React 19 in this repo
-const MotionTbody: any = motion.tbody as any;
-const MotionTr: any = motion.tr as any;
-const MotionDiv: any = motion.div as any;
+const MotionTbody = motion.tbody;
+const MotionTr = motion.tr;
+const MotionDiv = motion.div;
 import { api } from "@/trpc/client";
 
 const formatCurrency = (value: number) =>
@@ -126,7 +125,7 @@ export default function ProductManagementPage() {
   
 
   // show undo toast after delete mutation
-  const showUndoForCategory = (previous: any) => {
+  const showUndoForCategory = (previous: unknown) => {
     toast.success(
       "Kategori dihapus",
       {
@@ -135,10 +134,11 @@ export default function ProductManagementPage() {
           onClick: async () => {
             if (!previous) return;
             // re-create the first deleted item from snapshot
-            const item = Array.isArray(previous) ? previous.find(Boolean) : previous[0];
+            const arr = Array.isArray(previous) ? previous : (previous as unknown[]);
+            const item = arr.find(Boolean) as Record<string, unknown> | undefined;
             if (!item) return;
             try {
-              await upsertCategory.mutateAsync({ id: item.id, name: item.name });
+              await upsertCategory.mutateAsync({ id: item.id as string, name: item.name as string });
               await categoriesQuery.refetch();
               toast.success("Pembatalan berhasil");
             } catch (err) {
@@ -150,7 +150,7 @@ export default function ProductManagementPage() {
     );
   };
 
-  const showUndoForSupplier = (previous: any) => {
+  const showUndoForSupplier = (previous: unknown) => {
     toast.success(
       "Supplier dihapus",
       {
@@ -158,10 +158,11 @@ export default function ProductManagementPage() {
           label: "Undo",
           onClick: async () => {
             if (!previous) return;
-            const item = Array.isArray(previous) ? previous.find(Boolean) : previous[0];
+            const arr = Array.isArray(previous) ? previous : (previous as unknown[]);
+            const item = arr.find(Boolean) as Record<string, unknown> | undefined;
             if (!item) return;
             try {
-              await upsertSupplier.mutateAsync({ id: item.id, name: item.name, email: item.email ?? undefined, phone: item.phone ?? undefined });
+              await upsertSupplier.mutateAsync({ id: item.id as string, name: item.name as string, email: item.email as string ?? undefined, phone: item.phone as string ?? undefined });
               await suppliersQuery.refetch();
               toast.success("Pembatalan berhasil");
             } catch (err) {
@@ -175,6 +176,9 @@ export default function ProductManagementPage() {
   const taxSettingsQuery = api.settings.listTaxSettings.useQuery();
   const upsertTaxSetting = api.settings.upsertTaxSetting.useMutation();
   const activateTaxSetting = api.settings.activateTaxSetting.useMutation();
+
+  // move hook to top-level of component to comply with hooks rules
+  const showUndo = useUndoToast();
 
   const [formState, setFormState] = useState<ProductFormState>(emptyProductForm);
   const [categoryDraft, setCategoryDraft] = useState(emptyCategoryDraft);
@@ -275,7 +279,6 @@ export default function ProductManagementPage() {
         await deleteCategory.mutateAsync({ id });
       });
 
-      const showUndo = useUndoToast();
       const undone = await showUndo({ label: "Kategori dihapus", seconds: 6, onUndo: async () => {
         cancelScheduledDelete(`category:${id}`);
         if (snapshot?.previous) {
@@ -329,7 +332,6 @@ export default function ProductManagementPage() {
         await deleteSupplier.mutateAsync({ id });
       });
 
-      const showUndo = useUndoToast();
       const undone = await showUndo({ label: "Supplier dihapus", seconds: 6, onUndo: async () => {
         cancelScheduledDelete(`supplier:${id}`);
         if (snapshot?.previous) {

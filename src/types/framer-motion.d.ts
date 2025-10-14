@@ -3,17 +3,18 @@ import * as React from "react";
 // Provide a small declaration merging file to align framer-motion element types with React 19
 // This keeps typing stricter than the previous any-shim while avoiding deep version conflicts.
 declare module "framer-motion" {
-  // Minimal MotionProps used in our components
+  // Minimal MotionProps used in our components. Use `unknown` and
+  // `Record<string, unknown>` to avoid wide `any` while remaining flexible.
   export interface MotionProps extends React.HTMLAttributes<HTMLElement> {
-    initial?: any;
-    animate?: any;
-    exit?: any;
-    variants?: any;
-    whileHover?: any;
-    whileTap?: any;
+    initial?: unknown;
+    animate?: unknown;
+    exit?: unknown;
+    variants?: Record<string, unknown> | unknown;
+    whileHover?: unknown;
+    whileTap?: unknown;
   }
 
-  type MotionComponent<P> = React.ForwardRefExoticComponent<P & React.RefAttributes<any>>;
+  type MotionComponent<P> = React.ForwardRefExoticComponent<P & React.RefAttributes<unknown>>;
 
   export const motion: {
     div: MotionComponent<React.HTMLAttributes<HTMLDivElement> & MotionProps>;
@@ -24,10 +25,10 @@ declare module "framer-motion" {
     th: MotionComponent<React.ThHTMLAttributes<HTMLTableHeaderCellElement> & MotionProps>;
     span: MotionComponent<React.HTMLAttributes<HTMLSpanElement> & MotionProps>;
     button: MotionComponent<React.ButtonHTMLAttributes<HTMLButtonElement> & MotionProps>;
-    [key: string]: MotionComponent<any>;
+    [key: string]: MotionComponent<React.HTMLAttributes<HTMLElement> & MotionProps>;
   };
 
-  export const AnimatePresence: React.ComponentType<any>;
-  export function useAnimation(): any;
-  export default motion;
+  export const AnimatePresence: React.ComponentType<Record<string, unknown>>;
+  export function useAnimation(): unknown;
+  export default motion as unknown;
 }

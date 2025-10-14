@@ -72,7 +72,7 @@ const MotionButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
           whileHover={{ scale: 1.02 }}
           className="inline-block"
         >
-          <Slot className={classes} ref={ref as any} {...(props as any)} />
+          <Slot className={classes} ref={ref as unknown as React.Ref<HTMLElement>} {...(props as unknown as Record<string, unknown>)} />
         </motion.span>
       );
     }
@@ -85,7 +85,7 @@ const MotionButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
         whileHover={{ scale: 1.02 }}
         className={classes}
         ref={ref}
-        {...(props as any)}
+        {...(props as unknown as Record<string, unknown>)}
       />
     );
   },

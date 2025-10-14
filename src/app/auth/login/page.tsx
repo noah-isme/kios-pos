@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, type SignInResponse } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import { MotionButton as Button } from "@/components/ui/button";
@@ -21,35 +21,35 @@ export default function LoginPage() {
     try {
       if (password) {
         // use credentials provider
-        const res = await signIn('credentials', { redirect: false, email, password });
-        if ((res as any)?.error) {
-          setMessage(`Gagal login: ${(res as any).error}`);
+        const res = (await signIn('credentials', { redirect: false, email, password })) as
+          | SignInResponse
+          | undefined;
+        if (res?.error) {
+          setMessage(`Gagal login: ${res.error}`);
         } else {
           // successful sign in will redirect automatically if redirect omitted in client
           window.location.href = '/';
         }
       } else {
-        const res = await signIn("email", { email, redirect: false });
-        if ((res as any)?.ok) {
+        const res = (await signIn("email", { email, redirect: false })) as
+          | SignInResponse
+          | undefined;
+        if (res?.ok) {
           setMessage("Magic link dikirim ke email (cek konsol jika menggunakan jsonTransport).");
-        } else if ((res as any)?.error) {
-          setMessage(`Gagal mengirim magic link: ${(res as any).error}`);
+        } else if (res?.error) {
+          setMessage(`Gagal mengirim magic link: ${res.error}`);
         } else {
           setMessage("Permintaan dikirim. Periksa email Anda.");
         }
       }
-    } catch (err: any) {
-      setMessage(err?.message ?? String(err));
+    } catch (err: unknown) {
+      const e = err as { message?: string } | string | unknown;
+      setMessage((e as { message?: string })?.message ?? String(e));
     } finally {
       setLoading(false);
     }
   };
 
-  const onGoogle = async () => {
-    setLoading(true);
-    await signIn("google", { callbackUrl: "/" });
-    // signIn will redirect to provider flow
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

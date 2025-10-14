@@ -12,28 +12,14 @@ type UndoToastOptions = {
 export function useUndoToast() {
   return function showUndoToast({ label = "Dihapus", seconds = 6, onUndo }: UndoToastOptions) {
     return new Promise<boolean>((resolve) => {
-      let remaining = seconds;
-
-      const container = document.createElement("span");
-      const update = () => {
-        container.textContent = `${label} — Undo (${remaining})`;
-      };
-
-      update();
-
-      const interval = setInterval(() => {
-        remaining -= 1;
-        if (remaining <= 0) {
-          clearInterval(interval);
-        }
-        update();
-      }, 1000);
-
-      const toastId = toast(messageMount(container), {
+      // Use a simple string message for the toast. The previous approach
+      // mounted a DOM node and updated it periodically; that pattern causes
+      // typing friction with ReactNode. Showing a static message here keeps
+      // the behavior simple and strongly typed.
+      const toastId = toast(`${label} — Undo`, {
         action: {
           label: "Undo",
           onClick: async () => {
-            clearInterval(interval);
             try {
               await onUndo?.();
               toast.success("Aksi dibatalkan");
@@ -44,16 +30,8 @@ export function useUndoToast() {
           },
         },
       });
-
-      // resolve false after countdown
-      setTimeout(() => {
-        clearInterval(interval);
-        resolve(false);
-      }, seconds * 1000 + 500);
-
-      function messageMount(node: HTMLElement) {
-        return node as any;
-      }
+      // resolve false after timeout
+      setTimeout(() => resolve(false), seconds * 1000 + 500);
     });
   };
 }

@@ -110,7 +110,9 @@ export default async function DashboardPage() {
             ))}
         </MotionList>
 
-        <DashboardWidgets days={7} />
+        <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <DashboardWidgets days={7} />
+        </section>
       </section>
     </div>
   );

@@ -18,7 +18,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
         "rounded-lg border border-transparent bg-[color:var(--card)] text-card-foreground",
         className,
       )}
-      {...(props as any)}
+      {...props}
     />
   ),
 );

@@ -1,4 +1,6 @@
+import * as React from "react";
 import type { Metadata } from "next";
+import ClientSidebarLoader from "@/components/layout/client-sidebar-loader";
 import { Providers } from "@/app/providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getServerAuthSession } from "@/server/auth";
@@ -34,10 +36,7 @@ export default async function RootLayout({
               <div className="col-span-12 md:col-span-2">
                 {/* Sidebar will render only on md+ */}
                 <div className="hidden md:block">
-                  {/* Sidebar is a client component */}
-                  {/* Importing client component */}
-                  {/* eslint-disable-next-line @typescript-eslint/no-var-requires */}
-                  {typeof window !== 'undefined' ? require('@/components/layout/sidebar').default() : null}
+                  <ClientSidebarLoader />
                 </div>
               </div>
 

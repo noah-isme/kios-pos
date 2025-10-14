@@ -7,30 +7,26 @@ export async function GET() {
 
     const fn = typeof auth.GET === 'function' ? auth.GET : auth.handler;
 
-    // Build a request-like object that contains a `query.nextauth` array which
-    // NextAuth internals expect when handling catch-all routes.
-    const authReq: any = {
-      method: 'GET',
-      url: 'http://localhost/api/auth/providers',
-      headers: new Headers(),
-      query: { nextauth: ['providers'] },
-      text: async () => '',
-      json: async () => ({}),
-    };
+    // Build a request-like object resembling the shape NextAuth expects.
+    // Create a real Request so the handler receives an instance of Request.
+    const authReq = new Request('http://localhost/api/auth/providers', { method: 'GET' });
 
     try {
-      const res: any = await fn(authReq as any);
-      if (res && typeof res.text === 'function') {
-        const text = await res.text();
-        return new Response(JSON.stringify({ ok: true, status: res.status, body: text }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      const res = await fn(authReq as Request);
+      // If the result looks like a Response-like with a text() method, read it.
+      if (res && typeof (res as { text?: unknown }).text === 'function') {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const text = await (res as { text: () => Promise<string> }).text();
+  const status = (res as unknown as { status?: number }).status ?? 200;
+  return new Response(JSON.stringify({ ok: true, status, body: text }), { status: 200, headers: { 'Content-Type': 'application/json' } });
       }
       return new Response(JSON.stringify({ ok: true, result: String(res) }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    } catch (innerErr: any) {
-      console.error('[debug-auth-invoke] handler threw', (innerErr as any)?.stack ?? (innerErr as any)?.message ?? innerErr);
-      return new Response(JSON.stringify({ ok: false, error: String(innerErr?.message ?? innerErr), stack: String(innerErr?.stack ?? '') }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    } catch (innerErr: unknown) {
+      console.error('[debug-auth-invoke] handler threw', (innerErr as Error)?.stack ?? String(innerErr));
+      return new Response(JSON.stringify({ ok: false, error: String((innerErr as Error)?.message ?? innerErr), stack: String((innerErr as Error)?.stack ?? '') }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
-  } catch (err: any) {
-    console.error('[debug-auth-invoke] import error', err?.stack ?? err?.message ?? err);
-    return new Response(JSON.stringify({ ok: false, error: String(err?.message ?? err), stack: String(err?.stack ?? '') }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  } catch (err: unknown) {
+    console.error('[debug-auth-invoke] import error', (err as Error)?.stack ?? String(err));
+    return new Response(JSON.stringify({ ok: false, error: String((err as Error)?.message ?? err), stack: String((err as Error)?.stack ?? '') }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 }

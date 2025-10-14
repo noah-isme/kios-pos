@@ -1,43 +1,48 @@
+// Prefer static imports for core dependencies to satisfy ESLint rules.
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+import NextAuthDefault, { getServerSession as _getServerSession } from "next-auth";
+
+const NextAuth = NextAuthDefault;
+const getServerSession = _getServerSession;
+
+// env, db, and Role are application-specific and may not be available in
+// some test environments. Guard their dynamic import to provide fallbacks.
+// We accept `any` here because at runtime `db` is a PrismaClient instance
+// with a large generated type; narrowing it causes more churn. Keep the
+// runtime behavior and avoid TypeScript incompatibility by using `any`.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+let env: any;
+let db: any;
+let Role: any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 try {
-  // Importing inside the try block so if any import-time evaluation throws we can
-  // capture it and log a clearer message in the dev server logs.
-  /* eslint-disable @typescript-eslint/no-var-requires */
-  var { PrismaAdapter } = require("@auth/prisma-adapter");
-  var CredentialsProvider = require("next-auth/providers/credentials").default;
-  var bcrypt = require('bcryptjs');
-  var nodemailer = require('nodemailer');
-  var NextAuth = require('next-auth').default;
-  var getServerSession = require('next-auth').getServerSession;
-  // types are not required at runtime
-  var env = require('@/env').env;
-  var db = require('@/server/db').db;
-  var Role = require('@/server/db/enums').Role;
-} catch (e: any) {
-  // If any of these runtime requires fail (for example in unit tests where
-  // path aliases may not be wired), log the error but continue with safe
-  // fallbacks so tests can import this module without crashing.
-  console.error("Error while requiring server/auth runtime dependencies:", e?.stack ?? e?.message ?? e);
-
-  // Provide minimal fallbacks used by other code paths in tests.
-  // These are intentionally minimal and only used in non-production test runs.
+  // dynamic import of local modules (may fail in some test runners)
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const localEnv = await import('@/env');
+  env = localEnv.env;
+  const localDb = await import('@/server/db');
+  db = localDb.db;
+  const localEnums = await import('@/server/db/enums');
+  Role = localEnums.Role;
+} catch (e) {
+  console.error("Error importing local runtime modules (env/db):", (e as Error)?.stack ?? String(e));
+  // Mark test fallback so tests can detect we are using a stubbed runtime.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (global as any).__TEST_FALLBACKS__ = true;
-
-  // Minimal env fallback
-  var env = { NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? 'dev-secret' } as any;
-
-  // Minimal db fallback with the methods used in this file (user lookup)
-  var db = {
+  (global as unknown as Record<string, unknown>).__TEST_FALLBACKS__ = true;
+  env = { NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? 'dev-secret' };
+  db = {
     user: {
       findUnique: async () => null,
     },
     sale: {
       count: async () => 0,
     },
-  } as any;
-
-  // Minimal Role fallback
-  var Role = { ADMIN: 'ADMIN', OWNER: 'OWNER', CASHIER: 'CASHIER' } as any;
+  };
+  Role = { ADMIN: 'ADMIN', OWNER: 'OWNER', CASHIER: 'CASHIER' };
 }
 
 // Credentials-only auth (email + password). Email/Google providers removed.
@@ -72,12 +77,17 @@ export const authOptions: NextAuthOptions = {
     // Removed EmailProvider and GoogleProvider
   ],
   callbacks: {
-    async session({ session, user }: { session: any; user: any }) {
-      if (session.user) {
-        session.user.id = user.id;
-        session.user.role = user.role;
+    async session({ session, user }: { session: Session | unknown; user: unknown }) {
+      if (session && typeof session === "object" && session && "user" in (session as Record<string, unknown>)) {
+        const userObj = user as { id?: string; role?: string } | undefined;
+        const sessionUser = (session as Session).user as Record<string, unknown> | undefined;
+        if (sessionUser && userObj) {
+          // assign fields defensively
+          if (typeof userObj.id === "string") sessionUser.id = userObj.id;
+          if (typeof userObj.role === "string") sessionUser.role = userObj.role;
+        }
       }
-      return session;
+      return session as Session;
     },
   },
 };
@@ -86,14 +96,22 @@ export const authOptions: NextAuthOptions = {
 console.log("NEXTAUTH_SECRET set?", !!env.NEXTAUTH_SECRET);
 console.log("EMAIL server configured?", !!(env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD));
 
-let handler: any;
+// Next.js app-route handlers expect functions that accept a Request and
+// return void | Response | Promise<void | Response>. Use that as the
+// handler type so the generated .next types line up.
+let handler: (req: Request) => void | Response | Promise<void | Response>;
 try {
   console.log('[server/auth] Initializing NextAuth with adapters/providers...');
-  handler = NextAuth(authOptions);
+  // NextAuth returns a handler function; keep its signature generic to avoid
+  // tightly coupling to NextAuth internal types here.
+  // NextAuth returns a handler function. Cast it to the narrower Request
+  // -> Response | void signature to satisfy Next.js route type checks.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  handler = NextAuth(authOptions) as unknown as (req: Request) => void | Response | Promise<void | Response>;
   console.log('[server/auth] NextAuth initialized successfully');
 } catch (err) {
   // If NextAuth throws during initialization, surface the error to dev logs
-  console.error("Failed to initialize NextAuth:", err);
+  console.error("Failed to initialize NextAuth:", (err as Error)?.stack ?? String(err));
   // Fallback handler returns a 500 JSON so the client sees a clear error
   handler = async (req: Request) =>
     new Response(JSON.stringify({ message: "NextAuth initialization failed" }), { status: 500, headers: { "Content-Type": "application/json" } });
@@ -110,7 +128,15 @@ async function buildAuthReq(req: Request) {
   const url = new URL(req.url);
   const segments = url.pathname.split('/').filter(Boolean).slice(2);
   const text = await req.text().catch(() => '');
-  const authReq: any = {
+  const authReq: {
+    method: string;
+    headers: Headers;
+    body: string;
+    url: string;
+    query: { nextauth: string[] };
+    text: () => Promise<string>;
+    json: () => Promise<unknown> | null;
+  } = {
     method: req.method,
     headers: req.headers,
     body: text,
@@ -138,9 +164,10 @@ export { handler };
 // debugging when endpoints are called.
 async function invokeHandlerSafely(req: Request) {
   try {
-    return await handler(req as any);
-  } catch (err: any) {
-    console.error('[server/auth] handler invocation error:', err?.stack ?? err?.message ?? err);
+    // Handler has a generic signature; cast to unknown when invoking.
+    return await (handler as (r: unknown) => Promise<unknown>)(req);
+  } catch (err) {
+    console.error('[server/auth] handler invocation error:', (err as Error)?.stack ?? String(err));
     throw err;
   }
 }
