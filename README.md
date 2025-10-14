@@ -10,6 +10,12 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 - **UI & Utilitas**: shadcn/ui, lucide-react, pdf-lib untuk struk PDF, sonner untuk notifikasi.
 - **Deploy**: Vercel untuk frontend/API, Supabase untuk database, auth, dan storage.
 
+## 📖 Dokumentasi
+
+- **[MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)** - Panduan lengkap setup database, migrasi, dan verifikasi
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Panduan deploy ke production (Vercel + Supabase)
+- **[CHANGELOG.md](./CHANGELOG.md)** - Riwayat perubahan dan fitur baru
+
 ## Fitur
 
 - Modul kasir end-to-end (scan barcode, diskon item, diskon tambahan, kalkulasi PPN, pembayaran mock, cetak struk PDF).
@@ -21,6 +27,8 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 - Script impor CSV untuk mengisi katalog awal langsung ke Supabase/Postgres.
 
 ## Persiapan Lingkungan
+
+> 💡 **Untuk panduan lengkap setup database dan migrasi**, lihat [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
 
 1. Salin file contoh environment dan isi kredensial Anda:
 
@@ -132,6 +140,8 @@ Notes:
 
 
 ## Deploy
+
+> 💡 **Untuk panduan lengkap deployment ke production**, lihat [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 - Deploy aplikasi ke Vercel (`vercel --prod`) dan arahkan environment variables sesuai `.env`.
 - Pastikan Supabase menyediakan `DATABASE_URL`, `NEXTAUTH_SECRET`, kredensial SMTP, dan OAuth Google.
