@@ -12,8 +12,10 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 
 ## 📖 Dokumentasi
 
+- **[DOCS_INDEX.md](./DOCS_INDEX.md)** - 🎯 **MULAI DI SINI** - Indeks lengkap semua dokumentasi
 - **[MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)** - Panduan lengkap setup database, migrasi, dan verifikasi
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Panduan deploy ke production (Vercel + Supabase)
+- **[PROJECT_SUMMARY.md](./PROJECT_SUMMARY.md)** - Overview proyek, arsitektur, dan roadmap
 - **[CHANGELOG.md](./CHANGELOG.md)** - Riwayat perubahan dan fitur baru
 
 ## Fitur
