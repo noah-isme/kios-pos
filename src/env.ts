@@ -11,7 +11,18 @@ const envSchema = z.object({
   EMAIL_SERVER_PORT: z.coerce.number().default(587),
   EMAIL_SERVER_USER: z.string().min(1).optional(),
   EMAIL_SERVER_PASSWORD: z.string().min(1).optional(),
-  EMAIL_FROM: z.string().email().optional(),
+  // Accept either a plain email or a display-name with email in angle brackets, e.g. "Kios POS <no-reply@example.com>"
+  EMAIL_FROM: z
+    .string()
+    .optional()
+    .transform((v) => {
+      if (!v) return undefined;
+      const match = v.match(/<([^>]+)>/);
+      return match ? match[1] : v;
+    })
+    .refine((val) => val === undefined || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
+      message: "Invalid email address",
+    }),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_ANON_KEY: z.string().optional(),
   STORE_NPWP: z.string().optional(),
