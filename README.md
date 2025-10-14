@@ -84,7 +84,7 @@ Kios POS adalah implementasi sistem Point of Sale retail berbasis Next.js (App R
 ## Impor Data Awal
 
 - File `data/initial-products.csv` menampung contoh 8 produk beserta harga jual, stok, kategori, supplier, diskon default, promo, dan tarif PPN.
-- Jalankan `npm run seed:products` untuk membaca CSV tersebut dan:
+- Jalankan `pnpm run seed:products` untuk membaca CSV tersebut dan:
   - Membuat kategori serta supplier (jika belum ada) sekaligus menautkannya ke produk.
   - Mengisi stok awal pada outlet utama (`MAIN`) lengkap dengan jejak mutasi `StockMovement` bertipe `INITIAL`.
   - Membuat pengaturan PPN default (jika belum tersedia) dengan tarif dominan dari dataset.
