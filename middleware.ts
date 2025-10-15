@@ -5,8 +5,9 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Allow Next.js internals, static files, API routes and auth pages
+  // Allow Next.js internals, static files, API routes, auth pages, and the MSW worker
   if (
+    pathname === '/mockServiceWorker.js' ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
     pathname.startsWith('/favicon.ico') ||
@@ -31,5 +32,5 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   // Match all paths except api, _next, static, auth — those are handled above
-  matcher: ['/((?!_next|static|favicon.ico|api|auth).*)'],
+  matcher: ['/((?!_next|static|favicon.ico|api|auth|mockServiceWorker\\.js).*)'],
 };
