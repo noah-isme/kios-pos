@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { MotionButton as Button } from "@/components/ui/button";
@@ -23,6 +23,25 @@ const MotionTbody = motion.tbody;
 const MotionTr = motion.tr;
 const MotionDiv = motion.div;
 import { api } from "@/trpc/client";
+
+const PRODUCT_COLUMNS = [
+  { key: "name", label: "Nama", align: "left" },
+  { key: "sku", label: "SKU", align: "left" },
+  { key: "barcode", label: "Barcode", align: "left" },
+  { key: "supplier", label: "Supplier", align: "left" },
+  { key: "price", label: "Harga", align: "right" },
+  { key: "discount", label: "Diskon", align: "right" },
+  { key: "promo", label: "Promo", align: "right" },
+  { key: "tax", label: "PPN", align: "right" },
+] as const;
+
+type ColumnKey = (typeof PRODUCT_COLUMNS)[number]["key"];
+
+const COLUMN_STORAGE_KEY = "kios-pos:products-columns";
+
+const DISCOUNT_POLICY_PERCENT = Number(
+  process.env.NEXT_PUBLIC_DISCOUNT_LIMIT_PERCENT ?? 50,
+);
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -124,6 +143,39 @@ export default function ProductManagementPage() {
   });
   
 
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedSupplier, setSelectedSupplier] = useState<string>("all");
+  const [columnVisibility, setColumnVisibility] = useState<Record<ColumnKey, boolean>>({
+    name: true,
+    sku: true,
+    barcode: true,
+    supplier: true,
+    price: true,
+    discount: true,
+    promo: true,
+    tax: true,
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(COLUMN_STORAGE_KEY);
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as Record<ColumnKey, boolean>;
+      setColumnVisibility((prev) => ({ ...prev, ...parsed }));
+    } catch {
+      // ignore invalid storage
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      COLUMN_STORAGE_KEY,
+      JSON.stringify(columnVisibility),
+    );
+  }, [columnVisibility]);
+
   // show undo toast after delete mutation
   const showUndoForCategory = (previous: unknown) => {
     toast.success(
@@ -198,6 +250,134 @@ export default function ProductManagementPage() {
     () => taxSettingsQuery.data?.find((setting) => setting.isActive)?.rate ?? null,
     [taxSettingsQuery.data],
   );
+  const categoryOptions = categoriesQuery.data ?? [];
+  const supplierOptions = suppliersQuery.data ?? [];
+  const visibleColumns = PRODUCT_COLUMNS.filter(
+    (column) => columnVisibility[column.key],
+  );
+  const visibleColumnCount = visibleColumns.length;
+
+  const filteredProducts = useMemo(() => {
+    const list = productsQuery.data ?? [];
+    return list.filter((product) => {
+      const matchCategory =
+        selectedCategory === "all" || product.categoryId === selectedCategory;
+      const matchSupplier =
+        selectedSupplier === "all" || product.supplierId === selectedSupplier;
+      return matchCategory && matchSupplier;
+    });
+  }, [productsQuery.data, selectedCategory, selectedSupplier]);
+
+  const renderProductCell = (
+    product: (typeof filteredProducts)[number],
+    key: ColumnKey,
+  ) => {
+    switch (key) {
+      case "name":
+        return (
+          <div className="flex flex-col">
+            <span className="font-medium text-foreground">{product.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {product.category ?? "Tanpa kategori"}
+            </span>
+          </div>
+        );
+      case "sku":
+        return product.sku;
+      case "barcode":
+        return product.barcode ?? "-";
+      case "supplier":
+        return product.supplier ?? "-";
+      case "price":
+        return formatCurrency(product.price ?? 0);
+      case "discount":
+        return formatPercent(product.defaultDiscountPercent);
+      case "promo":
+        return product.promoPrice ? (
+          <div className="flex flex-col items-end text-right">
+            <span>
+              {product.promoName ?? "Promo"} ·{" "}
+              {formatCurrency(product.promoPrice)}
+            </span>
+            {product.promoStart ? (
+              <span className="text-xs text-muted-foreground">
+                {formatDate(product.promoStart)} - {formatDate(product.promoEnd)}
+              </span>
+            ) : null}
+          </div>
+        ) : (
+          "-"
+        );
+      case "tax":
+        return product.isTaxable
+          ? formatPercent(product.taxRate ?? activeTaxRate)
+          : "-";
+      default:
+        return null;
+    }
+  };
+
+  const toggleColumn = (key: ColumnKey) => {
+    setColumnVisibility((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const exportProductsCsv = () => {
+    if (!filteredProducts.length) {
+      toast.info("Tidak ada data untuk diekspor.");
+      return;
+    }
+    const headers = PRODUCT_COLUMNS.filter(
+      (column) => columnVisibility[column.key],
+    ).map((column) => column.label);
+    const rows = filteredProducts
+      .map((product) =>
+        PRODUCT_COLUMNS.filter((column) => columnVisibility[column.key])
+          .map((column) => {
+            switch (column.key) {
+              case "name":
+                return product.name ?? "";
+              case "sku":
+                return product.sku ?? "";
+              case "barcode":
+                return product.barcode ?? "";
+              case "supplier":
+                return product.supplier ?? "";
+              case "price":
+                return String(product.price ?? "");
+              case "discount":
+                return product.defaultDiscountPercent != null
+                  ? String(product.defaultDiscountPercent)
+                  : "";
+              case "promo":
+                return product.promoPrice
+                  ? `${product.promoName ?? "Promo"} ${product.promoPrice}`
+                  : "";
+              case "tax":
+                return product.isTaxable
+                  ? String(product.taxRate ?? activeTaxRate ?? 0)
+                  : "";
+              default:
+                return "";
+            }
+          })
+          .join(","),
+      )
+      .join("\n");
+
+    const csvContent = [headers.join(","), rows].join("\n");
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "katalog-produk.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Ekspor CSV berhasil dibuat.");
+  };
 
   const handleSubmit = async () => {
     if (!formState.name || !formState.sku) {
@@ -398,104 +578,172 @@ export default function ProductManagementPage() {
             <CardDescription>Monitor harga, promo, supplier, dan status pajak.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input
-              placeholder="Cari nama, SKU, atau barcode"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Barcode</TableHead>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead className="text-right">Harga</TableHead>
-                  <TableHead className="text-right">Diskon</TableHead>
-                  <TableHead className="text-right">Promo</TableHead>
-                  <TableHead className="text-right">PPN</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-
-              {/* Motion-enabled table body with staggered rows */}
-              <MotionTbody
-                initial="hidden"
-                animate="show"
-                variants={{
-                  hidden: {},
-                  show: { transition: { staggerChildren: 0.03 } },
-                }}
-                className="[&_tr:last-child]:border-0"
-              >
-                {productsQuery.data?.map((product) => (
-                  <MotionTr
-                    key={product.id}
-                    variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.2 } } }}
-                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(0,240px)_minmax(0,200px)_minmax(0,200px)] lg:items-end lg:gap-3">
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium text-muted-foreground" htmlFor="search-products">
+                    Cari produk
+                  </label>
+                  <Input
+                    id="search-products"
+                    placeholder="Nama, SKU, atau barcode"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-category">
+                    Filter kategori
+                  </label>
+                  <select
+                    id="filter-category"
+                    value={selectedCategory}
+                    onChange={(event) => setSelectedCategory(event.target.value)}
+                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
-                    <TableCell>{product.barcode ?? "-"}</TableCell>
-                    <TableCell>{product.supplier ?? "-"}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
-                    <TableCell className="text-right">
-                      {formatPercent(product.defaultDiscountPercent)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {product.promoPrice
-                        ? `${product.promoName ?? "Promo"} · ${formatCurrency(product.promoPrice)}`
-                        : "-"}
-                      {product.promoStart ? (
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(product.promoStart)} - {formatDate(product.promoEnd)}
-                        </p>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {product.isTaxable ? formatPercent(product.taxRate ?? activeTaxRate) : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        onClick={() =>
-                          setFormState({
-                            id: product.id,
-                            name: product.name,
-                            sku: product.sku,
-                            barcode: product.barcode ?? "",
-                            price: String(product.price ?? ""),
-                            categoryId: product.categoryId ?? "",
-                            supplierId: product.supplierId ?? "",
-                            costPrice: product.costPrice != null ? String(product.costPrice) : "",
-                            defaultDiscountPercent:
-                              product.defaultDiscountPercent != null
-                                ? String(product.defaultDiscountPercent)
-                                : "",
-                            promoName: product.promoName ?? "",
-                            promoPrice: product.promoPrice != null ? String(product.promoPrice) : "",
-                            promoStart: product.promoStart ? product.promoStart.slice(0, 10) : "",
-                            promoEnd: product.promoEnd ? product.promoEnd.slice(0, 10) : "",
-                            isTaxable: product.isTaxable,
-                            taxRate: product.taxRate != null ? String(product.taxRate) : "",
-                          })
-                        }
-                      >
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </MotionTr>
-                ))}
+                    <option value="all">Semua kategori</option>
+                    {categoryOptions.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-supplier">
+                    Filter supplier
+                  </label>
+                  <select
+                    id="filter-supplier"
+                    value={selectedSupplier}
+                    onChange={(event) => setSelectedSupplier(event.target.value)}
+                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="all">Semua supplier</option>
+                    {supplierOptions.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-                {productsQuery.data?.length === 0 && (
-                  <MotionTr variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
-                    <TableCell colSpan={9} className="text-center text-sm text-muted-foreground">
-                      Belum ada produk yang sesuai filter.
-                    </TableCell>
-                  </MotionTr>
-                )}
-              </MotionTbody>
-            </Table>
+              <div className="flex flex-wrap gap-2">
+                {PRODUCT_COLUMNS.map((column) => (
+                  <Button
+                    key={column.key}
+                    variant={columnVisibility[column.key] ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => toggleColumn(column.key)}
+                  >
+                    {columnVisibility[column.key] ? "✓" : "○"} {column.label}
+                  </Button>
+                ))}
+                <Button variant="default" size="sm" onClick={exportProductsCsv}>
+                  Ekspor CSV
+                </Button>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-md border">
+              <Table className="[&_tbody]:block [&_tbody]:max-h-[360px] [&_tbody]:overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-background">
+                <TableHeader>
+                  <TableRow>
+                    {visibleColumns.map((column) => (
+                      <TableHead
+                        key={column.key}
+                        className={column.align === "right" ? "text-right" : undefined}
+                      >
+                        {column.label}
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <MotionTbody
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.03 } },
+                  }}
+                  className="[&_tr:last-child]:border-0"
+                >
+                  {filteredProducts.map((product) => (
+                    <MotionTr
+                      key={product.id}
+                      variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.2 } } }}
+                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    >
+                      {visibleColumns.map((column) => (
+                        <TableCell
+                          key={column.key}
+                          className={column.align === "right" ? "text-right" : undefined}
+                        >
+                          {renderProductCell(product, column.key)}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          onClick={() =>
+                            setFormState({
+                              id: product.id,
+                              name: product.name,
+                              sku: product.sku,
+                              barcode: product.barcode ?? "",
+                              price: String(product.price ?? ""),
+                              categoryId: product.categoryId ?? "",
+                              supplierId: product.supplierId ?? "",
+                              costPrice: product.costPrice != null ? String(product.costPrice) : "",
+                              defaultDiscountPercent:
+                                product.defaultDiscountPercent != null
+                                  ? String(product.defaultDiscountPercent)
+                                  : "",
+                              promoName: product.promoName ?? "",
+                              promoPrice: product.promoPrice != null ? String(product.promoPrice) : "",
+                              promoStart: product.promoStart ? product.promoStart.slice(0, 10) : "",
+                              promoEnd: product.promoEnd ? product.promoEnd.slice(0, 10) : "",
+                              isTaxable: product.isTaxable,
+                              taxRate: product.taxRate != null ? String(product.taxRate) : "",
+                            })
+                          }
+                        >
+                          Edit
+                        </Button>
+                      </TableCell>
+                    </MotionTr>
+                  ))}
+
+                  {filteredProducts.length === 0 && (
+                    <MotionTr variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
+                      <TableCell colSpan={visibleColumnCount + 1} className="py-10 text-center text-sm text-muted-foreground">
+                        <div className="flex flex-col items-center gap-3">
+                          <p>Belum ada produk. Import master data atau tambah manual terlebih dahulu.</p>
+                          <div className="flex flex-wrap justify-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toast.info("Gunakan script seed: pnpm seed:products")}
+                            >
+                              Impor CSV
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => setFormState(emptyProductForm)}
+                            >
+                              Tambah Produk
+                            </Button>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </MotionTr>
+                  )}
+                </MotionTbody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
@@ -606,7 +854,21 @@ export default function ProductManagementPage() {
                   onChange={(event) =>
                     setFormState((state) => ({ ...state, defaultDiscountPercent: event.target.value }))
                   }
+                  onBlur={(event) => {
+                    const value = Number(event.target.value);
+                    if (Number.isNaN(value)) return;
+                    if (value > DISCOUNT_POLICY_PERCENT) {
+                      toast.warning(`Diskon default dibatasi ${DISCOUNT_POLICY_PERCENT}% sesuai kebijakan toko.`);
+                      setFormState((state) => ({
+                        ...state,
+                        defaultDiscountPercent: String(DISCOUNT_POLICY_PERCENT),
+                      }));
+                    }
+                  }}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Diskon maksimal mengikuti kebijakan toko: {DISCOUNT_POLICY_PERCENT}%.
+                </p>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="promoName">Nama Promo</Label>

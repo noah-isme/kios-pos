@@ -74,6 +74,9 @@ export default function Home() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            <Button variant="secondary" asChild>
+              <Link href="/demo/cashier">Coba Demo Tanpa Login</Link>
+            </Button>
             <Button variant="outline" asChild>
               <Link href="/docs/implementation">Baca Panduan Implementasi</Link>
             </Button>

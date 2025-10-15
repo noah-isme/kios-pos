@@ -99,33 +99,40 @@ export default function DailyReportPage() {
           <CardDescription>Daftar ringkas transaksi pada tanggal tersebut.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Struk</TableHead>
-                <TableHead>Waktu</TableHead>
-                <TableHead>Metode</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <MotionTableBody>
-              {summaryQuery.data?.sales.map((sale) => (
-                <MotionTableRow key={sale.id} className="border-b">
-                  <TableCell className="font-medium">{sale.receiptNumber}</TableCell>
-                  <TableCell>{format(new Date(sale.soldAt), "HH:mm")}</TableCell>
-                  <TableCell>{sale.paymentMethods.join(", ")}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(sale.totalNet)}</TableCell>
-                </MotionTableRow>
-              ))}
-              {summaryQuery.data?.sales.length === 0 && (
-                <MotionTableRow>
-                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
-                    Belum ada transaksi.
-                  </TableCell>
-                </MotionTableRow>
-              )}
-            </MotionTableBody>
-          </Table>
+          <div className="overflow-hidden rounded-md border">
+            <Table className="[&_tbody]:block [&_tbody]:max-h-[320px] [&_tbody]:overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-background">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Struk</TableHead>
+                  <TableHead>Waktu</TableHead>
+                  <TableHead>Metode</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <MotionTableBody>
+                {summaryQuery.data?.sales.map((sale) => (
+                  <MotionTableRow key={sale.id} className="border-b">
+                    <TableCell className="font-medium">{sale.receiptNumber}</TableCell>
+                    <TableCell>{format(new Date(sale.soldAt), "HH:mm")}</TableCell>
+                    <TableCell>{sale.paymentMethods.join(", ")}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(sale.totalNet)}</TableCell>
+                  </MotionTableRow>
+                ))}
+                {summaryQuery.data?.sales.length === 0 && (
+                  <MotionTableRow>
+                    <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
+                      <div className="flex flex-col items-center gap-3">
+                        <p>Belum ada transaksi untuk tanggal ini.</p>
+                        <Button variant="outline" size="sm" onClick={() => setSelectedDate(format(new Date(), "yyyy-MM-dd"))}>
+                          Reset ke hari ini
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </MotionTableRow>
+                )}
+              </MotionTableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

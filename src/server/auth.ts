@@ -1,6 +1,8 @@
 // Prefer static imports for core dependencies to satisfy ESLint rules.
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
+import EmailProvider from "next-auth/providers/email";
+import bcrypt from "bcryptjs";
 import nodemailer from "nodemailer";
 import NextAuthDefault, { getServerSession as _getServerSession } from "next-auth";
 
@@ -44,28 +46,6 @@ try {
   Role = { ADMIN: 'ADMIN', OWNER: 'OWNER', CASHIER: 'CASHIER' };
 }
 
-// Try to load bcryptjs dynamically. Some dev/test environments may not have
-// all optional deps installed; avoid a static import which would make the
-// entire module fail to compile under Turbopack and cause 405s for auth
-// endpoints. Provide an insecure fallback compare for dev/tests only so the
-// app can run without the package installed.
-let bcrypt: { compare: (a: string, b: string) => Promise<boolean> };
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  // Use dynamic import so bundlers that can't find the package won't fail
-  // the whole compilation step.
-  // Note: top-level await is allowed in ESM here.
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  bcrypt = (await import('bcryptjs')).default;
-} catch (err) {
-  // Fallback: insecure plain-text comparison (only for dev/test). This
-  // prevents the server from failing to start when bcryptjs isn't present.
-  // If you see this log in production, install `bcryptjs`.
-  // eslint-disable-next-line @typescript-eslint/require-await
-  bcrypt = { compare: async (a: string, b: string) => a === b };
-  console.warn('[server/auth] bcryptjs not available — falling back to insecure compare (dev only)');
-}
-
 // Credentials-only auth (email + password). Email/Google providers removed.
 import type { NextAuthOptions } from 'next-auth';
 import type { Adapter } from 'next-auth/adapters';
@@ -73,7 +53,7 @@ import type { Adapter } from 'next-auth/adapters';
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db) as Adapter,
   session: {
-    strategy: "jwt",
+    strategy: "database",
   },
   secret: env.NEXTAUTH_SECRET,
   pages: {
@@ -88,14 +68,48 @@ export const authOptions: NextAuthOptions = {
       },
         async authorize(credentials: { email?: string; password?: string } | undefined) {
           if (!credentials?.email || !credentials?.password) return null;
-          const user = await db.user.findUnique({ where: { email: credentials.email } });
-          if (!user || !user.passwordHash) return null;
-          const valid = await bcrypt.compare(credentials.password, user.passwordHash);
-          if (!valid) return null;
-          return { id: user.id, name: user.name ?? undefined, email: user.email ?? undefined, role: user.role };
+        const user = await db.user.findUnique({ where: { email: credentials.email } });
+        if (!user || !user.passwordHash) return null;
+        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!valid) return null;
+        return { id: user.id, name: user.name ?? undefined, email: user.email ?? undefined, role: user.role };
       },
     }),
-    // Removed EmailProvider and GoogleProvider
+    EmailProvider({
+      from: env.EMAIL_FROM ?? "no-reply@example.com",
+      sendVerificationRequest: async ({ identifier, url }) => {
+        const configuredTransport =
+          env.EMAIL_SERVER_HOST && env.EMAIL_SERVER_USER && env.EMAIL_SERVER_PASSWORD;
+
+        const transport = configuredTransport
+          ? nodemailer.createTransport({
+              host: env.EMAIL_SERVER_HOST,
+              port: env.EMAIL_SERVER_PORT,
+              auth: {
+                user: env.EMAIL_SERVER_USER,
+                pass: env.EMAIL_SERVER_PASSWORD,
+              },
+            })
+          : nodemailer.createTransport({
+              jsonTransport: true,
+            });
+
+        const result = await transport.sendMail({
+          to: identifier,
+          from: env.EMAIL_FROM ?? "no-reply@example.com",
+          subject: "Tautan Masuk Kios POS",
+          text: `Halo!\n\nGunakan tautan berikut untuk masuk ke Kios POS:\n\n${url}\n\nTautan ini berlaku selama 10 menit.`,
+          html: `<p>Halo!</p><p>Gunakan tautan berikut untuk masuk ke Kios POS:</p><p><a href="${url}">${url}</a></p><p>Tautan ini berlaku selama 10 menit.</p>`,
+        });
+
+        if (!configuredTransport) {
+          console.info(
+            "[auth/email] EMAIL_SERVER_* belum dikonfigurasi. Email magic link dicetak ke console:",
+            (result as { message?: string })?.message ?? result,
+          );
+        }
+      },
+    }),
   ],
   callbacks: {
     async session({ session, user }: { session: Session | unknown; user: unknown }) {
@@ -177,14 +191,9 @@ async function buildAuthReq(req: Request) {
 
 // Export the NextAuth handler directly for the App Router. This matches the
 // canonical pattern NextAuth expects in app-route handlers.
-// Export wrapped handlers for the App Router. Adapt the incoming Fetch
-// Request into the shape NextAuth internals expect (with query.nextauth)
-// and convert the result into a proper Response.
 export { handler as GET, handler as POST };
 // Also export the raw handler for programmatic use
 export { handler };
-
-// (Note: handler exported above)
 
 // Wrap the handler to log invocation errors with stack traces for easier
 // debugging when endpoints are called.

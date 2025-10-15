@@ -9,6 +9,11 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
 ### Added
 
+- Halaman demo publik read-only (`/demo/*`) beserta CTA "Coba Demo Tanpa Login" di beranda.
+- Hook `useActiveOutlet` dan cache katalog IndexedDB untuk mempercepat lookup barcode dan menyimpan outlet aktif.
+- Dialog pembayaran kasir dengan preview struk 58/80mm, QR metadata, tombol Unduh & Cetak, serta keyboard shortcut kasir.
+- Script E2E `demo-routes-and-payment.spec.ts` guna sanity-test demo pages dan alur pembayaran.
+
 - Sistem autentikasi lengkap dengan NextAuth
   - Magic link email menggunakan Nodemailer
   - Google OAuth integration
@@ -95,6 +100,12 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
   - Build verification
 
 ### Changed
+
+- Navbar kini minimal saat belum login dan menampilkan avatar + outlet aktif ketika sesi ada.
+- Tata letak modul kasir dirapikan menjadi grid dua kolom dengan ringkasan hierarkis dan validasi diskon sesuai kebijakan toko.
+- Halaman login dipisah menjadi tab Magic Link vs Email+Password dengan microcopy feedback.
+- Tabel manajemen produk mendapatkan sticky header, filter, ekspor CSV, dan persistensi kolom via localStorage.
+- Tabel laporan harian dan empty state diperhalus agar lebih informatif.
 
 - Optimasi query database dengan Prisma
 - Peningkatan performa UI dengan animasi yang lebih smooth

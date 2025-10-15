@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [mode, setMode] = useState<"magic" | "password">("magic");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [password, setPassword] = useState("");
@@ -19,7 +20,11 @@ export default function LoginPage() {
     setLoading(true);
     setMessage(null);
     try {
-      if (password) {
+      if (mode === "password") {
+        if (!password) {
+          setMessage("Masukkan password Anda.");
+          return;
+        }
         // use credentials provider
         const res = (await signIn('credentials', { redirect: false, email, password })) as
           | SignInResponse
@@ -56,6 +61,30 @@ export default function LoginPage() {
       <div className="w-full max-w-md p-6 rounded-md border bg-card">
         <h1 className="text-2xl font-semibold mb-4">Masuk ke Kios POS</h1>
 
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant={mode === "magic" ? "default" : "outline"}
+            onClick={() => {
+              setMode("magic");
+              setPassword("");
+              setMessage(null);
+            }}
+          >
+            Tautan Email
+          </Button>
+          <Button
+            type="button"
+            variant={mode === "password" ? "default" : "outline"}
+            onClick={() => {
+              setMode("password");
+              setMessage(null);
+            }}
+          >
+            Email + Password
+          </Button>
+        </div>
+
   <form onSubmit={onEmailSignIn} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
@@ -68,19 +97,30 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Password (opsional)</label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          {mode === "password" ? (
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <Input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required={mode === "password"}
+              />
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Kami akan mengirimkan tautan masuk sekali pakai ke email Anda.
+            </p>
+          )}
 
           <div className="flex items-center gap-2">
             <Button type="submit" disabled={loading}>
-              {loading ? "Mengirim..." : "Kirim magic link"}
+              {loading
+                ? "Memproses..."
+                : mode === "magic"
+                  ? "Kirim tautan masuk"
+                  : "Masuk"}
             </Button>
             <Button variant="outline" type="button" onClick={() => router.push("/")}>Batal</Button>
           </div>
@@ -89,7 +129,14 @@ export default function LoginPage() {
         {/* credentials only - no magic link / providers */}
 
         {message ? (
-          <div className="mt-4 text-sm text-muted-foreground">{message}</div>
+          <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+            <p>{message}</p>
+            {mode === "magic" && !message.toLowerCase().includes("gagal") ? (
+              <p className="text-xs">
+                Kami kirim tautan ke email Anda. Cek folder Spam jika tidak menemukan dalam 1 menit.
+              </p>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </div>
