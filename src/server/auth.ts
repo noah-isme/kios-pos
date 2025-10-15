@@ -49,11 +49,12 @@ try {
 // Credentials-only auth (email + password). Email/Google providers removed.
 import type { NextAuthOptions } from 'next-auth';
 import type { Adapter } from 'next-auth/adapters';
+import type { JWT } from 'next-auth/jwt';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db) as Adapter,
   session: {
-    strategy: "database",
+    strategy: "jwt",
   },
   secret: env.NEXTAUTH_SECRET,
   pages: {
@@ -112,14 +113,23 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async session({ session, user }: { session: Session | unknown; user: unknown }) {
-      if (session && typeof session === "object" && session && "user" in (session as Record<string, unknown>)) {
-        const userObj = user as { id?: string; role?: string } | undefined;
+    async jwt({ token, user }) {
+      if (user && typeof user === "object") {
+        const maybeUser = user as { id?: string; role?: string };
+        if (typeof maybeUser.id === "string") token.sub = maybeUser.id;
+        if (typeof maybeUser.role === "string") {
+          (token as JWT & { role?: string }).role = maybeUser.role;
+        }
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session && typeof session === "object" && "user" in session) {
         const sessionUser = (session as Session).user as Record<string, unknown> | undefined;
-        if (sessionUser && userObj) {
-          // assign fields defensively
-          if (typeof userObj.id === "string") sessionUser.id = userObj.id;
-          if (typeof userObj.role === "string") sessionUser.role = userObj.role;
+        if (sessionUser) {
+          if (typeof token.sub === "string") sessionUser.id = token.sub;
+          const typedToken = token as JWT & { role?: string };
+          if (typeof typedToken.role === "string") sessionUser.role = typedToken.role;
         }
       }
       return session as Session;

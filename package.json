@@ -14,9 +14,10 @@
     "db:migrate": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "seed:products": "node ./scripts/seed-supabase.mjs",
+    "seed:full": "node ./scripts/seed-full.mjs",
     "test:e2e": "playwright test",
-  "auth:post": "node ./scripts/auth-post.mjs",
-  "test:e2e:ui": "playwright test tests/e2e/ui --project=chromium",
+    "auth:post": "node ./scripts/auth-post.mjs",
+    "test:e2e:ui": "playwright test tests/e2e/ui --project=chromium",
     "test:unit": "vitest run"
   },
   "dependencies": {
