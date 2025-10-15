@@ -10,6 +10,7 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 ### Added
 
 - Halaman demo publik read-only (`/demo/*`) beserta CTA "Coba Demo Tanpa Login" di beranda.
+- Script `seed-full.mjs` (`pnpm run seed:full`) untuk mengosongkan dan mengisi ulang seluruh tabel staging dengan dataset realistis.
 - Hook `useActiveOutlet` dan cache katalog IndexedDB untuk mempercepat lookup barcode dan menyimpan outlet aktif.
 - Dialog pembayaran kasir dengan preview struk 58/80mm, QR metadata, tombol Unduh & Cetak, serta keyboard shortcut kasir.
 - Script E2E `demo-routes-and-payment.spec.ts` guna sanity-test demo pages dan alur pembayaran.
@@ -101,6 +102,7 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
 ### Changed
 
+- NextAuth kini menggunakan strategi sesi JWT sehingga middleware edge dapat membaca token yang sama tanpa ketergantungan tabel `Session`.
 - Navbar kini minimal saat belum login dan menampilkan avatar + outlet aktif ketika sesi ada.
 - Tata letak modul kasir dirapikan menjadi grid dua kolom dengan ringkasan hierarkis dan validasi diskon sesuai kebijakan toko.
 - Halaman login dipisah menjadi tab Magic Link vs Email+Password dengan microcopy feedback.

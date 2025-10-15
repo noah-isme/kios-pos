@@ -194,6 +194,22 @@ Untuk data testing lengkap termasuk user dan transaksi:
 node scripts/seed-initial.mjs
 ```
 
+### Seed Data Lengkap (Staging)
+
+Gunakan script baru untuk mengosongkan seluruh tabel dan mengisi ulang dengan dataset realistis (outlet, produk, stok, transaksi, pembayaran, refund, dan ringkasan harian):
+
+```bash
+pnpm run seed:full
+```
+
+Checklist sebelum menjalankan `seed:full`:
+
+- [ ] `DATABASE_URL` mengarah ke instance yang ingin di-reset (mis. staging).
+- [ ] Backup sudah dibuat bila diperlukan.
+- [ ] Server aplikasi tidak sedang melayani traffic penting (proses akan menghapus seluruh data).
+- [ ] `NEXTAUTH_URL` di `.env` atau `.env.local` sudah sesuai host dev/staging agar cookie login valid.
+- [ ] Setelah seeding, login manual (`owner@example.com` / `password`) untuk memastikan token JWT baru diterbitkan.
+
 ## Verifikasi Setup
 
 ### 1. Verifikasi Database Connection
