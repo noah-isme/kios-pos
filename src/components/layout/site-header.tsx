@@ -76,7 +76,7 @@ export function SiteHeader({ className }: { className?: string }) {
           {isAuthenticated && (
             <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden min-h-[44px] min-w-[44px]">
+                <Button variant="ghost" size="sm" className="md:hidden min-h-[44px] min-w-[44px]" aria-label="Buka menu navigasi">
                   <Menu className="h-5 w-5" />
                 </Button>
               </DialogTrigger>
@@ -129,6 +129,7 @@ export function SiteHeader({ className }: { className?: string }) {
                 void signOut({ callbackUrl: "/auth/login" });
               }}
               className="min-h-[44px]"
+              aria-label="Keluar dari aplikasi"
             >
               <LogOut className="h-4 w-4" />
               Keluar
@@ -149,6 +150,7 @@ export function SiteHeader({ className }: { className?: string }) {
               size="sm"
               onClick={() => router.push("/auth/login")}
               className="min-h-[44px]"
+              aria-label="Masuk ke aplikasi"
             >
               <LogIn className="h-4 w-4" />
               Masuk
