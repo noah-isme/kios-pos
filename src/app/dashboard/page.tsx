@@ -17,6 +17,17 @@ import { ensureAuthenticatedOrRedirect } from "@/server/auth";
 import { db } from "@/server/db";
 import { getDailySalesSummary } from '@/server/api/server-helpers';
 import DashboardWidgets from '@/components/dashboard/widgets';
+import OnboardingTooltip from '@/components/dashboard/onboarding-tooltip';
+
+function Breadcrumbs() {
+  return (
+    <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
+      <Link href="/dashboard" className="hover:text-foreground">
+        Dashboard
+      </Link>
+    </nav>
+  );
+}
 
 const quickActions = [
   { title: "Kasir", description: "Buka kasir untuk transaksi", href: "/cashier", icon: <ReceiptText className="h-5 w-5" />, accent: 'amber' },
@@ -64,6 +75,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <OnboardingTooltip />
+      <Breadcrumbs />
       <header className="rounded-2xl border border-border bg-card p-8 shadow-sm">
         <Badge variant="secondary" className="w-fit uppercase tracking-wide">Dashboard</Badge>
         <h1 className="mt-3 text-2xl font-semibold">Selamat datang, {userName}</h1>
@@ -79,7 +92,7 @@ export default async function DashboardPage() {
       </header>
 
       <section>
-        <MotionList variants={containerCards} className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+        <MotionList variants={containerCards} className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <MotionItem variants={cardVariant} className="flex justify-center px-2">
             <SummaryCard title="Penjualan Hari Ini" value={`${todayCount} transaksi`} icon={<ReceiptText className="h-5 w-5" />} />
           </MotionItem>
@@ -91,10 +104,10 @@ export default async function DashboardPage() {
             .map((a) => (
               <MotionItem key={a.href} variants={cardVariant} className="flex justify-center px-2">
                 <Link href={a.href} className="w-full">
-                  <Card className="p-4 sm:p-5 w-full hover:shadow-lg transition">
+                  <Card className="p-6 w-full hover:shadow-lg transition h-full">
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className="rounded-md p-2 bg-off-white text-primary">{a.icon}</div>
+                        <div className={`rounded-md p-3 ${ACCENT_CLASSES[a.accent]?.icon || 'bg-off-white text-primary'}`}>{a.icon}</div>
                         <div>
                           <CardTitle>{a.title}</CardTitle>
                           <CardDescription className="text-sm text-muted-foreground">{a.description}</CardDescription>
