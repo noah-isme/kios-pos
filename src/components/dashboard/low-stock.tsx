@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { api } from "@/trpc/client";
 
 function fmt(n: number) {
@@ -25,10 +26,12 @@ export default function LowStockWidget() {
       {items.length === 0 && !stockQ.isLoading && <div className="text-sm text-muted-foreground">Semua stok aman.</div>}
       <div className="space-y-2">
         {items.map((it) => (
-          <div key={it.productId} className="flex items-center justify-between">
-            <div className="text-sm">{it.productName}</div>
-            <div className="text-sm font-medium">{fmt(it.quantity)}</div>
-          </div>
+          <Link key={it.productId} href="/management/products" className="block">
+            <div className="flex items-center justify-between p-2 rounded hover:bg-muted transition">
+              <div className="text-sm">{it.productName}</div>
+              <div className="text-sm font-medium">{fmt(it.quantity)}</div>
+            </div>
+          </Link>
         ))}
       </div>
     </div>
