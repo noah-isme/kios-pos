@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 import { MotionButton as Button } from "@/components/ui/button";
 import { useUndoToast } from "@/components/ui/undo-toast";
@@ -951,7 +952,14 @@ export default function ProductManagementPage() {
               </div>
               <div className="flex gap-2 pt-2">
                 <Button className="flex-1" onClick={() => void handleSubmit()} disabled={upsertProduct.isPending}>
-                  {upsertProduct.isPending ? "Menyimpan..." : "Simpan"}
+                  {upsertProduct.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
                 </Button>
                 <Button variant="outline" onClick={resetForm}>
                   Reset
@@ -976,7 +984,14 @@ export default function ProductManagementPage() {
                 />
                 <div className="flex gap-2">
                   <Button onClick={() => void handleCategorySubmit()} disabled={upsertCategory.isPending}>
-                    {upsertCategory.isPending ? "Memproses..." : categoryDraft.id ? "Perbarui" : "Tambah"}
+                    {upsertCategory.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Memproses...
+                      </>
+                    ) : (
+                      categoryDraft.id ? "Perbarui" : "Tambah"
+                    )}
                   </Button>
                   {categoryDraft.id && (
                     <Button
@@ -1057,7 +1072,14 @@ export default function ProductManagementPage() {
                 />
                 <div className="flex gap-2">
                   <Button onClick={() => void handleSupplierSubmit()} disabled={upsertSupplier.isPending}>
-                    {upsertSupplier.isPending ? "Memproses..." : supplierDraft.id ? "Perbarui" : "Tambah"}
+                    {upsertSupplier.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Memproses...
+                      </>
+                    ) : (
+                      supplierDraft.id ? "Perbarui" : "Tambah"
+                    )}
                   </Button>
                   {supplierDraft.id && (
                     <Button
