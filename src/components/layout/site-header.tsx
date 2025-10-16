@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from "next/link";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, Menu } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -10,6 +10,12 @@ import { MotionButton as Button } from "@/components/ui/button";
 import MotionList, { MotionItem } from "@/components/ui/motion-list";
 import { cn } from "@/lib/utils";
 import { useActiveOutlet } from "@/hooks/use-active-outlet";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Sidebar from "@/components/layout/sidebar";
 
 const navItems = [
   { href: "/cashier", label: "Kasir" },
@@ -23,6 +29,7 @@ export function SiteHeader({ className }: { className?: string }) {
   const { activeOutlet } = useActiveOutlet();
   const [time, setTime] = React.useState(() => new Date());
   const [mounted, setMounted] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   React.useEffect(() => {
     const id = setInterval(() => setTime(new Date()), 1000);
@@ -66,6 +73,18 @@ export function SiteHeader({ className }: { className?: string }) {
     <header className={cn("fixed inset-x-0 top-0 z-50 border-b border-border bg-white/95 backdrop-blur", className)}>
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
+          {isAuthenticated && (
+            <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="md:hidden min-h-[44px] min-w-[44px]">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-80 p-0">
+                <Sidebar />
+              </DialogContent>
+            </Dialog>
+          )}
           <Link href="/" className="text-lg font-semibold">
             Kios POS
           </Link>
@@ -109,6 +128,7 @@ export function SiteHeader({ className }: { className?: string }) {
               onClick={() => {
                 void signOut({ callbackUrl: "/auth/login" });
               }}
+              className="min-h-[44px]"
             >
               <LogOut className="h-4 w-4" />
               Keluar
@@ -128,6 +148,7 @@ export function SiteHeader({ className }: { className?: string }) {
               variant="pill"
               size="sm"
               onClick={() => router.push("/auth/login")}
+              className="min-h-[44px]"
             >
               <LogIn className="h-4 w-4" />
               Masuk
