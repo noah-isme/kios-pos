@@ -26,6 +26,7 @@ const formatCurrency = (value: number) =>
 
 export default function DailyReportPage() {
   const [selectedDate, setSelectedDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
+  const [search, setSearch] = useState("");
 
   const summaryQuery = api.sales.getDailySummary.useQuery({ date: selectedDate });
   const forecastQuery = api.sales.forecastNextDay.useQuery(
@@ -33,7 +34,22 @@ export default function DailyReportPage() {
     { enabled: Boolean(summaryQuery.data?.sales.length) },
   );
 
-  const totals = useMemo(() => summaryQuery.data?.totals, [summaryQuery.data?.totals]);
+  const filteredSales = useMemo(() => {
+    if (!summaryQuery.data?.sales) return [];
+    if (!search) return summaryQuery.data.sales;
+    return summaryQuery.data.sales.filter(sale =>
+      sale.items.some(item => item.productName.toLowerCase().includes(search.toLowerCase()))
+    );
+  }, [summaryQuery.data?.sales, search]);
+
+  const totals = useMemo(() => {
+    const sales = filteredSales;
+    return {
+      totalSales: sales.length,
+      totalItems: sales.reduce((sum, s) => sum + s.items.reduce((itemSum, i) => itemSum + i.quantity, 0), 0),
+      totalRevenue: sales.reduce((sum, s) => sum + s.totalNet, 0),
+    };
+  }, [filteredSales]);
 
   return (
     <div className="space-y-6">
@@ -45,6 +61,13 @@ export default function DailyReportPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Input
+            type="text"
+            placeholder="Cari produk..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-48"
+          />
           <Input
             type="date"
             value={selectedDate}
@@ -79,7 +102,7 @@ export default function DailyReportPage() {
             <CardDescription>Setelah diskon</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {summaryQuery.isLoading ? "…" : formatCurrency(totals?.totalNet ?? 0)}
+            {summaryQuery.isLoading ? "…" : formatCurrency(totals?.totalRevenue ?? 0)}
           </CardContent>
         </Card>
         <Card className="card-focusable">
@@ -88,7 +111,7 @@ export default function DailyReportPage() {
             <CardDescription>Tunai & setoran kasir</CardDescription>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">
-            {summaryQuery.isLoading ? "…" : formatCurrency(totals?.totalCash ?? 0)}
+            {summaryQuery.isLoading ? "…" : formatCurrency(totals?.totalRevenue ?? 0)}
           </CardContent>
         </Card>
       </div>
@@ -110,7 +133,7 @@ export default function DailyReportPage() {
                 </TableRow>
               </TableHeader>
               <MotionTableBody>
-                {summaryQuery.data?.sales.map((sale) => (
+                {filteredSales.map((sale) => (
                   <MotionTableRow key={sale.id} className="border-b">
                     <TableCell className="font-medium">{sale.receiptNumber}</TableCell>
                     <TableCell>{format(new Date(sale.soldAt), "HH:mm")}</TableCell>
@@ -118,7 +141,7 @@ export default function DailyReportPage() {
                     <TableCell className="text-right">{formatCurrency(sale.totalNet)}</TableCell>
                   </MotionTableRow>
                 ))}
-                {summaryQuery.data?.sales.length === 0 && (
+                {filteredSales.length === 0 && (
                   <MotionTableRow>
                     <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
                       <div className="flex flex-col items-center gap-3">

@@ -26,7 +26,7 @@ export default function LowStockWidget() {
       {items.length === 0 && !stockQ.isLoading && <div className="text-sm text-muted-foreground">Semua stok aman.</div>}
       <div className="space-y-2">
         {items.map((it) => (
-          <Link key={it.productId} href="/management/products" className="block">
+          <Link key={it.productId} href="/management/stock" className="block">
             <div className="flex items-center justify-between p-2 rounded hover:bg-muted transition">
               <div className="text-sm">{it.productName}</div>
               <div className="text-sm font-medium">{fmt(it.quantity)}</div>

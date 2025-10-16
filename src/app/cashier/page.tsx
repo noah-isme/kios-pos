@@ -93,6 +93,7 @@ export default function CashierPage() {
   const [receiptQr, setReceiptQr] = useState<string | null>(null);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [checkoutState, setCheckoutState] = useState<"idle" | "review" | "success">("idle");
+  const [isExpressMode, setIsExpressMode] = useState(false);
 
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
@@ -403,15 +404,25 @@ export default function CashierPage() {
       </div>
 
       <header className="space-y-1">
-        <p className="text-sm uppercase tracking-wide text-muted-foreground">
-          Modul Kasir
-        </p>
-        <h1 className="text-3xl font-semibold text-foreground">
-          {activeOutlet?.name ?? "Outlet belum dipilih"}
-        </h1>
-        <p className="text-muted-foreground">
-          Fokus ke input barcode dengan Ctrl+K, tambah item dengan F1, buka pembayaran dengan F2.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm uppercase tracking-wide text-muted-foreground">
+              Modul Kasir
+            </p>
+            <h1 className="text-3xl font-semibold text-foreground">
+              {activeOutlet?.name ?? "Outlet belum dipilih"}
+            </h1>
+            <p className="text-muted-foreground">
+              {isExpressMode ? "Mode cepat: Scan barcode dan checkout otomatis." : "Fokus ke input barcode dengan Ctrl+K, tambah item dengan F1, buka pembayaran dengan F2."}
+            </p>
+          </div>
+          <Button
+            variant={isExpressMode ? "default" : "outline"}
+            onClick={() => setIsExpressMode(!isExpressMode)}
+          >
+            {isExpressMode ? "Mode Normal" : "Mode Cepat"}
+          </Button>
+        </div>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

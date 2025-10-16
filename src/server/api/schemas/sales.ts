@@ -74,6 +74,12 @@ export const saleSummarySchema = z.object({
   totalNet: z.number(),
   soldAt: z.string(),
   paymentMethods: z.array(z.nativeEnum(PaymentMethod)),
+  items: z.array(
+    z.object({
+      productName: z.string(),
+      quantity: z.number(),
+    }),
+  ),
 });
 
 export const dailySummaryOutputSchema = z.object({
