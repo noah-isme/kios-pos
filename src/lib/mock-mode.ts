@@ -4,8 +4,10 @@ const hasSupabaseConfig = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 );
 
+const isProduction = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
+
 export const startMockMode = async () => {
-  if (typeof window === "undefined" || hasSupabaseConfig) {
+  if (typeof window === "undefined" || hasSupabaseConfig || isProduction) {
     return false;
   }
 

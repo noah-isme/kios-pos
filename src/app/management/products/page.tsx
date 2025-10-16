@@ -128,6 +128,8 @@ const emptyTaxDraft = {
 
 export default function ProductManagementPage() {
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("products");
+  const [liveMessage, setLiveMessage] = useState("");
   const productsQuery = api.products.list.useQuery({ search });
   const upsertProduct = api.products.upsert.useMutation();
   const categoriesQuery = api.products.categories.useQuery();
@@ -563,420 +565,455 @@ export default function ProductManagementPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderCell = (product: Record<string, any>, key: ColumnKey) => {
+    switch (key) {
+      case "name":
+        return product.name;
+      case "sku":
+        return product.sku;
+      case "barcode":
+        return product.barcode || "-";
+      case "supplier":
+        return product.supplier?.name || "-";
+      case "price":
+        return formatCurrency(product.price);
+      case "discount":
+        return product.defaultDiscountPercent ? `${product.defaultDiscountPercent}%` : "-";
+      case "promo":
+        return product.promoPrice ? formatCurrency(product.promoPrice) : "-";
+      case "tax":
+        return product.isTaxable ? `${product.taxRate || 0}%` : "Tidak";
+      default:
+        return "-";
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <div className="sr-only" aria-live="polite">
+        {liveMessage}
+      </div>
+
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">Manajemen Produk</h1>
         <p className="text-muted-foreground">
-          Sinkronkan SKU, barcode, kategori, harga jual, promo, dan pajak agar katalog kasir konsisten.
+          Kelola katalog produk, kategori, supplier, dan pengaturan pajak untuk operasi kios yang efisien.
         </p>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Daftar Produk</CardTitle>
-            <CardDescription>Monitor harga, promo, supplier, dan status pajak.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(0,240px)_minmax(0,200px)_minmax(0,200px)] lg:items-end lg:gap-3">
-                <div className="grid gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground" htmlFor="search-products">
-                    Cari produk
-                  </label>
+      <nav className="flex space-x-1 border-b">
+        <button
+          onClick={() => setActiveTab("products")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+            activeTab === "products"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Produk
+        </button>
+        <button
+          onClick={() => setActiveTab("categories")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+            activeTab === "categories"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Kategori
+        </button>
+        <button
+          onClick={() => setActiveTab("suppliers")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+            activeTab === "suppliers"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Supplier
+        </button>
+        <button
+          onClick={() => setActiveTab("tax")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+            activeTab === "tax"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          PPN
+        </button>
+      </nav>
+
+      {activeTab === "products" && (
+        <div className="space-y-6">
+          {/* Produk content */}
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daftar Produk</CardTitle>
+                <CardDescription>Monitor harga, promo, supplier, dan status pajak.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                  <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(0,240px)_minmax(0,200px)_minmax(0,200px)] lg:items-end lg:gap-3">
+                    <div className="grid gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground" htmlFor="search-products">
+                        Cari produk
+                      </label>
+                      <Input
+                        id="search-products"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-category">
+                        Kategori
+                      </label>
+                      <select
+                        id="filter-category"
+                        value={selectedCategory}
+                        onChange={(event) => setSelectedCategory(event.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="all">Semua kategori</option>
+                        {categoriesQuery.data?.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid gap-1.5">
+                      <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-supplier">
+                        Supplier
+                      </label>
+                      <select
+                        id="filter-supplier"
+                        value={selectedSupplier}
+                        onChange={(event) => setSelectedSupplier(event.target.value)}
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="all">Semua supplier</option>
+                        {suppliersQuery.data?.map((supplier) => (
+                          <option key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => setFormState(emptyProductForm)}
+                    >
+                      Tambah Produk
+                    </Button>
+                  </div>
+                </div>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        {visibleColumns.map((column) => (
+                          <TableHead key={column.key} className={column.align === "right" ? "text-right" : ""}>
+                            {column.label}
+                          </TableHead>
+                        ))}
+                        <TableHead className="w-0"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <MotionTbody variants={listVariants} initial="hidden" animate="show">
+                      {filteredProducts.map((product) => (
+                        <MotionTr key={product.id} variants={rowVariant} className="border-b">
+                          {visibleColumns.map((column) => (
+                            <TableCell key={column.key} className={column.align === "right" ? "text-right" : ""}>
+                              {renderCell(product, column.key)}
+                            </TableCell>
+                          ))}
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                setFormState({
+                                  id: product.id,
+                                  name: product.name,
+                                  sku: product.sku,
+                                  barcode: product.barcode ?? "",
+                                  price: String(product.price ?? 0),
+                                  categoryId: product.categoryId ?? "",
+                                  supplierId: product.supplierId ?? "",
+                                  costPrice: product.costPrice != null ? String(product.costPrice) : "",
+                                  defaultDiscountPercent:
+                                    product.defaultDiscountPercent != null
+                                      ? String(product.defaultDiscountPercent)
+                                      : "",
+                                  promoName: product.promoName ?? "",
+                                  promoPrice: product.promoPrice != null ? String(product.promoPrice) : "",
+                                  promoStart: product.promoStart ? product.promoStart.slice(0, 10) : "",
+                                  promoEnd: product.promoEnd ? product.promoEnd.slice(0, 10) : "",
+                                  isTaxable: product.isTaxable,
+                                  taxRate: product.taxRate != null ? String(product.taxRate) : "",
+                                })
+                              }
+                            >
+                              Edit
+                            </Button>
+                          </TableCell>
+                        </MotionTr>
+                      ))}
+
+                      {filteredProducts.length === 0 && (
+                        <MotionTr variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
+                          <TableCell colSpan={visibleColumnCount + 1} className="py-10 text-center text-sm text-muted-foreground">
+                            <div className="flex flex-col items-center gap-3">
+                              <p>Belum ada produk. Import master data atau tambah manual terlebih dahulu.</p>
+                              <div className="flex flex-wrap justify-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => toast.info("Gunakan script seed: pnpm seed:products")}
+                                >
+                                  Impor CSV
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setFormState(emptyProductForm)}
+                                >
+                                  Tambah Produk
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </MotionTr>
+                      )}
+                    </MotionTbody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingProduct ? "Ubah Produk" : "Tambah Produk"}</CardTitle>
+                <CardDescription>
+                  Lengkapi informasi harga pokok, diskon standar, promo musiman, dan konfigurasi PPN per produk.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Nama Produk</Label>
                   <Input
-                    id="search-products"
-                    placeholder="Nama, SKU, atau barcode"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
+                    id="name"
+                    value={formState.name}
+                    onChange={(event) => setFormState((state) => ({ ...state, name: event.target.value }))}
                   />
                 </div>
-                <div className="grid gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-category">
-                    Filter kategori
-                  </label>
+                <div className="grid gap-2">
+                  <Label htmlFor="sku">SKU</Label>
+                  <Input
+                    id="sku"
+                    value={formState.sku}
+                    onChange={(event) => setFormState((state) => ({ ...state, sku: event.target.value }))}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="barcode">Barcode</Label>
+                  <Input
+                    id="barcode"
+                    value={formState.barcode}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, barcode: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="price">Harga Jual</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    min={0}
+                    value={formState.price}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, price: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="costPrice">Harga Pokok (opsional)</Label>
+                  <Input
+                    id="costPrice"
+                    type="number"
+                    min={0}
+                    value={formState.costPrice}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, costPrice: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="category">Kategori</Label>
                   <select
-                    id="filter-category"
-                    value={selectedCategory}
-                    onChange={(event) => setSelectedCategory(event.target.value)}
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    id="category"
+                    value={formState.categoryId}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, categoryId: event.target.value }))
+                    }
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="all">Semua kategori</option>
-                    {categoryOptions.map((category) => (
+                    <option value="">Pilih kategori</option>
+                    {categoriesQuery.data?.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>
                     ))}
                   </select>
                 </div>
-                <div className="grid gap-1.5">
-                  <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-supplier">
-                    Filter supplier
-                  </label>
+                <div className="grid gap-2">
+                  <Label htmlFor="supplier">Supplier</Label>
                   <select
-                    id="filter-supplier"
-                    value={selectedSupplier}
-                    onChange={(event) => setSelectedSupplier(event.target.value)}
-                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    id="supplier"
+                    value={formState.supplierId}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, supplierId: event.target.value }))
+                    }
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="all">Semua supplier</option>
-                    {supplierOptions.map((supplier) => (
+                    <option value="">Pilih supplier</option>
+                    {suppliersQuery.data?.map((supplier) => (
                       <option key={supplier.id} value={supplier.id}>
                         {supplier.name}
                       </option>
                     ))}
                   </select>
                 </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {PRODUCT_COLUMNS.map((column) => (
-                  <Button
-                    key={column.key}
-                    variant={columnVisibility[column.key] ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => toggleColumn(column.key)}
+                <div className="grid gap-2">
+                  <Label htmlFor="defaultDiscountPercent">Diskon Standar (%)</Label>
+                  <Input
+                    id="defaultDiscountPercent"
+                    type="number"
+                    min={0}
+                    max={DISCOUNT_POLICY_PERCENT}
+                    value={formState.defaultDiscountPercent}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, defaultDiscountPercent: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="promoName">Nama Promo (opsional)</Label>
+                  <Input
+                    id="promoName"
+                    value={formState.promoName}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, promoName: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="promoPrice">Harga Promo (opsional)</Label>
+                  <Input
+                    id="promoPrice"
+                    type="number"
+                    min={0}
+                    value={formState.promoPrice}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, promoPrice: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="promoStart">Mulai Promo</Label>
+                    <Input
+                      id="promoStart"
+                      type="date"
+                      value={formState.promoStart}
+                      onChange={(event) =>
+                        setFormState((state) => ({ ...state, promoStart: event.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="promoEnd">Akhir Promo</Label>
+                    <Input
+                      id="promoEnd"
+                      type="date"
+                      value={formState.promoEnd}
+                      onChange={(event) =>
+                        setFormState((state) => ({ ...state, promoEnd: event.target.value }))
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="isTaxable">PPN</Label>
+                  <select
+                    id="isTaxable"
+                    value={formState.isTaxable ? "taxable" : "non-taxable"}
+                    onChange={(event) =>
+                      setFormState((state) => ({ ...state, isTaxable: event.target.value === "taxable" }))
+                    }
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {columnVisibility[column.key] ? "✓" : "○"} {column.label}
+                    <option value="non-taxable">Tidak kena PPN</option>
+                    <option value="taxable">Kena PPN</option>
+                  </select>
+                </div>
+                {formState.isTaxable && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="taxRate">Tarif PPN (%)</Label>
+                    <Input
+                      id="taxRate"
+                      type="number"
+                      min={0}
+                      max={100}
+                      step="0.01"
+                      value={formState.taxRate}
+                      onChange={(event) =>
+                        setFormState((state) => ({ ...state, taxRate: event.target.value }))
+                      }
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2 pt-2">
+                  <Button className="flex-1" onClick={() => void handleSubmit()} disabled={upsertProduct.isPending}>
+                    {upsertProduct.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Menyimpan...
+                      </>
+                    ) : (
+                      "Simpan"
+                    )}
                   </Button>
-                ))}
-                <Button variant="default" size="sm" onClick={exportProductsCsv}>
-                  Ekspor CSV
-                </Button>
-              </div>
-            </div>
+                  <Button variant="outline" onClick={resetForm}>
+                    Reset
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
-            <div className="overflow-hidden rounded-md border">
-              <Table className="[&_tbody]:block [&_tbody]:max-h-[360px] [&_tbody]:overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-background">
-                <TableHeader>
-                  <TableRow>
-                    {visibleColumns.map((column) => (
-                      <TableHead
-                        key={column.key}
-                        className={column.align === "right" ? "text-right" : undefined}
-                      >
-                        {column.label}
-                      </TableHead>
-                    ))}
-                    <TableHead className="text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <MotionTbody
-                  initial="hidden"
-                  animate="show"
-                  variants={{
-                    hidden: {},
-                    show: { transition: { staggerChildren: 0.03 } },
-                  }}
-                  className="[&_tr:last-child]:border-0"
-                >
-                  {filteredProducts.map((product) => (
-                    <MotionTr
-                      key={product.id}
-                      variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.2 } } }}
-                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                    >
-                      {visibleColumns.map((column) => (
-                        <TableCell
-                          key={column.key}
-                          className={column.align === "right" ? "text-right" : undefined}
-                        >
-                          {renderProductCell(product, column.key)}
-                        </TableCell>
-                      ))}
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          onClick={() =>
-                            setFormState({
-                              id: product.id,
-                              name: product.name,
-                              sku: product.sku,
-                              barcode: product.barcode ?? "",
-                              price: String(product.price ?? ""),
-                              categoryId: product.categoryId ?? "",
-                              supplierId: product.supplierId ?? "",
-                              costPrice: product.costPrice != null ? String(product.costPrice) : "",
-                              defaultDiscountPercent:
-                                product.defaultDiscountPercent != null
-                                  ? String(product.defaultDiscountPercent)
-                                  : "",
-                              promoName: product.promoName ?? "",
-                              promoPrice: product.promoPrice != null ? String(product.promoPrice) : "",
-                              promoStart: product.promoStart ? product.promoStart.slice(0, 10) : "",
-                              promoEnd: product.promoEnd ? product.promoEnd.slice(0, 10) : "",
-                              isTaxable: product.isTaxable,
-                              taxRate: product.taxRate != null ? String(product.taxRate) : "",
-                            })
-                          }
-                        >
-                          Edit
-                        </Button>
-                      </TableCell>
-                    </MotionTr>
-                  ))}
-
-                  {filteredProducts.length === 0 && (
-                    <MotionTr variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
-                      <TableCell colSpan={visibleColumnCount + 1} className="py-10 text-center text-sm text-muted-foreground">
-                        <div className="flex flex-col items-center gap-3">
-                          <p>Belum ada produk. Import master data atau tambah manual terlebih dahulu.</p>
-                          <div className="flex flex-wrap justify-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => toast.info("Gunakan script seed: pnpm seed:products")}
-                            >
-                              Impor CSV
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => setFormState(emptyProductForm)}
-                            >
-                              Tambah Produk
-                            </Button>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </MotionTr>
-                  )}
-                </MotionTbody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
+      {activeTab === "categories" && (
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{editingProduct ? "Ubah Produk" : "Tambah Produk"}</CardTitle>
-              <CardDescription>
-                Lengkapi informasi harga pokok, diskon standar, promo musiman, dan konfigurasi PPN per produk.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Nama Produk</Label>
-                <Input
-                  id="name"
-                  value={formState.name}
-                  onChange={(event) => setFormState((state) => ({ ...state, name: event.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input
-                  id="sku"
-                  value={formState.sku}
-                  onChange={(event) => setFormState((state) => ({ ...state, sku: event.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="barcode">Barcode</Label>
-                <Input
-                  id="barcode"
-                  value={formState.barcode}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, barcode: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="price">Harga Jual</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min={0}
-                  value={formState.price}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, price: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="costPrice">Harga Pokok (opsional)</Label>
-                <Input
-                  id="costPrice"
-                  type="number"
-                  min={0}
-                  value={formState.costPrice}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, costPrice: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="category">Kategori</Label>
-                <select
-                  id="category"
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={formState.categoryId}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, categoryId: event.target.value }))
-                  }
-                >
-                  <option value="">Pilih kategori</option>
-                  {categoriesQuery.data?.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="supplier">Supplier</Label>
-                <select
-                  id="supplier"
-                  className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                  value={formState.supplierId}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, supplierId: event.target.value }))
-                  }
-                >
-                  <option value="">Pilih supplier</option>
-                  {suppliersQuery.data?.map((supplier) => (
-                    <option key={supplier.id} value={supplier.id}>
-                      {supplier.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="defaultDiscountPercent">Diskon Default (%)</Label>
-                <Input
-                  id="defaultDiscountPercent"
-                  type="number"
-                  min={0}
-                  max={100}
-                  step="0.01"
-                  value={formState.defaultDiscountPercent}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, defaultDiscountPercent: event.target.value }))
-                  }
-                  onBlur={(event) => {
-                    const value = Number(event.target.value);
-                    if (Number.isNaN(value)) return;
-                    if (value > DISCOUNT_POLICY_PERCENT) {
-                      toast.warning(`Diskon default dibatasi ${DISCOUNT_POLICY_PERCENT}% sesuai kebijakan toko.`);
-                      setFormState((state) => ({
-                        ...state,
-                        defaultDiscountPercent: String(DISCOUNT_POLICY_PERCENT),
-                      }));
-                    }
-                  }}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Diskon maksimal mengikuti kebijakan toko: {DISCOUNT_POLICY_PERCENT}%.
-                </p>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="promoName">Nama Promo</Label>
-                <Input
-                  id="promoName"
-                  value={formState.promoName}
-                  onChange={(event) => setFormState((state) => ({ ...state, promoName: event.target.value }))}
-                  placeholder="Contoh: Promo Ramadhan"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="promoPrice">Harga Promo</Label>
-                <Input
-                  id="promoPrice"
-                  type="number"
-                  min={0}
-                  value={formState.promoPrice}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, promoPrice: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="grid gap-2 md:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="promoStart">Mulai Promo</Label>
-                  <Input
-                    id="promoStart"
-                    type="date"
-                    value={formState.promoStart}
-                    onChange={(event) =>
-                      setFormState((state) => ({ ...state, promoStart: event.target.value }))
-                    }
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="promoEnd">Selesai Promo</Label>
-                  <Input
-                    id="promoEnd"
-                    type="date"
-                    value={formState.promoEnd}
-                    onChange={(event) =>
-                      setFormState((state) => ({ ...state, promoEnd: event.target.value }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="isTaxable"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border border-input"
-                  checked={formState.isTaxable}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, isTaxable: event.target.checked }))
-                  }
-                />
-                <div>
-                  <Label htmlFor="isTaxable" className="font-medium">
-                    Terapkan PPN untuk produk ini
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Tandai untuk menghitung PPN saat transaksi.
-                  </p>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="taxRate">Tarif PPN (%)</Label>
-                <Input
-                  id="taxRate"
-                  type="number"
-                  min={0}
-                  max={100}
-                  step="0.01"
-                  value={formState.taxRate}
-                  disabled={!formState.isTaxable}
-                  onChange={(event) =>
-                    setFormState((state) => ({ ...state, taxRate: event.target.value }))
-                  }
-                />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button className="flex-1" onClick={() => void handleSubmit()} disabled={upsertProduct.isPending}>
-                  {upsertProduct.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    "Simpan"
-                  )}
-                </Button>
-                <Button variant="outline" onClick={resetForm}>
-                  Reset
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
+          {/* Kategori content */}
           <Card>
             <CardHeader>
               <CardTitle>Kategori Produk</CardTitle>
               <CardDescription>Kelola klasifikasi untuk laporan dan filter kasir.</CardDescription>
             </CardHeader>
-              <CardContent className="space-y-4">
-              <div className="flex flex-col gap-2 sm:flex-row">
+            <CardContent className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="categoryName">Nama Kategori</Label>
                 <Input
-                  placeholder="Nama kategori"
+                  id="categoryName"
+                  placeholder="Contoh: Minuman"
                   value={categoryDraft.name}
                   onChange={(event) =>
                     setCategoryDraft((draft) => ({ ...draft, name: event.target.value }))
@@ -1004,12 +1041,9 @@ export default function ProductManagementPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <MotionList className="space-y-2">
+                <MotionList as="div" className="space-y-2">
                   {categoriesQuery.data?.map((category) => (
-                    <MotionItem
-                      key={category.id}
-                      className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2"
-                    >
+                    <MotionItem key={category.id} as="div" className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2">
                       <div>
                         <p className="text-sm font-medium">{category.name}</p>
                         <p className="text-xs text-muted-foreground">{category.slug}</p>
@@ -1041,63 +1075,78 @@ export default function ProductManagementPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
 
+      {activeTab === "suppliers" && (
+        <div className="space-y-6">
+          {/* Supplier content */}
           <Card>
             <CardHeader>
               <CardTitle>Supplier</CardTitle>
               <CardDescription>Catat vendor untuk mempermudah restock dan negosiasi harga.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-2">
-                <Input
-                  placeholder="Nama supplier"
-                  value={supplierDraft.name}
-                  onChange={(event) =>
-                    setSupplierDraft((draft) => ({ ...draft, name: event.target.value }))
-                  }
-                />
-                <Input
-                  placeholder="Email (opsional)"
-                  value={supplierDraft.email}
-                  onChange={(event) =>
-                    setSupplierDraft((draft) => ({ ...draft, email: event.target.value }))
-                  }
-                />
-                <Input
-                  placeholder="No. telepon (opsional)"
-                  value={supplierDraft.phone}
-                  onChange={(event) =>
-                    setSupplierDraft((draft) => ({ ...draft, phone: event.target.value }))
-                  }
-                />
-                <div className="flex gap-2">
-                  <Button onClick={() => void handleSupplierSubmit()} disabled={upsertSupplier.isPending}>
-                    {upsertSupplier.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Memproses...
-                      </>
-                    ) : (
-                      supplierDraft.id ? "Perbarui" : "Tambah"
-                    )}
-                  </Button>
-                  {supplierDraft.id && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setSupplierDraft(emptySupplierDraft)}
-                    >
-                      Batal
-                    </Button>
-                  )}
+              <div className="grid gap-2 md:grid-cols-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="supplierName">Nama Supplier</Label>
+                  <Input
+                    id="supplierName"
+                    placeholder="PT Nusantara Beans"
+                    value={supplierDraft.name}
+                    onChange={(event) =>
+                      setSupplierDraft((draft) => ({ ...draft, name: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="supplierEmail">Email (opsional)</Label>
+                  <Input
+                    id="supplierEmail"
+                    type="email"
+                    placeholder="sales@supplier.com"
+                    value={supplierDraft.email}
+                    onChange={(event) =>
+                      setSupplierDraft((draft) => ({ ...draft, email: event.target.value }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="supplierPhone">Telepon (opsional)</Label>
+                  <Input
+                    id="supplierPhone"
+                    placeholder="+62-21-8890-1111"
+                    value={supplierDraft.phone}
+                    onChange={(event) =>
+                      setSupplierDraft((draft) => ({ ...draft, phone: event.target.value }))
+                    }
+                  />
                 </div>
               </div>
+              <div className="flex gap-2">
+                <Button onClick={() => void handleSupplierSubmit()} disabled={upsertSupplier.isPending}>
+                  {upsertSupplier.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    supplierDraft.id ? "Perbarui" : "Tambah"
+                  )}
+                </Button>
+                {supplierDraft.id && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setSupplierDraft(emptySupplierDraft)}
+                  >
+                    Batal
+                  </Button>
+                )}
+              </div>
               <div className="space-y-2">
-                <MotionList className="space-y-2">
+                <MotionList as="div" className="space-y-2">
                   {suppliersQuery.data?.map((supplier) => (
-                    <MotionItem
-                      key={supplier.id}
-                      className="flex flex-col gap-2 rounded-md border border-dashed border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
-                    >
+                    <MotionItem key={supplier.id} as="div" className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2">
                       <div>
                         <p className="text-sm font-medium">{supplier.name}</p>
                         {(supplier.email || supplier.phone) && (
@@ -1138,7 +1187,12 @@ export default function ProductManagementPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
 
+      {activeTab === "tax" && (
+        <div className="space-y-6">
+          {/* PPN content */}
           <Card>
             <CardHeader>
               <CardTitle>Pengaturan PPN</CardTitle>
@@ -1146,7 +1200,7 @@ export default function ProductManagementPage() {
                 Simpan tarif PPN nasional atau outlet tertentu dan pilih mana yang aktif untuk kasir.
               </CardDescription>
             </CardHeader>
-              <CardContent className="space-y-4">
+            <CardContent className="space-y-4">
               <div className="grid gap-2 md:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="taxName">Nama Tarif</Label>
@@ -1174,42 +1228,33 @@ export default function ProductManagementPage() {
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="taxActive"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border border-input"
-                  checked={taxDraft.isActive}
-                  onChange={(event) =>
-                    setTaxDraft((draft) => ({ ...draft, isActive: event.target.checked }))
-                  }
-                />
-                <Label htmlFor="taxActive">Jadikan aktif setelah disimpan</Label>
-              </div>
               <div className="flex gap-2">
                 <Button onClick={() => void handleTaxSubmit()} disabled={upsertTaxSetting.isPending}>
-                  {upsertTaxSetting.isPending ? "Memproses..." : taxDraft.id ? "Perbarui" : "Simpan"}
+                  {upsertTaxSetting.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    taxDraft.id ? "Perbarui" : "Tambah"
+                  )}
                 </Button>
                 {taxDraft.id && (
-                  <Button variant="outline" onClick={() => setTaxDraft(emptyTaxDraft)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setTaxDraft(emptyTaxDraft)}
+                  >
                     Batal
                   </Button>
                 )}
               </div>
               <div className="space-y-2">
-                <MotionList className="space-y-2">
+                <MotionList as="div" className="space-y-2">
                   {taxSettingsQuery.data?.map((setting) => (
-                    <MotionItem
-                      key={setting.id}
-                      className="flex flex-col gap-2 rounded-md border border-dashed border-border px-3 py-2 lg:flex-row lg:items-center lg:justify-between"
-                    >
+                    <MotionItem key={setting.id} as="div" className="flex items-center justify-between rounded-md border border-dashed border-border px-3 py-2">
                       <div>
-                        <p className="text-sm font-medium">
-                          {setting.name} · {formatPercent(setting.rate)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {setting.isActive ? "Aktif" : "Nonaktif"} · diperbarui {formatDate(setting.updatedAt)}
-                        </p>
+                        <p className="text-sm font-medium">{setting.name}</p>
+                        <p className="text-xs text-muted-foreground">{setting.rate}% {setting.isActive ? "(Aktif)" : ""}</p>
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -1246,7 +1291,7 @@ export default function ProductManagementPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      )}
     </div>
   );
 }
