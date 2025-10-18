@@ -16,13 +16,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { motion } from "framer-motion";
-import { listVariants, rowVariant, fadeVariant } from "@/components/ui/motion-variants";
+import { listVariants } from "@/components/ui/motion-variants";
 import MotionList, { MotionItem } from "@/components/ui/motion-list";
+import { MotionTableBody, MotionTableRow } from "@/components/ui/motion-table";
+import {
+  ColumnDef,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 
-const MotionTbody = motion.tbody;
-const MotionTr = motion.tr;
-const MotionDiv = motion.div;
 import { api } from "@/trpc/client";
 
 const PRODUCT_COLUMNS = [
@@ -39,6 +43,20 @@ const PRODUCT_COLUMNS = [
 type ColumnKey = (typeof PRODUCT_COLUMNS)[number]["key"];
 
 const COLUMN_STORAGE_KEY = "kios-pos:products-columns";
+
+const defaultColumnVisibility: VisibilityState = PRODUCT_COLUMNS.reduce(
+  (acc, column) => ({ ...acc, [column.key]: true }),
+  {} as VisibilityState,
+);
+
+type ProductColumnMeta = {
+  align?: "left" | "right";
+  label?: string;
+  key?: string;
+};
+
+const getColumnMeta = (meta: unknown): ProductColumnMeta =>
+  (meta ?? {}) as ProductColumnMeta;
 
 const DISCOUNT_POLICY_PERCENT = Number(
   process.env.NEXT_PUBLIC_DISCOUNT_LIMIT_PERCENT ?? 50,
@@ -129,7 +147,7 @@ const emptyTaxDraft = {
 export default function ProductManagementPage() {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("products");
-  const [liveMessage, setLiveMessage] = useState("");
+  const showUndo = useUndoToast();
   const productsQuery = api.products.list.useQuery({ search });
   const upsertProduct = api.products.upsert.useMutation();
   const categoriesQuery = api.products.categories.useQuery();
@@ -145,31 +163,26 @@ export default function ProductManagementPage() {
     // noop: we handle scheduling manually in handler
   });
   
+  type ProductRow = NonNullable<typeof productsQuery.data>[number];
+
 
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedSupplier, setSelectedSupplier] = useState<string>("all");
-  const [columnVisibility, setColumnVisibility] = useState<Record<ColumnKey, boolean>>({
-    name: true,
-    sku: true,
-    barcode: true,
-    supplier: true,
-    price: true,
-    discount: true,
-    promo: true,
-    tax: true,
-  });
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem(COLUMN_STORAGE_KEY);
-    if (!stored) return;
-    try {
-      const parsed = JSON.parse(stored) as Record<ColumnKey, boolean>;
-      setColumnVisibility((prev) => ({ ...prev, ...parsed }));
-    } catch {
-      // ignore invalid storage
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window === "undefined") {
+      return defaultColumnVisibility;
     }
-  }, []);
+    const stored = window.localStorage.getItem(COLUMN_STORAGE_KEY);
+    if (!stored) {
+      return defaultColumnVisibility;
+    }
+    try {
+      const parsed = JSON.parse(stored) as VisibilityState;
+      return { ...defaultColumnVisibility, ...parsed };
+    } catch {
+      return defaultColumnVisibility;
+    }
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -180,61 +193,11 @@ export default function ProductManagementPage() {
   }, [columnVisibility]);
 
   // show undo toast after delete mutation
-  const showUndoForCategory = (previous: unknown) => {
-    toast.success(
-      "Kategori dihapus",
-      {
-        action: {
-          label: "Undo",
-          onClick: async () => {
-            if (!previous) return;
-            // re-create the first deleted item from snapshot
-            const arr = Array.isArray(previous) ? previous : (previous as unknown[]);
-            const item = arr.find(Boolean) as Record<string, unknown> | undefined;
-            if (!item) return;
-            try {
-              await upsertCategory.mutateAsync({ id: item.id as string, name: item.name as string });
-              await categoriesQuery.refetch();
-              toast.success("Pembatalan berhasil");
-            } catch (err) {
-              toast.error("Gagal mengembalikan kategori");
-            }
-          },
-        },
-      },
-    );
-  };
-
-  const showUndoForSupplier = (previous: unknown) => {
-    toast.success(
-      "Supplier dihapus",
-      {
-        action: {
-          label: "Undo",
-          onClick: async () => {
-            if (!previous) return;
-            const arr = Array.isArray(previous) ? previous : (previous as unknown[]);
-            const item = arr.find(Boolean) as Record<string, unknown> | undefined;
-            if (!item) return;
-            try {
-              await upsertSupplier.mutateAsync({ id: item.id as string, name: item.name as string, email: item.email as string ?? undefined, phone: item.phone as string ?? undefined });
-              await suppliersQuery.refetch();
-              toast.success("Pembatalan berhasil");
-            } catch (err) {
-              toast.error("Gagal mengembalikan supplier");
-            }
-          },
-        },
-      },
-    );
-  };
   const taxSettingsQuery = api.settings.listTaxSettings.useQuery();
   const upsertTaxSetting = api.settings.upsertTaxSetting.useMutation();
   const activateTaxSetting = api.settings.activateTaxSetting.useMutation();
 
   // move hook to top-level of component to comply with hooks rules
-  const showUndo = useUndoToast();
-
   const [formState, setFormState] = useState<ProductFormState>(emptyProductForm);
   const [categoryDraft, setCategoryDraft] = useState(emptyCategoryDraft);
   const [supplierDraft, setSupplierDraft] = useState(emptySupplierDraft);
@@ -253,13 +216,6 @@ export default function ProductManagementPage() {
     () => taxSettingsQuery.data?.find((setting) => setting.isActive)?.rate ?? null,
     [taxSettingsQuery.data],
   );
-  const categoryOptions = categoriesQuery.data ?? [];
-  const supplierOptions = suppliersQuery.data ?? [];
-  const visibleColumns = PRODUCT_COLUMNS.filter(
-    (column) => columnVisibility[column.key],
-  );
-  const visibleColumnCount = visibleColumns.length;
-
   const filteredProducts = useMemo(() => {
     const list = productsQuery.data ?? [];
     return list.filter((product) => {
@@ -271,72 +227,216 @@ export default function ProductManagementPage() {
     });
   }, [productsQuery.data, selectedCategory, selectedSupplier]);
 
-  const renderProductCell = (
-    product: (typeof filteredProducts)[number],
-    key: ColumnKey,
-  ) => {
-    switch (key) {
-      case "name":
-        return (
-          <div className="flex flex-col">
-            <span className="font-medium text-foreground">{product.name}</span>
-            <span className="text-xs text-muted-foreground">
-              {product.category ?? "Tanpa kategori"}
-            </span>
-          </div>
-        );
-      case "sku":
-        return product.sku;
-      case "barcode":
-        return product.barcode ?? "-";
-      case "supplier":
-        return product.supplier ?? "-";
-      case "price":
-        return formatCurrency(product.price ?? 0);
-      case "discount":
-        return formatPercent(product.defaultDiscountPercent);
-      case "promo":
-        return product.promoPrice ? (
-          <div className="flex flex-col items-end text-right">
-            <span>
-              {product.promoName ?? "Promo"} ·{" "}
-              {formatCurrency(product.promoPrice)}
-            </span>
-            {product.promoStart ? (
-              <span className="text-xs text-muted-foreground">
-                {formatDate(product.promoStart)} - {formatDate(product.promoEnd)}
+  const columns = useMemo<ColumnDef<ProductRow>[]>(() => {
+    const baseColumns: ColumnDef<ProductRow>[] = PRODUCT_COLUMNS.map((column) => {
+      switch (column.key) {
+        case "name":
+          return {
+            id: column.key,
+            accessorKey: "name",
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 260,
+            cell: ({ row }) => (
+              <div className="flex flex-col">
+                <span className="font-medium text-foreground">{row.original.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {row.original.category ?? "Tanpa kategori"}
+                </span>
+              </div>
+            ),
+          } satisfies ColumnDef<ProductRow>;
+        case "sku":
+          return {
+            id: column.key,
+            accessorKey: "sku",
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 160,
+            cell: ({ row }) => row.original.sku ?? "-",
+          } satisfies ColumnDef<ProductRow>;
+        case "barcode":
+          return {
+            id: column.key,
+            accessorKey: "barcode",
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 160,
+            cell: ({ row }) => row.original.barcode ?? "-",
+          } satisfies ColumnDef<ProductRow>;
+        case "supplier":
+          return {
+            id: column.key,
+            accessorKey: "supplier",
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 180,
+            cell: ({ row }) => row.original.supplier ?? "-",
+          } satisfies ColumnDef<ProductRow>;
+        case "price":
+          return {
+            id: column.key,
+            accessorKey: "price",
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 140,
+            cell: ({ row }) => (
+              <span className="whitespace-nowrap">
+                {formatCurrency(row.original.price ?? 0)}
               </span>
-            ) : null}
-          </div>
-        ) : (
-          "-"
-        );
-      case "tax":
-        return product.isTaxable
-          ? formatPercent(product.taxRate ?? activeTaxRate)
-          : "-";
-      default:
-        return null;
-    }
-  };
+            ),
+          } satisfies ColumnDef<ProductRow>;
+        case "discount":
+          return {
+            id: column.key,
+            accessorFn: (row) => row.defaultDiscountPercent,
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 120,
+            cell: ({ row }) => formatPercent(row.original.defaultDiscountPercent),
+          } satisfies ColumnDef<ProductRow>;
+        case "promo":
+          return {
+            id: column.key,
+            accessorFn: (row) => row.promoPrice,
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 200,
+            cell: ({ row }) => {
+              if (!row.original.promoPrice) {
+                return "-";
+              }
+              return (
+                <div className="flex flex-col items-end text-right">
+                  <span>
+                    {row.original.promoName ?? "Promo"} ·{" "}
+                    {formatCurrency(row.original.promoPrice)}
+                  </span>
+                  {row.original.promoStart ? (
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(row.original.promoStart)} - {formatDate(row.original.promoEnd)}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            },
+          } satisfies ColumnDef<ProductRow>;
+        case "tax":
+          return {
+            id: column.key,
+            accessorFn: (row) => row.taxRate,
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+            size: 120,
+            cell: ({ row }) =>
+              row.original.isTaxable
+                ? formatPercent(row.original.taxRate ?? activeTaxRate)
+                : "-",
+          } satisfies ColumnDef<ProductRow>;
+        default:
+          return {
+            id: column.key,
+            accessorKey: column.key,
+            header: column.label,
+            meta: { align: column.align, label: column.label, key: column.key },
+          } satisfies ColumnDef<ProductRow>;
+      }
+    });
 
-  const toggleColumn = (key: ColumnKey) => {
-    setColumnVisibility((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+    baseColumns.push({
+      id: "actions",
+      header: () => null,
+      meta: { align: "left", label: "Aksi", key: "actions" },
+      enableHiding: false,
+      enableResizing: false,
+      size: 80,
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            setFormState({
+              id: row.original.id,
+              name: row.original.name,
+              sku: row.original.sku,
+              barcode: row.original.barcode ?? "",
+              price: String(row.original.price ?? 0),
+              categoryId: row.original.categoryId ?? "",
+              supplierId: row.original.supplierId ?? "",
+              costPrice:
+                row.original.costPrice != null
+                  ? String(row.original.costPrice)
+                  : "",
+              defaultDiscountPercent:
+                row.original.defaultDiscountPercent != null
+                  ? String(row.original.defaultDiscountPercent)
+                  : "",
+              promoName: row.original.promoName ?? "",
+              promoPrice:
+                row.original.promoPrice != null
+                  ? String(row.original.promoPrice)
+                  : "",
+              promoStart: row.original.promoStart
+                ? row.original.promoStart.slice(0, 10)
+                : "",
+              promoEnd: row.original.promoEnd
+                ? row.original.promoEnd.slice(0, 10)
+                : "",
+              isTaxable: row.original.isTaxable,
+              taxRate:
+                row.original.taxRate != null ? String(row.original.taxRate) : "",
+            })
+          }
+        >
+          Edit
+        </Button>
+      ),
+    });
+
+    return baseColumns;
+  }, [activeTaxRate, setFormState]);
+
+  const table = useReactTable({
+    data: filteredProducts,
+    columns,
+    state: {
+      columnVisibility,
+    },
+    onColumnVisibilityChange: setColumnVisibility,
+    getCoreRowModel: getCoreRowModel(),
+    columnResizeMode: "onChange",
+  });
 
   const exportProductsCsv = () => {
     if (!filteredProducts.length) {
       toast.info("Tidak ada data untuk diekspor.");
       return;
     }
-    const headers = PRODUCT_COLUMNS.filter(
-      (column) => columnVisibility[column.key],
-    ).map((column) => column.label);
+
+    const visibleColumns = table
+      .getAllLeafColumns()
+      .filter((column) => {
+        const meta = getColumnMeta(column.columnDef.meta);
+        return column.getIsVisible() && meta.key && meta.key !== "actions";
+      });
+
+    if (!visibleColumns.length) {
+      toast.info("Tampilkan minimal satu kolom sebelum ekspor.");
+      return;
+    }
+
+    const headers = visibleColumns.map((column) => {
+      const meta = getColumnMeta(column.columnDef.meta);
+      return meta.label ?? column.id;
+    });
+
     const rows = filteredProducts
       .map((product) =>
-        PRODUCT_COLUMNS.filter((column) => columnVisibility[column.key])
+        visibleColumns
           .map((column) => {
-            switch (column.key) {
+            const meta = getColumnMeta(column.columnDef.meta);
+            const metaKey = meta.key as ColumnKey | undefined;
+            switch (metaKey) {
               case "name":
                 return product.name ?? "";
               case "sku":
@@ -565,35 +665,8 @@ export default function ProductManagementPage() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderCell = (product: Record<string, any>, key: ColumnKey) => {
-    switch (key) {
-      case "name":
-        return product.name;
-      case "sku":
-        return product.sku;
-      case "barcode":
-        return product.barcode || "-";
-      case "supplier":
-        return product.supplier?.name || "-";
-      case "price":
-        return formatCurrency(product.price);
-      case "discount":
-        return product.defaultDiscountPercent ? `${product.defaultDiscountPercent}%` : "-";
-      case "promo":
-        return product.promoPrice ? formatCurrency(product.promoPrice) : "-";
-      case "tax":
-        return product.isTaxable ? `${product.taxRate || 0}%` : "Tidak";
-      default:
-        return "-";
-    }
-  };
-
   return (
     <div className="space-y-6">
-      <div className="sr-only" aria-live="polite">
-        {liveMessage}
-      </div>
 
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold">Manajemen Produk</h1>
@@ -704,7 +777,14 @@ export default function ProductManagementPage() {
                       </select>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportProductsCsv}
+                    >
+                      Ekspor CSV
+                    </Button>
                     <Button
                       size="sm"
                       onClick={() => setFormState(emptyProductForm)}
@@ -713,62 +793,85 @@ export default function ProductManagementPage() {
                     </Button>
                   </div>
                 </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="font-semibold uppercase tracking-wide text-muted-foreground">
+                    Kolom
+                  </span>
+                  {table.getAllLeafColumns().map((column) => {
+                    const meta = getColumnMeta(column.columnDef.meta);
+                    if (!meta.key || meta.key === "actions") {
+                      return null;
+                    }
+                    return (
+                      <label
+                        key={column.id}
+                        className="flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-foreground"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={column.getIsVisible()}
+                          onChange={() => column.toggleVisibility()}
+                          className="h-3 w-3 accent-primary"
+                        />
+                        {meta.label ?? column.id}
+                      </label>
+                    );
+                  })}
+                </div>
                 <div className="rounded-md border">
-                  <Table>
+                  <Table className="[&_tbody]:block [&_tbody]:max-h-[340px] [&_tbody]:overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-background">
                     <TableHeader>
-                      <TableRow>
-                        {visibleColumns.map((column) => (
-                          <TableHead key={column.key} className={column.align === "right" ? "text-right" : ""}>
-                            {column.label}
-                          </TableHead>
-                        ))}
-                        <TableHead className="w-0"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <MotionTbody variants={listVariants} initial="hidden" animate="show">
-                      {filteredProducts.map((product) => (
-                        <MotionTr key={product.id} variants={rowVariant} className="border-b">
-                          {visibleColumns.map((column) => (
-                            <TableCell key={column.key} className={column.align === "right" ? "text-right" : ""}>
-                              {renderCell(product, column.key)}
-                            </TableCell>
-                          ))}
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                setFormState({
-                                  id: product.id,
-                                  name: product.name,
-                                  sku: product.sku,
-                                  barcode: product.barcode ?? "",
-                                  price: String(product.price ?? 0),
-                                  categoryId: product.categoryId ?? "",
-                                  supplierId: product.supplierId ?? "",
-                                  costPrice: product.costPrice != null ? String(product.costPrice) : "",
-                                  defaultDiscountPercent:
-                                    product.defaultDiscountPercent != null
-                                      ? String(product.defaultDiscountPercent)
-                                      : "",
-                                  promoName: product.promoName ?? "",
-                                  promoPrice: product.promoPrice != null ? String(product.promoPrice) : "",
-                                  promoStart: product.promoStart ? product.promoStart.slice(0, 10) : "",
-                                  promoEnd: product.promoEnd ? product.promoEnd.slice(0, 10) : "",
-                                  isTaxable: product.isTaxable,
-                                  taxRate: product.taxRate != null ? String(product.taxRate) : "",
-                                })
-                              }
-                            >
-                              Edit
-                            </Button>
-                          </TableCell>
-                        </MotionTr>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                          {headerGroup.headers.map((header) => {
+                            const meta = getColumnMeta(header.column.columnDef.meta);
+                            const align = meta.align === "right" ? "text-right" : "text-left";
+                            return (
+                              <TableHead
+                                key={header.id}
+                                className={`relative ${align}`}
+                                style={{ width: header.getSize() ? `${header.getSize()}px` : undefined }}
+                              >
+                                {header.isPlaceholder
+                                  ? null
+                                  : flexRender(header.column.columnDef.header, header.getContext())}
+                                {header.column.getCanResize() ? (
+                                  <div
+                                    onMouseDown={header.getResizeHandler()}
+                                    onTouchStart={header.getResizeHandler()}
+                                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none"
+                                  />
+                                ) : null}
+                              </TableHead>
+                            );
+                          })}
+                        </TableRow>
                       ))}
-
-                      {filteredProducts.length === 0 && (
-                        <MotionTr variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
-                          <TableCell colSpan={visibleColumnCount + 1} className="py-10 text-center text-sm text-muted-foreground">
+                    </TableHeader>
+                    <MotionTableBody className="bg-background" variants={listVariants}>
+                      {table.getRowModel().rows.map((row) => (
+                        <MotionTableRow key={row.id} className="border-b">
+                          {row.getVisibleCells().map((cell) => {
+                            const meta = getColumnMeta(cell.column.columnDef.meta);
+                            const align = meta.align === "right" ? "text-right" : "";
+                            return (
+                              <TableCell
+                                key={cell.id}
+                                className={align}
+                                style={{ width: cell.column.getSize() ? `${cell.column.getSize()}px` : undefined }}
+                              >
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </TableCell>
+                            );
+                          })}
+                        </MotionTableRow>
+                      ))}
+                      {table.getRowModel().rows.length === 0 && (
+                        <MotionTableRow className="border-b" variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
+                          <TableCell
+                            colSpan={Math.max(table.getVisibleLeafColumns().length, 1)}
+                            className="py-10 text-center text-sm text-muted-foreground"
+                          >
                             <div className="flex flex-col items-center gap-3">
                               <p>Belum ada produk. Import master data atau tambah manual terlebih dahulu.</p>
                               <div className="flex flex-wrap justify-center gap-2">
@@ -788,9 +891,9 @@ export default function ProductManagementPage() {
                               </div>
                             </div>
                           </TableCell>
-                        </MotionTr>
+                        </MotionTableRow>
                       )}
-                    </MotionTbody>
+                    </MotionTableBody>
                   </Table>
                 </div>
               </CardContent>

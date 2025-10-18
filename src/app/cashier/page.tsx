@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
 import type { PaymentMethod } from "@prisma/client";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useActiveOutlet } from "@/hooks/use-active-outlet";
@@ -104,6 +105,19 @@ export default function CashierPage() {
   const catalogQuery = api.products.list.useQuery({ take: 100 }, { staleTime: 300_000 });
   const recordSale = api.sales.recordSale.useMutation();
   const printReceipt = api.sales.printReceipt.useMutation();
+  const recentSales = api.sales.listRecent.useQuery({ limit: 5 });
+  const voidSaleMutation = api.sales.voidSale.useMutation();
+  const refundSaleMutation = api.sales.refundSale.useMutation();
+
+  type RecentSale = NonNullable<typeof recentSales.data>[number];
+
+  type AfterSalesActionState = {
+    type: "void" | "refund";
+    sale: RecentSale;
+    note: string;
+  };
+
+  const [afterSalesAction, setAfterSalesAction] = useState<AfterSalesActionState | null>(null);
 
   useEffect(() => {
     if (!catalogQuery.data?.length) return;
@@ -145,6 +159,57 @@ export default function CashierPage() {
       setReceiptUrl(null);
     }
   }, [isPaymentDialogOpen, receiptUrl]);
+
+  const isProcessingAfterSales = voidSaleMutation.isPending || refundSaleMutation.isPending;
+
+  const openAfterSalesDialog = (sale: RecentSale, type: "void" | "refund") => {
+    if (sale.status !== "COMPLETED") {
+      toast.info("Transaksi sudah diproses sebelumnya.");
+      return;
+    }
+    setAfterSalesAction({ type, sale, note: "" });
+  };
+
+  const updateAfterSalesNote = (value: string) => {
+    setAfterSalesAction((current) => (current ? { ...current, note: value } : current));
+  };
+
+  const handleConfirmAfterSales = async () => {
+    if (!afterSalesAction) return;
+    const { sale, type, note } = afterSalesAction;
+
+    try {
+      if (type === "void") {
+        const result = await voidSaleMutation.mutateAsync({
+          saleId: sale.id,
+          reason: note || undefined,
+        });
+        toast.success(`Transaksi ${result.receiptNumber} dibatalkan.`);
+        setLiveMessage(`Transaksi ${result.receiptNumber} dibatalkan.`);
+      } else {
+        const result = await refundSaleMutation.mutateAsync({
+          saleId: sale.id,
+          reason: note || undefined,
+          amount: sale.totalNet,
+        });
+        toast.success(
+          `Refund ${result.receiptNumber} sebesar ${formatCurrency(result.refundAmount)} berhasil.`,
+        );
+        setLiveMessage(`Refund ${result.receiptNumber} berhasil.`);
+      }
+      await recentSales.refetch();
+      setAfterSalesAction(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal memproses tindakan.";
+      toast.error(message);
+      setLiveMessage(message);
+    }
+  };
+
+  const closeAfterSalesDialog = () => {
+    if (isProcessingAfterSales) return;
+    setAfterSalesAction(null);
+  };
 
   const totals = useMemo(() => {
     const totalGross = cart.reduce(
@@ -899,23 +964,215 @@ export default function CashierPage() {
                 </DialogContent>
               </Dialog>
             </CardContent>
-          </Card>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Tips Operasional</CardTitle>
-              <CardDescription>
-                Micro-interaction yang membantu kasir.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs text-muted-foreground">
-              <p>• Pastikan SKU populer di-pin di rak untuk scan cepat.</p>
-              <p>• Gunakan shortcut F2 untuk mengurangi waktu antrian.</p>
-              <p>• Konfirmasi refund/void hanya setelah cek stok fisik.</p>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Transaksi Terakhir</CardTitle>
+            <CardDescription>
+              Refund atau void dengan ringkasan stok yang kembali.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {recentSales.isLoading ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Memuat transaksi…
+              </div>
+            ) : recentSales.isError ? (
+              <div className="space-y-2 text-sm text-destructive">
+                <p>Gagal memuat transaksi terbaru.</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => recentSales.refetch()}
+                >
+                  Coba lagi
+                </Button>
+              </div>
+            ) : (recentSales.data ?? []).length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                Belum ada transaksi yang tercatat.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(recentSales.data ?? []).map((sale) => {
+                  const formattedTotal = formatCurrency(sale.totalNet);
+                  const isActionAvailable = sale.status === "COMPLETED";
+                  const statusLabel = (() => {
+                    switch (sale.status) {
+                      case "VOIDED":
+                        return "Void";
+                      case "REFUNDED":
+                        return "Refund";
+                      default:
+                        return "Selesai";
+                    }
+                  })();
+
+                  return (
+                    <div
+                      key={sale.id}
+                      className="rounded-lg border border-dashed border-border bg-muted/10 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-foreground">
+                            {sale.receiptNumber}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(sale.soldAt).toLocaleString("id-ID")} · {sale.totalItems} item · {formattedTotal}
+                          </p>
+                          {sale.status !== "COMPLETED" ? (
+                            <p className="text-xs font-medium uppercase tracking-wide text-orange-600">
+                              Status: {statusLabel}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled={!isActionAvailable || isProcessingAfterSales}
+                            onClick={() => openAfterSalesDialog(sale, "refund")}
+                          >
+                            Refund
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={!isActionAvailable || isProcessingAfterSales}
+                            onClick={() => openAfterSalesDialog(sale, "void")}
+                          >
+                            Void
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tips Operasional</CardTitle>
+            <CardDescription>
+              Micro-interaction yang membantu kasir.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 text-xs text-muted-foreground">
+            <p>• Pastikan SKU populer di-pin di rak untuk scan cepat.</p>
+            <p>• Gunakan shortcut F2 untuk mengurangi waktu antrian.</p>
+            <p>• Konfirmasi refund/void hanya setelah cek stok fisik.</p>
+          </CardContent>
+        </Card>
       </div>
+    </div>
+
+      <Dialog
+        open={Boolean(afterSalesAction)}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeAfterSalesDialog();
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          {afterSalesAction ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  {afterSalesAction.type === "void"
+                    ? "Konfirmasi Void Transaksi"
+                    : "Konfirmasi Refund Transaksi"}
+                </DialogTitle>
+                <DialogDescription>
+                  Tinjau ringkasan stok dan catatan sebelum melanjutkan.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 text-sm">
+                <section className="rounded-lg border bg-muted/20 p-3">
+                  <p className="text-sm font-semibold text-foreground">
+                    {afterSalesAction.sale.receiptNumber}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(afterSalesAction.sale.soldAt).toLocaleString("id-ID")} · {afterSalesAction.sale.totalItems} item · {formatCurrency(afterSalesAction.sale.totalNet)}
+                  </p>
+                </section>
+
+                <section className="space-y-2">
+                  <h4 className="text-xs font-semibold uppercase text-muted-foreground">
+                    Stok yang dikembalikan
+                  </h4>
+                  <ul className="space-y-1 rounded-md border border-dashed bg-muted/10 p-3 text-xs">
+                    {afterSalesAction.sale.items.map((item) => (
+                      <li key={`${afterSalesAction.sale.id}-${item.productName}`} className="flex justify-between gap-3">
+                        <span>{item.productName}</span>
+                        <span className="font-medium">× {item.quantity}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {(() => {
+                    const restockCount = afterSalesAction.sale.items.reduce(
+                      (sum, item) => sum + item.quantity,
+                      0,
+                    );
+                    const refundLabel = formatCurrency(afterSalesAction.sale.totalNet);
+                    return (
+                      <p className="text-xs text-muted-foreground">
+                        {afterSalesAction.type === "void"
+                          ? `Void akan mengembalikan ${restockCount} item ke stok dan menandai transaksi sebagai void.`
+                          : `Refund akan mengembalikan ${restockCount} item ke stok dan mencatat pengembalian dana sebesar ${refundLabel}.`}
+                      </p>
+                    );
+                  })()}
+                </section>
+
+                <section className="space-y-1">
+                  <Label htmlFor="after-sales-note" className="text-xs font-semibold text-muted-foreground">
+                    Catatan (opsional)
+                  </Label>
+                  <textarea
+                    id="after-sales-note"
+                    value={afterSalesAction.note}
+                    onChange={(event) => updateAfterSalesNote(event.target.value)}
+                    className="h-20 w-full rounded-md border border-input bg-background p-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                    placeholder="Contoh: disetujui supervisor atau alasan pengembalian"
+                  />
+                </section>
+              </div>
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeAfterSalesDialog}
+                  disabled={isProcessingAfterSales}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="button"
+                  variant={afterSalesAction.type === "void" ? "ghost" : "default"}
+                  onClick={() => void handleConfirmAfterSales()}
+                  disabled={isProcessingAfterSales}
+                >
+                  {isProcessingAfterSales
+                    ? "Memproses..."
+                    : afterSalesAction.type === "void"
+                      ? "Lanjutkan Void"
+                      : "Lanjutkan Refund"}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

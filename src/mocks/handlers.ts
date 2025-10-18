@@ -96,6 +96,7 @@ const buildSale = (
     discountTotal: totalDiscount,
     taxAmount: 0,
     totalNet,
+    status: "COMPLETED",
     items: saleItems,
     payments: payload.payments,
   };
@@ -199,8 +200,85 @@ const routeCall = async (
         soldAt: sale.soldAt,
         totalNet: sale.totalNet,
         totalItems: sale.items.reduce((sum, item) => sum + item.quantity, 0),
+        status: sale.status,
+        items: sale.items.map((item) => ({
+          productName: item.productName,
+          quantity: item.quantity,
+        })),
       }));
       return wrapData(call.id, recent);
+    }
+    case "sales.voidSale": {
+      const input = call.input as { saleId: string; reason?: string };
+      const index = db.sales.findIndex((sale) => sale.id === input.saleId);
+      if (index === -1) {
+        return wrapError(call.id, "Transaksi tidak ditemukan");
+      }
+
+      const sale = db.sales[index];
+      if (sale.status !== "COMPLETED") {
+        return wrapError(call.id, "Transaksi sudah diproses");
+      }
+
+      const updatedSale: MockSale = {
+        ...sale,
+        status: "VOIDED",
+      };
+
+      const nextDb: MockDatabase = {
+        ...db,
+        sales: [...db.sales.slice(0, index), updatedSale, ...db.sales.slice(index + 1)],
+      };
+
+      await writeMockDb(nextDb);
+
+      const restocked = updatedSale.items.reduce((sum, item) => sum + item.quantity, 0);
+
+      return wrapData(call.id, {
+        id: updatedSale.id,
+        receiptNumber: updatedSale.receiptNumber,
+        totalNet: updatedSale.totalNet,
+        totalItems: restocked,
+        restockedQuantity: restocked,
+        status: updatedSale.status,
+      });
+    }
+    case "sales.refundSale": {
+      const input = call.input as { saleId: string; reason?: string; amount?: number };
+      const index = db.sales.findIndex((sale) => sale.id === input.saleId);
+      if (index === -1) {
+        return wrapError(call.id, "Transaksi tidak ditemukan");
+      }
+
+      const sale = db.sales[index];
+      if (sale.status !== "COMPLETED") {
+        return wrapError(call.id, "Transaksi sudah diproses");
+      }
+
+      const updatedSale: MockSale = {
+        ...sale,
+        status: "REFUNDED",
+      };
+
+      const nextDb: MockDatabase = {
+        ...db,
+        sales: [...db.sales.slice(0, index), updatedSale, ...db.sales.slice(index + 1)],
+      };
+
+      await writeMockDb(nextDb);
+
+      const restocked = updatedSale.items.reduce((sum, item) => sum + item.quantity, 0);
+      const refundAmount = input.amount ?? updatedSale.totalNet;
+
+      return wrapData(call.id, {
+        id: updatedSale.id,
+        receiptNumber: updatedSale.receiptNumber,
+        totalNet: updatedSale.totalNet,
+        totalItems: restocked,
+        restockedQuantity: restocked,
+        status: updatedSale.status,
+        refundAmount,
+      });
     }
     case "sales.getDailySummary": {
       const totals = db.sales.reduce(

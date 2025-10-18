@@ -96,6 +96,13 @@ export const recentSalesOutputSchema = z.array(
     soldAt: z.string(),
     totalNet: z.number(),
     totalItems: z.number(),
+    status: z.string(),
+    items: z.array(
+      z.object({
+        productName: z.string(),
+        quantity: z.number(),
+      }),
+    ),
   }),
 );
 
@@ -128,6 +135,36 @@ export const listRecentInputSchema = z.object({
     .min(1, { message: "Minimal 1 transaksi" })
     .max(50, { message: "Maksimal 50 transaksi" })
     .default(10),
+});
+
+const saleActionBaseInputSchema = z.object({
+  saleId: z.string().min(1, { message: "Transaksi tidak valid" }),
+  reason: z
+    .string({ invalid_type_error: "Alasan harus berupa teks" })
+    .max(200, { message: "Alasan maksimal 200 karakter" })
+    .optional(),
+});
+
+export const voidSaleInputSchema = saleActionBaseInputSchema;
+
+export const refundSaleInputSchema = saleActionBaseInputSchema.extend({
+  amount: z
+    .number({ invalid_type_error: "Nominal refund harus berupa angka" })
+    .min(0, { message: "Nominal refund tidak boleh negatif" })
+    .optional(),
+});
+
+export const saleActionOutputSchema = z.object({
+  id: z.string(),
+  receiptNumber: z.string(),
+  totalNet: z.number(),
+  totalItems: z.number(),
+  restockedQuantity: z.number(),
+  status: z.string(),
+});
+
+export const refundSaleOutputSchema = saleActionOutputSchema.extend({
+  refundAmount: z.number(),
 });
 
 export const dailySummaryInputSchema = z.object({

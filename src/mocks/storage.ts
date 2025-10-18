@@ -49,6 +49,7 @@ export type MockSale = {
   discountTotal: number;
   taxAmount: number;
   totalNet: number;
+  status: "COMPLETED" | "VOIDED" | "REFUNDED";
   items: MockSaleItem[];
   payments: MockPayment[];
 };
@@ -129,6 +130,7 @@ const seedData: MockDatabase = {
       discountTotal: 3000,
       taxAmount: 0,
       totalNet: 39000,
+      status: "COMPLETED",
       items: [
         {
           id: "sale-demo-1-item-1",
@@ -165,6 +167,7 @@ const seedData: MockDatabase = {
       discountTotal: 0,
       taxAmount: 0,
       totalNet: 36000,
+      status: "COMPLETED",
       items: [
         {
           id: "sale-demo-2-item-1",
@@ -198,6 +201,7 @@ const seedData: MockDatabase = {
       discountTotal: 4000,
       taxAmount: 0,
       totalNet: 56000,
+      status: "COMPLETED",
       items: [
         {
           id: "sale-demo-3-item-1",

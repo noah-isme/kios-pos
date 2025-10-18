@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { httpBatchLink } from "@trpc/client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import superjson from "superjson";
 
@@ -23,9 +24,11 @@ export const TRPCReactProvider = ({ children }: { children: React.ReactNode }) =
     }),
   );
 
+  const pathname = usePathname();
+
   useEffect(() => {
     void startMockMode();
-  }, []);
+  }, [pathname]);
 
   return (
     <api.Provider client={trpcClient} queryClient={queryClient}>

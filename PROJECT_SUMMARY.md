@@ -365,6 +365,9 @@ kios-pos/
 
 ### Phase 2: Enhancement (🚧 In Progress)
 
+- [x] Demo publik read-only dengan mock mode otomatis
+- [x] Tabel produk berbasis TanStack dengan ekspor & resize kolom
+- [x] Alur refund/void kasir dengan konfirmasi stok
 - [ ] Laporan bulanan & tahunan
 - [ ] Export laporan ke Excel/PDF
 - [ ] Dashboard analytics dengan charts

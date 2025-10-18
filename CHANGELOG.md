@@ -10,6 +10,9 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 ### Added
 
 - Halaman demo publik read-only (`/demo/*`) beserta CTA "Coba Demo Tanpa Login" di beranda.
+- Worker MSW otomatis untuk `/demo/*` termasuk di produksi via toggle `startMockMode`.
+- Endpoint tRPC `sales.voidSale` dan `sales.refundSale` lengkap dengan dialog konfirmasi kasir dan ringkasan restock.
+- Integrasi tabel produk dengan TanStack Table (kolom dinamis, resize, ekspor CSV mengikuti visibilitas).
 - Script `seed-full.mjs` (`pnpm run seed:full`) untuk mengosongkan dan mengisi ulang seluruh tabel staging dengan dataset realistis.
 - Hook `useActiveOutlet` dan cache katalog IndexedDB untuk mempercepat lookup barcode dan menyimpan outlet aktif.
 - Dialog pembayaran kasir dengan preview struk 58/80mm, QR metadata, tombol Unduh & Cetak, serta keyboard shortcut kasir.
@@ -105,8 +108,9 @@ dan proyek ini mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 - NextAuth kini menggunakan strategi sesi JWT sehingga middleware edge dapat membaca token yang sama tanpa ketergantungan tabel `Session`.
 - Navbar kini minimal saat belum login dan menampilkan avatar + outlet aktif ketika sesi ada.
 - Tata letak modul kasir dirapikan menjadi grid dua kolom dengan ringkasan hierarkis dan validasi diskon sesuai kebijakan toko.
+- Halaman kasir kini menampilkan kartu "Transaksi Terakhir" dengan tombol refund/void yang terhubung ke dialog konfirmasi stok.
 - Halaman login dipisah menjadi tab Magic Link vs Email+Password dengan microcopy feedback.
-- Tabel manajemen produk mendapatkan sticky header, filter, ekspor CSV, dan persistensi kolom via localStorage.
+- Tabel manajemen produk mendapatkan TanStack core (sticky header, resize, toggle kolom, ekspor CSV, dan persistensi localStorage).
 - Tabel laporan harian dan empty state diperhalus agar lebih informatif.
 
 - Optimasi query database dengan Prisma

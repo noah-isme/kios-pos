@@ -16,6 +16,10 @@ import {
   recordSaleOutputSchema,
   printReceiptInputSchema,
   printReceiptOutputSchema,
+  refundSaleInputSchema,
+  refundSaleOutputSchema,
+  saleActionOutputSchema,
+  voidSaleInputSchema,
 } from "@/server/api/schemas/sales";
 import {
   SaleValidationError,
@@ -105,7 +109,11 @@ export const salesRouter = router({
           soldAt: "desc",
         },
         include: {
-          items: true,
+          items: {
+            include: {
+              product: true,
+            },
+          },
         },
       });
 
@@ -117,6 +125,11 @@ export const salesRouter = router({
           soldAt: sale.soldAt.toISOString(),
           totalNet: Number(sale.totalNet),
           totalItems: sale.items.reduce((sum, item) => sum + item.quantity, 0),
+          status: sale.status,
+          items: sale.items.map((item) => ({
+            productName: item.product?.name ?? "Produk",
+            quantity: item.quantity,
+          })),
         })),
       );
     }),
@@ -279,6 +292,176 @@ export const salesRouter = router({
       return printReceiptOutputSchema.parse({
         filename: `${sale.receiptNumber}.pdf`,
         base64: Buffer.from(pdf).toString("base64"),
+      });
+    }),
+  voidSale: protectedProcedure
+    .input(voidSaleInputSchema)
+    .output(saleActionOutputSchema)
+    .mutation(async ({ input }) => {
+      return await db.$transaction(async (tx) => {
+        const sale = await tx.sale.findUnique({
+          where: {
+            id: input.saleId,
+          },
+          include: {
+            items: true,
+          },
+        });
+
+        if (!sale) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Transaksi tidak ditemukan" });
+        }
+
+        if (sale.status !== "COMPLETED") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Transaksi sudah diproses sebelumnya" });
+        }
+
+        let restockedQuantity = 0;
+
+        for (const item of sale.items) {
+          restockedQuantity += item.quantity;
+          const inventory = await tx.inventory.upsert({
+            where: {
+              productId_outletId: {
+                productId: item.productId,
+                outletId: sale.outletId,
+              },
+            },
+            update: {
+              quantity: {
+                increment: item.quantity,
+              },
+            },
+            create: {
+              productId: item.productId,
+              outletId: sale.outletId,
+              quantity: item.quantity,
+              costPrice: toDecimal(Number(item.unitPrice)),
+            },
+          });
+
+          await tx.stockMovement.create({
+            data: {
+              inventoryId: inventory.id,
+              type: "ADJUSTMENT",
+              quantity: item.quantity,
+              reference: sale.id,
+              note: `Void struk ${sale.receiptNumber}`,
+            },
+          });
+        }
+
+        const totalItems = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+
+        await tx.sale.update({
+          where: { id: sale.id },
+          data: {
+            status: "VOIDED",
+            updatedAt: new Date(),
+          },
+        });
+
+        return saleActionOutputSchema.parse({
+          id: sale.id,
+          receiptNumber: sale.receiptNumber,
+          totalNet: Number(sale.totalNet),
+          totalItems,
+          restockedQuantity,
+          status: "VOIDED",
+        });
+      });
+    }),
+  refundSale: protectedProcedure
+    .input(refundSaleInputSchema)
+    .output(refundSaleOutputSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await db.$transaction(async (tx) => {
+        const sale = await tx.sale.findUnique({
+          where: {
+            id: input.saleId,
+          },
+          include: {
+            items: true,
+            refunds: true,
+          },
+        });
+
+        if (!sale) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Transaksi tidak ditemukan" });
+        }
+
+        if (sale.status !== "COMPLETED") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Transaksi tidak dapat direfund" });
+        }
+
+        if (sale.refunds.length > 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Refund sudah diproses" });
+        }
+
+        const refundAmount = input.amount ?? Number(sale.totalNet);
+        let restockedQuantity = 0;
+
+        for (const item of sale.items) {
+          restockedQuantity += item.quantity;
+          const inventory = await tx.inventory.upsert({
+            where: {
+              productId_outletId: {
+                productId: item.productId,
+                outletId: sale.outletId,
+              },
+            },
+            update: {
+              quantity: {
+                increment: item.quantity,
+              },
+            },
+            create: {
+              productId: item.productId,
+              outletId: sale.outletId,
+              quantity: item.quantity,
+              costPrice: toDecimal(Number(item.unitPrice)),
+            },
+          });
+
+          await tx.stockMovement.create({
+            data: {
+              inventoryId: inventory.id,
+              type: "ADJUSTMENT",
+              quantity: item.quantity,
+              reference: sale.id,
+              note: `Refund struk ${sale.receiptNumber}`,
+            },
+          });
+        }
+
+        const totalItems = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+
+        await tx.sale.update({
+          where: { id: sale.id },
+          data: {
+            status: "REFUNDED",
+            updatedAt: new Date(),
+          },
+        });
+
+        await tx.refund.create({
+          data: {
+            saleId: sale.id,
+            amount: toDecimal(refundAmount),
+            reason: input.reason,
+            approvedById: ctx.session?.user.id,
+          },
+        });
+
+        return refundSaleOutputSchema.parse({
+          id: sale.id,
+          receiptNumber: sale.receiptNumber,
+          totalNet: Number(sale.totalNet),
+          totalItems,
+          restockedQuantity,
+          status: "REFUNDED",
+          refundAmount,
+        });
       });
     }),
   forecastNextDay: protectedProcedure
