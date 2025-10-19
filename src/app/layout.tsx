@@ -27,20 +27,22 @@ export default async function RootLayout({
       <body className="antialiased font-sans">
         <Providers session={session}>
           <div className="min-h-screen bg-background text-foreground">
+            <a
+              href="#main-content"
+              className="fixed left-4 top-4 z-[100] -translate-y-24 inline-flex rounded bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow transition focus-visible:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              Lewati ke konten utama
+            </a>
             <div className="fixed inset-x-0 top-0 z-50">
               <SiteHeader />
             </div>
 
-            <div className="mx-auto mt-16 grid max-w-7xl grid-cols-12 gap-6 px-4 py-8">
-              {/* Sidebar (col-span 2) + Content (col-span 10) */}
-              <div className="col-span-12 md:col-span-2">
-                {/* Sidebar will render only on md+ */}
-                <div className="hidden md:block">
-                  <ClientSidebarLoader />
-                </div>
+            <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-12">
+              <div className="hidden lg:col-span-3 lg:block">
+                <ClientSidebarLoader />
               </div>
 
-              <main className="col-span-12 md:col-span-10">
+              <main id="main-content" className="col-span-1 lg:col-span-9">
                 <PageProgress />
                 <PageTransition keyProp={typeof children === 'object' ? undefined : undefined}>
                   {children}

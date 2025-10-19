@@ -9,7 +9,7 @@ export default function Sidebar() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <aside className="sticky top-16 col-span-2 hidden h-[calc(100vh-4rem)] overflow-auto border-r border-border bg-white p-4 md:block">
+    <aside className="sticky top-16 col-span-2 hidden h-[calc(100vh-4rem)] overflow-auto border-r border-border bg-white p-4 lg:block">
       <nav className="space-y-2">
         <Link
           href="/dashboard"

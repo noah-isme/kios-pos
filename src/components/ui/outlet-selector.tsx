@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2 } from "lucide-react";
+import { Building2, ChevronDown } from "lucide-react";
 
 import { useOutlet } from "@/lib/outlet-context";
 import { Badge } from "@/components/ui/badge";
@@ -22,33 +22,39 @@ export function OutletSelector() {
   }
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 border rounded-md">
-      <Building2 className="h-4 w-4 text-muted-foreground" />
+    <label className="flex items-center gap-3 rounded-md border bg-white/70 px-3 py-2 shadow-sm backdrop-blur">
+      <Building2 className="h-4 w-4 text-muted-foreground" aria-hidden />
       <div className="flex flex-col">
-        <span className="text-sm font-medium">{currentOutlet.name}</span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{currentOutlet.code}</span>
-          <Badge variant="secondary" className="text-xs">
+        <span className="text-sm font-medium text-foreground">
+          {currentOutlet.name}
+        </span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{currentOutlet.code}</span>
+          <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
             {userOutlets.find((uo) => uo.outletId === currentOutlet.id)?.role || "CASHIER"}
           </Badge>
         </div>
       </div>
-      <select
-        value={currentOutlet.id}
-        onChange={(e) => {
-          const selectedOutlet = userOutlets.find((uo) => uo.outletId === e.target.value)?.outlet;
-          if (selectedOutlet) {
-            setCurrentOutlet(selectedOutlet);
-          }
-        }}
-        className="ml-2 text-sm border-none bg-transparent focus:outline-none cursor-pointer"
-      >
-        {userOutlets.map((userOutlet) => (
-          <option key={userOutlet.id} value={userOutlet.outletId}>
-            {userOutlet.outlet.name} ({userOutlet.outlet.code})
-          </option>
-        ))}
-      </select>
-    </div>
+      <div className="relative ml-2 flex items-center">
+        <select
+          aria-label="Pilih outlet aktif"
+          value={currentOutlet.id}
+          onChange={(event) => {
+            const selectedOutlet = userOutlets.find((uo) => uo.outletId === event.target.value)?.outlet;
+            if (selectedOutlet) {
+              setCurrentOutlet(selectedOutlet);
+            }
+          }}
+          className="appearance-none rounded-md border border-transparent bg-transparent px-3 py-2 pr-8 text-sm font-medium text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          {userOutlets.map((userOutlet) => (
+            <option key={userOutlet.id} value={userOutlet.outletId}>
+              {userOutlet.outlet.name} ({userOutlet.outlet.code})
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2 h-4 w-4 text-muted-foreground" aria-hidden />
+      </div>
+    </label>
   );
 }
