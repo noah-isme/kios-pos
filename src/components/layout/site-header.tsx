@@ -9,13 +9,14 @@ import { useRouter } from "next/navigation";
 import { MotionButton as Button } from "@/components/ui/button";
 import MotionList, { MotionItem } from "@/components/ui/motion-list";
 import { cn } from "@/lib/utils";
-import { useActiveOutlet } from "@/hooks/use-active-outlet";
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Sidebar from "@/components/layout/sidebar";
+import { OutletSelector } from "@/components/ui/outlet-selector";
+import { useOutlet } from "@/lib/outlet-context";
 
 const navItems = [
   { href: "/cashier", label: "Kasir" },
@@ -26,7 +27,7 @@ const navItems = [
 export function SiteHeader({ className }: { className?: string }) {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { activeOutlet } = useActiveOutlet();
+  const { currentOutlet } = useOutlet();
   const [time, setTime] = React.useState(() => new Date());
   const [mounted, setMounted] = React.useState(false);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -109,8 +110,9 @@ export function SiteHeader({ className }: { className?: string }) {
               <span className="text-sm font-medium text-foreground">
                 {session?.user?.name ?? session?.user?.email ?? "Kasir"}
               </span>
-              <span>{activeOutlet?.name ?? "Outlet belum dipilih"}</span>
+              <span>{currentOutlet?.name ?? "Outlet belum dipilih"}</span>
             </div>
+            <OutletSelector />
             <div className="hidden flex-col text-right text-xs text-muted-foreground md:flex">
               <span className="text-xs uppercase tracking-wide text-muted-foreground">
                 Jam kasir

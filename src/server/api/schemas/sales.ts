@@ -140,7 +140,7 @@ export const listRecentInputSchema = z.object({
 const saleActionBaseInputSchema = z.object({
   saleId: z.string().min(1, { message: "Transaksi tidak valid" }),
   reason: z
-    .string({ invalid_type_error: "Alasan harus berupa teks" })
+    .string()
     .max(200, { message: "Alasan maksimal 200 karakter" })
     .optional(),
 });
@@ -149,7 +149,7 @@ export const voidSaleInputSchema = saleActionBaseInputSchema;
 
 export const refundSaleInputSchema = saleActionBaseInputSchema.extend({
   amount: z
-    .number({ invalid_type_error: "Nominal refund harus berupa angka" })
+    .number()
     .min(0, { message: "Nominal refund tidak boleh negatif" })
     .optional(),
 });

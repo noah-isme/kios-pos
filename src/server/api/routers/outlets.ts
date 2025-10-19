@@ -293,4 +293,35 @@ export const outletsRouter = router({
         quantity: row.quantity,
       }));
     }),
+  getUserOutlets: protectedProcedure
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
+
+      const userOutlets = await db.userOutlet.findMany({
+        where: {
+          userId,
+          isActive: true,
+        },
+        include: {
+          outlet: true,
+        },
+        orderBy: {
+          outlet: {
+            name: "asc",
+          },
+        },
+      });
+
+      return userOutlets.map((userOutlet) => ({
+        id: userOutlet.id,
+        outletId: userOutlet.outletId,
+        role: userOutlet.role,
+        outlet: {
+          id: userOutlet.outlet.id,
+          name: userOutlet.outlet.name,
+          code: userOutlet.outlet.code,
+          address: userOutlet.outlet.address ?? undefined,
+        },
+      }));
+    }),
 });

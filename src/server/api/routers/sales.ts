@@ -102,8 +102,34 @@ export const salesRouter = router({
   listRecent: protectedProcedure
     .input(listRecentInputSchema)
     .output(recentSalesOutputSchema)
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // Get user's current outlet from database (first active outlet)
+      const userOutlet = await db.userOutlet.findFirst({
+        where: {
+          userId: ctx.session.user.id,
+          isActive: true,
+        },
+        include: {
+          outlet: true,
+        },
+        orderBy: {
+          outlet: {
+            name: "asc",
+          },
+        },
+      });
+
+      if (!userOutlet) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "User tidak memiliki akses ke outlet manapun",
+        });
+      }
+
       const sales = await db.sale.findMany({
+        where: {
+          outletId: userOutlet.outletId,
+        },
         take: input.limit,
         orderBy: {
           soldAt: "desc",

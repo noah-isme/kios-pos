@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
 import { TRPCReactProvider } from "@/trpc/provider";
+import { OutletProvider } from "@/lib/outlet-context";
 
 export const Providers = ({
   children,
@@ -16,8 +17,10 @@ export const Providers = ({
   return (
     <SessionProvider session={session}>
       <TRPCReactProvider>
-        {children}
-        <Toaster richColors position="top-center" />
+        <OutletProvider>
+          {children}
+          <Toaster richColors position="top-center" />
+        </OutletProvider>
       </TRPCReactProvider>
     </SessionProvider>
   );

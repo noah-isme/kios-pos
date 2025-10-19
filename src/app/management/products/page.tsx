@@ -335,8 +335,8 @@ export default function ProductManagementPage() {
           } satisfies ColumnDef<ProductRow>;
         default:
           return {
-            id: column.key,
-            accessorKey: column.key,
+            id: column.key as string,
+            accessorKey: column.key as string,
             header: column.label,
             meta: { align: column.align, label: column.label, key: column.key },
           } satisfies ColumnDef<ProductRow>;

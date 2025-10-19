@@ -1,6 +1,7 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, BarChart3, Layers, ReceiptText, Settings2 } from "lucide-react";
-import { redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { MotionButton as Button } from "@/components/ui/button";
@@ -13,11 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ensureAuthenticatedOrRedirect } from "@/server/auth";
-import { db } from "@/server/db";
-import { getDailySalesSummary } from '@/server/api/server-helpers';
 import DashboardWidgets from '@/components/dashboard/widgets';
 import OnboardingTooltip from '@/components/dashboard/onboarding-tooltip';
+import { useOutlet } from "@/lib/outlet-context";
+import { api } from "@/trpc/client";
+import { useSession } from "next-auth/react";
 
 function Breadcrumbs() {
   return (
@@ -48,30 +49,29 @@ function SummaryCard({ title, value, icon }: { title: string; value: string; ico
     <Card className="p-4 sm:p-5 w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-md p-2 bg-off-white text-primary">{icon}</div>
-            <div>
-              <CardTitle className="text-sm">{title}</CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">{value}</CardDescription>
-            </div>
-          </div>
+          <span className="text-sm font-medium text-muted-foreground">{title}</span>
+          {icon}
         </div>
+        <CardTitle className="text-2xl">{value}</CardTitle>
       </CardHeader>
     </Card>
   );
 }
 
-async function getTodaySalesCount() {
-  const summary = await getDailySalesSummary();
-  return summary.sales.length ?? 0;
-}
-
-export default async function DashboardPage() {
-  const session = await ensureAuthenticatedOrRedirect();
+export default function DashboardPage() {
+  const { data: session } = useSession();
+  const { currentOutlet } = useOutlet();
 
   const userName = session?.user?.name ?? session?.user?.email ?? 'Pengguna';
-  const todayCount = await getTodaySalesCount();
   const role = session?.user?.role ?? 'CASHIER';
+
+  // Get today's sales count for current outlet
+  const { data: todaySummary } = api.sales.getDailySummary.useQuery({
+    date: new Date().toISOString(),
+    outletId: currentOutlet?.id,
+  });
+
+  const todayCount = todaySummary?.sales?.length ?? 0;
 
   return (
     <div className="flex flex-col gap-8">
@@ -79,8 +79,13 @@ export default async function DashboardPage() {
       <Breadcrumbs />
       <header className="rounded-2xl border border-border bg-card p-8 shadow-sm">
         <Badge variant="secondary" className="w-fit uppercase tracking-wide">Dashboard</Badge>
-        <h1 className="mt-3 text-2xl font-semibold">Selamat datang, {userName}</h1>
-        <p className="text-muted-foreground">Pusat navigasi untuk semua menu utama aplikasi.</p>
+        <h1 className="mt-3 text-2xl font-semibold">
+          Selamat datang, {userName}
+          {currentOutlet && <span className="text-muted-foreground"> - {currentOutlet.name}</span>}
+        </h1>
+        <p className="text-muted-foreground">
+          Pusat navigasi untuk semua menu utama aplikasi{currentOutlet ? ` di ${currentOutlet.name}` : ''}.
+        </p>
         <div className="mt-4 flex gap-3">
           <Button asChild>
             <Link href="/cashier" className="gap-2">
@@ -123,9 +128,7 @@ export default async function DashboardPage() {
             ))}
         </MotionList>
 
-        <section className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <DashboardWidgets days={7} />
-        </section>
+        <DashboardWidgets />
       </section>
     </div>
   );

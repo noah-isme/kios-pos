@@ -3,17 +3,18 @@
 import React from "react";
 import Link from "next/link";
 import { api } from "@/trpc/client";
+import { useOutlet } from "@/lib/outlet-context";
 
 function fmt(n: number) {
   return new Intl.NumberFormat("id-ID").format(n);
 }
 
 export default function LowStockWidget() {
-  const outletsQ = api.outlets.list.useQuery();
-  const firstOutlet = outletsQ.data?.[0];
+  const { currentOutlet } = useOutlet();
+
   const stockQ = api.outlets.getStockSnapshot.useQuery(
-    { outletId: firstOutlet?.id ?? "" },
-    { enabled: Boolean(firstOutlet?.id) }
+    { outletId: currentOutlet?.id ?? "" },
+    { enabled: Boolean(currentOutlet?.id) }
   );
 
   const items = (stockQ.data ?? []).filter((r) => r.quantity <= 5).slice(0, 10);
@@ -21,7 +22,9 @@ export default function LowStockWidget() {
   return (
     <div className="p-4 bg-card border border-border rounded-md">
       <h3 className="text-sm font-medium mb-2">Produk Hampir Habis</h3>
-      <div className="text-sm text-muted-foreground mb-3">Periksa produk dengan stok rendah pada outlet pertama.</div>
+      <div className="text-sm text-muted-foreground mb-3">
+        Periksa produk dengan stok rendah{currentOutlet ? ` di ${currentOutlet.name}` : ''}.
+      </div>
       {stockQ.isLoading && <div className="text-sm">Memuat …</div>}
       {items.length === 0 && !stockQ.isLoading && <div className="text-sm text-muted-foreground">Semua stok aman.</div>}
       <div className="space-y-2">

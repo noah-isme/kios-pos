@@ -421,6 +421,17 @@ const usersData = [
   },
 ];
 
+const userOutletsData = [
+  // Owner has access to all outlets
+  { userEmail: "owner@example.com", outletCode: "MAIN", role: "OWNER" },
+  { userEmail: "owner@example.com", outletCode: "BR2", role: "OWNER" },
+  // Admin has access to all outlets as manager
+  { userEmail: "admin@example.com", outletCode: "MAIN", role: "MANAGER" },
+  { userEmail: "admin@example.com", outletCode: "BR2", role: "MANAGER" },
+  // Cashier only has access to main outlet
+  { userEmail: "cashier@example.com", outletCode: "MAIN", role: "CASHIER" },
+];
+
 const accountSeeds = [
   {
     email: "owner@example.com",
@@ -701,6 +712,24 @@ async function seedUsers() {
   }
   console.log(`👤 Seeded ${map.size} users`);
   return map;
+}
+
+async function seedUserOutlets(userMap, outletMap) {
+  for (const userOutlet of userOutletsData) {
+    const user = userMap.get(userOutlet.userEmail);
+    const outlet = outletMap.get(userOutlet.outletCode);
+    if (!user || !outlet) continue;
+
+    await prisma.userOutlet.create({
+      data: {
+        userId: user.id,
+        outletId: outlet.id,
+        role: userOutlet.role,
+        isActive: true,
+      },
+    });
+  }
+  console.log(`🏪 Seeded ${userOutletsData.length} user-outlet relationships`);
 }
 
 async function seedAccounts(userMap) {
@@ -989,6 +1018,7 @@ async function main() {
   const productsMap = await seedProducts(categoriesMap, suppliersMap);
   await seedInventory(productsMap, outletsMap);
   const userMap = await seedUsers();
+  await seedUserOutlets(userMap, outletsMap);
   await seedAccounts(userMap);
   await seedSessions(userMap);
   await seedVerificationTokens();
