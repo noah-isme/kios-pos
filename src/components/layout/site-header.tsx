@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { MotionButton as Button } from "@/components/ui/button";
 import MotionList, { MotionItem } from "@/components/ui/motion-list";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -71,13 +72,23 @@ export function SiteHeader({ className }: { className?: string }) {
   }, [session?.user?.name, session?.user?.email]);
 
   return (
-    <header className={cn("fixed inset-x-0 top-0 z-50 border-b border-border bg-white/95 backdrop-blur", className)}>
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 border-b border-border bg-white/95 backdrop-blur",
+        className,
+      )}
+    >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
           {isAuthenticated && (
             <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden min-h-[44px] min-w-[44px]" aria-label="Buka menu navigasi">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-[44px] min-w-[44px] lg:hidden"
+                  aria-label="Buka menu navigasi"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </DialogTrigger>
@@ -90,7 +101,7 @@ export function SiteHeader({ className }: { className?: string }) {
             Kios POS
           </Link>
           {isAuthenticated ? (
-            <nav className="hidden gap-1 md:flex">
+            <nav className="hidden gap-1 lg:flex" aria-label="Navigasi utama">
               <MotionList as="div" className="flex gap-1">
                 {navItems.map((item) => (
                   <MotionItem key={item.href} as="div" className="inline-block">
@@ -105,36 +116,48 @@ export function SiteHeader({ className }: { className?: string }) {
         </div>
 
         {isAuthenticated ? (
-          <div className="flex items-center gap-3">
-            <div className="hidden flex-col items-end text-xs text-muted-foreground sm:flex">
-              <span className="text-sm font-medium text-foreground">
+          <div className="flex items-center gap-3 text-sm">
+            <div className="hidden text-right lg:flex lg:flex-col">
+              <span className="font-medium text-foreground">
                 {session?.user?.name ?? session?.user?.email ?? "Kasir"}
               </span>
-              <span>{currentOutlet?.name ?? "Outlet belum dipilih"}</span>
-            </div>
-            <OutletSelector />
-            <div className="hidden flex-col text-right text-xs text-muted-foreground md:flex">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">
-                Jam kasir
-              </span>
-              <span className="text-sm text-foreground">
-                {mounted ? time.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "--:--"}
+              <span className="text-xs text-muted-foreground">
+                {currentOutlet?.name ?? "Outlet belum dipilih"}
               </span>
             </div>
+            <div className="flex items-center gap-3">
+              <OutletSelector />
+              <Separator orientation="vertical" className="hidden lg:block" />
+              <div className="hidden flex-col text-right lg:flex">
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Jam kasir
+                </span>
+                <span className="font-semibold text-foreground">
+                  {mounted
+                    ? time.toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "--:--"}
+                </span>
+              </div>
+            </div>
+            <Separator orientation="vertical" className="hidden lg:block" />
             <div className="hidden h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-semibold uppercase text-foreground sm:flex">
               {initials}
             </div>
+            <Separator orientation="vertical" className="hidden sm:block" />
             <Button
               variant="pill"
               size="sm"
               onClick={() => {
                 void signOut({ callbackUrl: "/auth/login" });
               }}
-              className="min-h-[44px]"
+              className="min-h-[40px]"
               aria-label="Keluar dari aplikasi"
             >
               <LogOut className="h-4 w-4" />
-              Keluar
+              <span className="hidden sm:inline">Keluar</span>
             </Button>
           </div>
         ) : (
@@ -142,7 +165,7 @@ export function SiteHeader({ className }: { className?: string }) {
             <Button
               variant="ghost"
               size="sm"
-              className="hidden md:flex"
+              className="hidden lg:flex"
               asChild
             >
               <Link href="/demo/cashier">Coba Demo</Link>
@@ -151,7 +174,7 @@ export function SiteHeader({ className }: { className?: string }) {
               variant="pill"
               size="sm"
               onClick={() => router.push("/auth/login")}
-              className="min-h-[44px]"
+              className="min-h-[40px]"
               aria-label="Masuk ke aplikasi"
             >
               <LogIn className="h-4 w-4" />
