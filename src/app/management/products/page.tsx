@@ -229,118 +229,135 @@ export default function ProductManagementPage() {
 
   const columns = useMemo<ColumnDef<ProductRow>[]>(() => {
     const baseColumns: ColumnDef<ProductRow>[] = PRODUCT_COLUMNS.map((column) => {
-      switch (column.key) {
-        case "name":
-          return {
-            id: column.key,
-            accessorKey: "name",
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 260,
-            cell: ({ row }) => (
-              <div className="flex flex-col">
-                <span className="font-medium text-foreground">{row.original.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {row.original.category ?? "Tanpa kategori"}
-                </span>
-              </div>
-            ),
-          } satisfies ColumnDef<ProductRow>;
-        case "sku":
-          return {
-            id: column.key,
-            accessorKey: "sku",
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 160,
-            cell: ({ row }) => row.original.sku ?? "-",
-          } satisfies ColumnDef<ProductRow>;
-        case "barcode":
-          return {
-            id: column.key,
-            accessorKey: "barcode",
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 160,
-            cell: ({ row }) => row.original.barcode ?? "-",
-          } satisfies ColumnDef<ProductRow>;
-        case "supplier":
-          return {
-            id: column.key,
-            accessorKey: "supplier",
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 180,
-            cell: ({ row }) => row.original.supplier ?? "-",
-          } satisfies ColumnDef<ProductRow>;
-        case "price":
-          return {
-            id: column.key,
-            accessorKey: "price",
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 140,
-            cell: ({ row }) => (
-              <span className="whitespace-nowrap">
-                {formatCurrency(row.original.price ?? 0)}
+      const key = column.key as string;
+      const label = column.label;
+      const align = column.align;
+
+      if (column.key === "name") {
+        return {
+          id: key,
+          accessorKey: "name",
+          header: label,
+          meta: { align, label, key },
+          size: 260,
+          cell: ({ row }) => (
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">{row.original.name}</span>
+              <span className="text-xs text-muted-foreground">
+                {row.original.category ?? "Tanpa kategori"}
               </span>
-            ),
-          } satisfies ColumnDef<ProductRow>;
-        case "discount":
-          return {
-            id: column.key,
-            accessorFn: (row) => row.defaultDiscountPercent,
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 120,
-            cell: ({ row }) => formatPercent(row.original.defaultDiscountPercent),
-          } satisfies ColumnDef<ProductRow>;
-        case "promo":
-          return {
-            id: column.key,
-            accessorFn: (row) => row.promoPrice,
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 200,
-            cell: ({ row }) => {
-              if (!row.original.promoPrice) {
-                return "-";
-              }
-              return (
-                <div className="flex flex-col items-end text-right">
-                  <span>
-                    {row.original.promoName ?? "Promo"} ·{" "}
-                    {formatCurrency(row.original.promoPrice)}
-                  </span>
-                  {row.original.promoStart ? (
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(row.original.promoStart)} - {formatDate(row.original.promoEnd)}
-                    </span>
-                  ) : null}
-                </div>
-              );
-            },
-          } satisfies ColumnDef<ProductRow>;
-        case "tax":
-          return {
-            id: column.key,
-            accessorFn: (row) => row.taxRate,
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-            size: 120,
-            cell: ({ row }) =>
-              row.original.isTaxable
-                ? formatPercent(row.original.taxRate ?? activeTaxRate)
-                : "-",
-          } satisfies ColumnDef<ProductRow>;
-        default:
-          return {
-            id: column.key as string,
-            accessorKey: column.key as string,
-            header: column.label,
-            meta: { align: column.align, label: column.label, key: column.key },
-          } satisfies ColumnDef<ProductRow>;
+            </div>
+          ),
+        } satisfies ColumnDef<ProductRow>;
       }
+
+      if (column.key === "sku") {
+        return {
+          id: key,
+          accessorKey: "sku",
+          header: label,
+          meta: { align, label, key },
+          size: 160,
+          cell: ({ row }) => row.original.sku ?? "-",
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      if (column.key === "barcode") {
+        return {
+          id: key,
+          accessorKey: "barcode",
+          header: label,
+          meta: { align, label, key },
+          size: 160,
+          cell: ({ row }) => row.original.barcode ?? "-",
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      if (column.key === "supplier") {
+        return {
+          id: key,
+          accessorKey: "supplier",
+          header: label,
+          meta: { align, label, key },
+          size: 180,
+          cell: ({ row }) => row.original.supplier ?? "-",
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      if (column.key === "price") {
+        return {
+          id: key,
+          accessorKey: "price",
+          header: label,
+          meta: { align, label, key },
+          size: 140,
+          cell: ({ row }) => (
+            <span className="whitespace-nowrap">
+              {formatCurrency(row.original.price ?? 0)}
+            </span>
+          ),
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      if (column.key === "discount") {
+        return {
+          id: key,
+          accessorFn: (row) => row.defaultDiscountPercent,
+          header: label,
+          meta: { align, label, key },
+          size: 120,
+          cell: ({ row }) => formatPercent(row.original.defaultDiscountPercent),
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      if (column.key === "promo") {
+        return {
+          id: key,
+          accessorFn: (row) => row.promoPrice,
+          header: label,
+          meta: { align, label, key },
+          size: 200,
+          cell: ({ row }) => {
+            if (!row.original.promoPrice) {
+              return "-";
+            }
+            return (
+              <div className="flex flex-col items-end text-right">
+                <span>
+                  {row.original.promoName ?? "Promo"} ·{" "}
+                  {formatCurrency(row.original.promoPrice)}
+                </span>
+                {row.original.promoStart ? (
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(row.original.promoStart)} - {formatDate(row.original.promoEnd)}
+                  </span>
+                ) : null}
+              </div>
+            );
+          },
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      if (column.key === "tax") {
+        return {
+          id: key,
+          accessorFn: (row) => row.taxRate,
+          header: label,
+          meta: { align, label, key },
+          size: 120,
+          cell: ({ row }) =>
+            row.original.isTaxable
+              ? formatPercent(row.original.taxRate ?? activeTaxRate)
+              : "-",
+        } satisfies ColumnDef<ProductRow>;
+      }
+
+      return {
+        id: key,
+        accessorKey: key,
+        header: label,
+        meta: { align, label, key },
+      } satisfies ColumnDef<ProductRow>;
     });
 
     baseColumns.push({
