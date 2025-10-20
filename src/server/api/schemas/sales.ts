@@ -145,7 +145,12 @@ const saleActionBaseInputSchema = z.object({
     .optional(),
 });
 
-export const voidSaleInputSchema = saleActionBaseInputSchema;
+export const voidSaleInputSchema = saleActionBaseInputSchema.extend({
+  reason: z
+    .string()
+    .min(3, { message: "Alasan minimal 3 karakter" })
+    .max(200, { message: "Alasan maksimal 200 karakter" }),
+});
 
 export const refundSaleInputSchema = saleActionBaseInputSchema.extend({
   amount: z
@@ -177,3 +182,49 @@ export const forecastInputSchema = z.object({
 });
 
 export type SalePaperSize = z.infer<typeof recordSaleInputSchema>["paperSize"];
+
+export const receiptListInputSchema = z.object({
+  outletId: z.string().min(1, { message: "Outlet wajib dipilih" }),
+  limit: z
+    .number()
+    .int({ message: "Batas harus bilangan bulat" })
+    .min(1, { message: "Minimal 1 transaksi" })
+    .max(50, { message: "Maksimal 50 transaksi" })
+    .default(10),
+});
+
+export const receiptSummarySchema = z.object({
+  id: z.string(),
+  receiptNumber: z.string(),
+  soldAt: z.string(),
+  cashierName: z.string().nullable(),
+  totalNet: z.number(),
+  paymentMethods: z.array(z.nativeEnum(PaymentMethod)),
+  status: z.string(),
+});
+
+export const receiptListOutputSchema = z.array(receiptSummarySchema);
+
+export const weeklyTrendInputSchema = z.object({
+  outletId: z.string().optional(),
+  paymentMethod: z.nativeEnum(PaymentMethod).optional(),
+});
+
+export const weeklyTrendPointSchema = z.object({
+  date: z.string(),
+  totalNet: z.number(),
+  transactionCount: z.number(),
+});
+
+export const weeklyTrendSummarySchema = z.object({
+  currentTotalNet: z.number(),
+  previousTotalNet: z.number(),
+  changePercent: z.number(),
+  currentTransactionCount: z.number(),
+  previousTransactionCount: z.number(),
+});
+
+export const weeklyTrendOutputSchema = z.object({
+  series: z.array(weeklyTrendPointSchema),
+  summary: weeklyTrendSummarySchema,
+});

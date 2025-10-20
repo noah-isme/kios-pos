@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, StockMovementType } from "@prisma/client";
 import { slugify } from "@/lib/utils";
 import {
   categoryListOutputSchema,
@@ -18,12 +18,38 @@ import {
   upsertCategoryInputSchema,
   upsertSupplierInputSchema,
   simpleSuccessSchema,
+  productInventoryInputSchema,
+  productInventoryListSchema,
+  stockMovementListInputSchema,
+  stockMovementListOutputSchema,
+  stockAdjustmentInputSchema,
+  stockAdjustmentOutputSchema,
 } from "@/server/api/schemas/products";
 import { db } from "@/server/db";
 import { protectedProcedure, publicProcedure, router } from "@/server/api/trpc";
 
 const toDecimal = (value?: number | null) =>
   typeof value === "number" ? new Prisma.Decimal(value.toFixed(2)) : undefined;
+
+const mapMovement = (movement: {
+  id: string;
+  type: StockMovementType;
+  quantity: number;
+  note: string | null;
+  reference: string | null;
+  occurredAt: Date;
+  inventory: { outlet: { name: string } };
+  createdBy: { name: string | null } | null;
+}) => ({
+  id: movement.id,
+  type: movement.type,
+  quantity: movement.quantity,
+  note: movement.note,
+  reference: movement.reference,
+  occurredAt: movement.occurredAt.toISOString(),
+  outletName: movement.inventory.outlet.name,
+  createdBy: movement.createdBy?.name ?? null,
+});
 
 export const productsRouter = router({
   list: protectedProcedure
@@ -75,6 +101,142 @@ export const productsRouter = router({
           taxRate: product.taxRate ? Number(product.taxRate) : null,
         })),
       );
+    }),
+  getInventoryByProduct: protectedProcedure
+    .input(productInventoryInputSchema)
+    .output(productInventoryListSchema)
+    .query(async ({ input }) => {
+      const inventories = await db.inventory.findMany({
+        where: {
+          productId: input.productId,
+        },
+        include: {
+          outlet: true,
+        },
+        orderBy: {
+          outlet: {
+            name: "asc",
+          },
+        },
+      });
+
+      return productInventoryListSchema.parse(
+        inventories.map((inventory) => ({
+          outletId: inventory.outletId,
+          outletName: inventory.outlet.name,
+          quantity: inventory.quantity,
+          updatedAt: inventory.updatedAt.toISOString(),
+        })),
+      );
+    }),
+  getStockMovements: protectedProcedure
+    .input(stockMovementListInputSchema)
+    .output(stockMovementListOutputSchema)
+    .query(async ({ input }) => {
+      const movements = await db.stockMovement.findMany({
+        where: {
+          inventory: {
+            productId: input.productId,
+          },
+        },
+        include: {
+          inventory: {
+            include: {
+              outlet: true,
+            },
+          },
+          createdBy: {
+            select: { name: true },
+          },
+        },
+        orderBy: {
+          occurredAt: "desc",
+        },
+        take: input.limit,
+      });
+
+      return stockMovementListOutputSchema.parse(movements.map(mapMovement));
+    }),
+  createStockAdjustment: protectedProcedure
+    .input(stockAdjustmentInputSchema)
+    .output(stockAdjustmentOutputSchema)
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+      const delta = input.type === "OUT" ? -input.quantity : input.quantity;
+      const movementType =
+        input.type === "IN"
+          ? StockMovementType.IN
+          : input.type === "OUT"
+            ? StockMovementType.OUT
+            : StockMovementType.ADJUSTMENT;
+
+      return await db.$transaction(async (tx) => {
+        const existing = await tx.inventory.findUnique({
+          where: {
+            productId_outletId: {
+              productId: input.productId,
+              outletId: input.outletId,
+            },
+          },
+        });
+
+        if (!existing && delta < 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Stok belum tersedia untuk dikurangi",
+          });
+        }
+
+        const inventory = existing
+          ? await tx.inventory.update({
+              where: { id: existing.id },
+              data: {
+                quantity: (() => {
+                  const nextQuantity = existing.quantity + delta;
+                  if (nextQuantity < 0) {
+                    throw new TRPCError({
+                      code: "BAD_REQUEST",
+                      message: "Stok tidak mencukupi untuk pengurangan",
+                    });
+                  }
+                  return nextQuantity;
+                })(),
+              },
+            })
+          : await tx.inventory.create({
+              data: {
+                productId: input.productId,
+                outletId: input.outletId,
+                quantity: delta,
+              },
+            });
+
+        const movement = await tx.stockMovement.create({
+          data: {
+            inventoryId: inventory.id,
+            type: movementType,
+            quantity: delta,
+            note: input.note,
+            createdById: userId,
+          },
+          include: {
+            inventory: {
+              include: {
+                outlet: true,
+              },
+            },
+            createdBy: {
+              select: { name: true },
+            },
+          },
+        });
+
+        return stockAdjustmentOutputSchema.parse({
+          inventoryId: inventory.id,
+          quantity: inventory.quantity,
+          movement: mapMovement(movement),
+        });
+      });
     }),
   getByBarcode: publicProcedure
     .input(productByBarcodeInputSchema)

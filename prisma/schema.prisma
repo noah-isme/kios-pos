@@ -36,6 +36,27 @@ enum StockMovementType {
   SALE
   TRANSFER_IN
   TRANSFER_OUT
+  IN
+  OUT
+  RETURN
+}
+
+model CashSession {
+  id           String   @id @default(cuid())
+  outletId     String
+  userId       String
+  openingCash  Decimal  @db.Decimal(12, 2)
+  closingCash  Decimal? @db.Decimal(12, 2)
+  expectedCash Decimal? @db.Decimal(12, 2)
+  difference   Decimal? @db.Decimal(12, 2)
+  openTime     DateTime @default(now())
+  closeTime    DateTime?
+
+  outlet Outlet @relation(fields: [outletId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([outletId, closeTime])
+  @@index([userId, closeTime])
 }
 
 model User {
@@ -55,6 +76,8 @@ model User {
   userOutlets     UserOutlet[]
   requestedTransfers StockTransfer[] @relation("TransferRequestedBy")
   approvedTransfers StockTransfer[] @relation("TransferApprovedBy")
+  cashSessions   CashSession[]
+  stockMovements StockMovement[]
 }
 
 model Account {
@@ -125,6 +148,7 @@ model Outlet {
   userOutlets UserOutlet[]
   transfersFrom StockTransfer[] @relation("TransferFrom")
   transfersTo StockTransfer[] @relation("TransferTo")
+  cashSessions CashSession[]
 }
 
 model Product {
@@ -176,7 +200,9 @@ model StockMovement {
   reference      String?
   note           String?
   occurredAt     DateTime          @default(now())
+  createdById    String?
   inventory      Inventory         @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  createdBy      User?             @relation(fields: [createdById], references: [id])
 }
 
 model StockTransfer {

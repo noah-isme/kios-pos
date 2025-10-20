@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import { addDays, endOfDay, startOfDay } from "date-fns";
 
 import { PaymentMethod, Prisma } from "@/server/db/enums";
@@ -19,6 +18,10 @@ import {
   refundSaleInputSchema,
   refundSaleOutputSchema,
   saleActionOutputSchema,
+  receiptListInputSchema,
+  receiptListOutputSchema,
+  weeklyTrendInputSchema,
+  weeklyTrendOutputSchema,
   voidSaleInputSchema,
 } from "@/server/api/schemas/sales";
 import {
@@ -159,6 +162,53 @@ export const salesRouter = router({
         })),
       );
     }),
+  getReceiptsByOutlet: protectedProcedure
+    .input(receiptListInputSchema)
+    .output(receiptListOutputSchema)
+    .query(async ({ input, ctx }) => {
+      const membership = await db.userOutlet.findFirst({
+        where: {
+          userId: ctx.session.user.id,
+          outletId: input.outletId,
+          isActive: true,
+        },
+      });
+
+      if (!membership) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Anda tidak memiliki akses ke outlet ini",
+        });
+      }
+
+      const sales = await db.sale.findMany({
+        where: {
+          outletId: input.outletId,
+        },
+        orderBy: {
+          soldAt: "desc",
+        },
+        include: {
+          cashier: {
+            select: { name: true },
+          },
+          payments: true,
+        },
+        take: input.limit,
+      });
+
+      return receiptListOutputSchema.parse(
+        sales.map((sale) => ({
+          id: sale.id,
+          receiptNumber: sale.receiptNumber,
+          soldAt: sale.soldAt.toISOString(),
+          cashierName: sale.cashier?.name ?? null,
+          totalNet: Number(sale.totalNet),
+          paymentMethods: sale.payments.map((payment) => payment.method),
+          status: sale.status,
+        })),
+      );
+    }),
   recordSale: protectedProcedure
     .input(recordSaleInputSchema)
     .output(recordSaleOutputSchema)
@@ -257,6 +307,7 @@ export const salesRouter = router({
                 quantity: -item.quantity,
                 reference: createdSale.id,
                 note: `Penjualan ${createdSale.receiptNumber}`,
+                createdById: ctx.session?.user.id,
               },
             });
           }),
@@ -323,7 +374,7 @@ export const salesRouter = router({
   voidSale: protectedProcedure
     .input(voidSaleInputSchema)
     .output(saleActionOutputSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return await db.$transaction(async (tx) => {
         const sale = await tx.sale.findUnique({
           where: {
@@ -373,6 +424,7 @@ export const salesRouter = router({
               quantity: item.quantity,
               reference: sale.id,
               note: `Void struk ${sale.receiptNumber}`,
+              createdById: ctx.session?.user.id,
             },
           });
         }
@@ -456,6 +508,7 @@ export const salesRouter = router({
               quantity: item.quantity,
               reference: sale.id,
               note: `Refund struk ${sale.receiptNumber}`,
+              createdById: ctx.session?.user.id,
             },
           });
         }
@@ -528,36 +581,98 @@ export const salesRouter = router({
         suggestedFloat: Number(averageDailySales.toFixed(2)),
       });
     }),
-  getLastNDays: protectedProcedure
-    .input(
-      z.object({
-        days: z.number().int().min(1).max(30).default(7),
-      }),
-    )
+  getWeeklyTrend: protectedProcedure
+    .input(weeklyTrendInputSchema)
+    .output(weeklyTrendOutputSchema)
     .query(async ({ input }) => {
-      const days = input.days;
-      const results: Array<{ date: string; totalNet: number; count: number }> = [];
+      const now = endOfDay(new Date());
+      const currentPeriodStart = startOfDay(addDays(now, -6));
+      const previousPeriodStart = startOfDay(addDays(currentPeriodStart, -7));
 
-      for (let i = days - 1; i >= 0; i--) {
-        const date = addDays(startOfDay(new Date()), -i);
-        const rangeStart = startOfDay(date);
-        const rangeEnd = endOfDay(date);
-
-        const sales = await db.sale.findMany({
-          where: {
-            soldAt: {
-              gte: rangeStart,
-              lte: rangeEnd,
-            },
+      const sales = await db.sale.findMany({
+        where: {
+          soldAt: {
+            gte: previousPeriodStart,
+            lte: now,
           },
-          include: { items: true },
-        });
+          outletId: input.outletId ?? undefined,
+          status: "COMPLETED",
+          payments: input.paymentMethod
+            ? {
+                some: {
+                  method: input.paymentMethod,
+                },
+              }
+            : undefined,
+        },
+        include: {
+          payments: true,
+        },
+      });
 
-        const totalNet = sales.reduce((acc, s) => acc + Number(s.totalNet), 0);
+      const currentBuckets = new Map<string, { totalNet: number; count: number }>();
+      const previousBuckets = new Map<string, { totalNet: number; count: number }>();
 
-        results.push({ date: rangeStart.toISOString(), totalNet, count: sales.length });
+      for (const sale of sales) {
+        const soldAt = sale.soldAt instanceof Date ? sale.soldAt : new Date(sale.soldAt);
+        const bucketDate = startOfDay(soldAt);
+        const bucketKey = bucketDate.toISOString();
+        const target = bucketDate >= currentPeriodStart ? currentBuckets : previousBuckets;
+        const existing = target.get(bucketKey) ?? { totalNet: 0, count: 0 };
+        existing.totalNet += Number(sale.totalNet);
+        existing.count += 1;
+        target.set(bucketKey, existing);
       }
 
-      return results;
+      const series = Array.from({ length: 7 }, (_, index) => {
+        const day = startOfDay(addDays(currentPeriodStart, index));
+        const key = day.toISOString();
+        const stats = currentBuckets.get(key) ?? { totalNet: 0, count: 0 };
+        return {
+          date: key,
+          totalNet: Number(stats.totalNet.toFixed(2)),
+          transactionCount: stats.count,
+        };
+      });
+
+      const summary = series.reduce(
+        (acc, point) => {
+          acc.currentTotalNet += point.totalNet;
+          acc.currentTransactionCount += point.transactionCount;
+          return acc;
+        },
+        {
+          currentTotalNet: 0,
+          currentTransactionCount: 0,
+          previousTotalNet: 0,
+          previousTransactionCount: 0,
+        },
+      );
+
+      for (let i = 0; i < 7; i++) {
+        const day = startOfDay(addDays(previousPeriodStart, i));
+        const key = day.toISOString();
+        const stats = previousBuckets.get(key) ?? { totalNet: 0, count: 0 };
+        summary.previousTotalNet += stats.totalNet;
+        summary.previousTransactionCount += stats.count;
+      }
+
+      const changePercent =
+        summary.previousTotalNet === 0
+          ? summary.currentTotalNet > 0
+            ? 100
+            : 0
+          : ((summary.currentTotalNet - summary.previousTotalNet) / summary.previousTotalNet) * 100;
+
+      return weeklyTrendOutputSchema.parse({
+        series,
+        summary: {
+          currentTotalNet: Number(summary.currentTotalNet.toFixed(2)),
+          previousTotalNet: Number(summary.previousTotalNet.toFixed(2)),
+          changePercent: Number(changePercent.toFixed(2)),
+          currentTransactionCount: summary.currentTransactionCount,
+          previousTransactionCount: summary.previousTransactionCount,
+        },
+      });
     }),
 });
