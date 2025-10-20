@@ -69,6 +69,7 @@ jobs:
       - name: Run database migrations
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/testdb
+          DIRECT_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/testdb
         run: pnpm run db:push
 
       - name: Run lint
