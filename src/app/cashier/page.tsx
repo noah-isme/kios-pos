@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import QRCode from "qrcode";
+import { format } from "date-fns";
 import type { PaymentMethod } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -108,6 +110,19 @@ export default function CashierPage() {
   const recentSales = api.sales.listRecent.useQuery({ limit: 5 });
   const voidSaleMutation = api.sales.voidSale.useMutation();
   const refundSaleMutation = api.sales.refundSale.useMutation();
+  const {
+    data: activeSessionData,
+    refetch: refetchCashSession,
+    isLoading: isCashSessionLoading,
+    isFetching: isCashSessionFetching,
+  } = api.cashSessions.getActive.useQuery(
+    { outletId: activeOutletId ?? "" },
+    { enabled: Boolean(activeOutletId), refetchInterval: 60_000 },
+  );
+  const openCashSession = api.cashSessions.open.useMutation();
+  const closeCashSession = api.cashSessions.close.useMutation();
+
+  type CloseSessionResult = Awaited<ReturnType<typeof closeCashSession.mutateAsync>>;
 
   type RecentSale = NonNullable<typeof recentSales.data>[number];
 
@@ -118,6 +133,13 @@ export default function CashierPage() {
   };
 
   const [afterSalesAction, setAfterSalesAction] = useState<AfterSalesActionState | null>(null);
+  const [isOpenShiftModalOpen, setOpenShiftModalOpen] = useState(false);
+  const [isCloseShiftModalOpen, setCloseShiftModalOpen] = useState(false);
+  const [openingCashInput, setOpeningCashInput] = useState("");
+  const [closingCashInput, setClosingCashInput] = useState("");
+  const [closeSummary, setCloseSummary] = useState<CloseSessionResult | null>(null);
+  const activeSession = activeSessionData ?? null;
+  const isShiftLoading = isCashSessionLoading || isCashSessionFetching;
 
   useEffect(() => {
     if (!catalogQuery.data?.length) return;
@@ -137,6 +159,24 @@ export default function CashierPage() {
   useEffect(() => {
     barcodeInputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!activeOutletId) return;
+    void refetchCashSession();
+  }, [activeOutletId, refetchCashSession]);
+
+  useEffect(() => {
+    if (!isOpenShiftModalOpen) {
+      setOpeningCashInput("");
+    }
+  }, [isOpenShiftModalOpen]);
+
+  useEffect(() => {
+    if (!isCloseShiftModalOpen) {
+      setClosingCashInput("");
+      setCloseSummary(null);
+    }
+  }, [isCloseShiftModalOpen]);
 
   useEffect(() => {
     if (!receiptPreview) {
@@ -161,6 +201,63 @@ export default function CashierPage() {
   }, [isPaymentDialogOpen, receiptUrl]);
 
   const isProcessingAfterSales = voidSaleMutation.isPending || refundSaleMutation.isPending;
+  const isOpeningShift = openCashSession.isPending;
+  const isClosingShift = closeCashSession.isPending;
+
+  const handleOpenShift = async () => {
+    if (!activeOutletId) {
+      toast.error("Pilih outlet terlebih dahulu sebelum membuka shift.");
+      return;
+    }
+
+    const value = Number(openingCashInput || 0);
+
+    if (Number.isNaN(value) || value < 0) {
+      toast.error("Nominal kas awal tidak valid.");
+      return;
+    }
+
+    try {
+      await openCashSession.mutateAsync({
+        outletId: activeOutletId,
+        openingCash: value,
+      });
+      toast.success("Shift kasir berhasil dibuka.");
+      setOpenShiftModalOpen(false);
+      setOpeningCashInput("");
+      await refetchCashSession();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal membuka shift.";
+      toast.error(message);
+    }
+  };
+
+  const handleCloseShift = async () => {
+    if (!activeSession) {
+      toast.error("Tidak ada shift aktif untuk ditutup.");
+      return;
+    }
+
+    const value = Number(closingCashInput || 0);
+
+    if (Number.isNaN(value) || value < 0) {
+      toast.error("Nominal kas akhir tidak valid.");
+      return;
+    }
+
+    try {
+      const result = await closeCashSession.mutateAsync({
+        sessionId: activeSession.id,
+        closingCash: value,
+      });
+      setCloseSummary(result);
+      toast.success("Shift kasir ditutup.");
+      await refetchCashSession();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal menutup shift.";
+      toast.error(message);
+    }
+  };
 
   const openAfterSalesDialog = (sale: RecentSale, type: "void" | "refund") => {
     if (sale.status !== "COMPLETED") {
@@ -177,19 +274,24 @@ export default function CashierPage() {
   const handleConfirmAfterSales = async () => {
     if (!afterSalesAction) return;
     const { sale, type, note } = afterSalesAction;
+    const trimmedNote = note.trim();
 
     try {
       if (type === "void") {
+        if (trimmedNote.length < 3) {
+          toast.error("Alasan void minimal 3 karakter.");
+          return;
+        }
         const result = await voidSaleMutation.mutateAsync({
           saleId: sale.id,
-          reason: note || undefined,
+          reason: trimmedNote,
         });
         toast.success(`Transaksi ${result.receiptNumber} dibatalkan.`);
         setLiveMessage(`Transaksi ${result.receiptNumber} dibatalkan.`);
       } else {
         const result = await refundSaleMutation.mutateAsync({
           saleId: sale.id,
-          reason: note || undefined,
+          reason: trimmedNote.length > 0 ? trimmedNote : undefined,
           amount: sale.totalNet,
         });
         toast.success(
@@ -391,6 +493,12 @@ export default function CashierPage() {
       return;
     }
 
+    if (!activeSession) {
+      toast.error("Harap buka shift kasir sebelum memproses transaksi.");
+      setOpenShiftModalOpen(true);
+      return;
+    }
+
     const isNonCash = paymentMethod !== DEFAULT_PAYMENT_METHOD;
 
     try {
@@ -445,6 +553,7 @@ export default function CashierPage() {
     totals.totalNet,
     printReceipt,
     paymentReference,
+    activeSession,
   ]);
 
   const downloadReceipt = () => {
@@ -468,8 +577,8 @@ export default function CashierPage() {
         {liveMessage}
       </div>
 
-      <header className="space-y-1">
-        <div className="flex items-center justify-between">
+      <header className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm uppercase tracking-wide text-muted-foreground">
               Modul Kasir
@@ -478,15 +587,81 @@ export default function CashierPage() {
               {activeOutlet?.name ?? "Outlet belum dipilih"}
             </h1>
             <p className="text-muted-foreground">
-              {isExpressMode ? "Mode cepat: Scan barcode dan checkout otomatis." : "Fokus ke input barcode dengan Ctrl+K, tambah item dengan F1, buka pembayaran dengan F2."}
+              {isExpressMode
+                ? "Mode cepat: Scan barcode dan checkout otomatis."
+                : "Fokus ke input barcode dengan Ctrl+K, tambah item dengan F1, buka pembayaran dengan F2."}
             </p>
           </div>
-          <Button
-            variant={isExpressMode ? "default" : "outline"}
-            onClick={() => setIsExpressMode(!isExpressMode)}
-          >
-            {isExpressMode ? "Mode Normal" : "Mode Cepat"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline">
+              <Link href="/cashier/receipts">Riwayat Struk</Link>
+            </Button>
+            <Button
+              variant={isExpressMode ? "default" : "outline"}
+              onClick={() => setIsExpressMode(!isExpressMode)}
+            >
+              {isExpressMode ? "Mode Normal" : "Mode Cepat"}
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/50 px-3 py-2">
+          <div>
+            <p
+              className={`text-sm font-medium ${
+                isShiftLoading
+                  ? "text-muted-foreground"
+                  : activeSession
+                    ? "text-emerald-600"
+                    : "text-destructive"
+              }`}
+            >
+              {isShiftLoading
+                ? "Memuat status shift kasir..."
+                : activeSession
+                    ? `Shift dibuka oleh ${activeSession.user?.name ?? "Kasir"} pukul ${format(new Date(activeSession.openTime), "HH:mm")}`
+                    : "Belum ada shift aktif. Buka shift sebelum transaksi."}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {activeSession
+                ? `Kas awal ${formatCurrency(activeSession.openingCash)}${
+                    activeSession.expectedCash != null
+                      ? ` · Target kas ${formatCurrency(activeSession.expectedCash)}`
+                      : ""
+                  }`
+                : "Nilai kas awal membantu pencatatan selisih saat tutup shift."}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {activeSession ? (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setCloseShiftModalOpen(true);
+                  setClosingCashInput(
+                    activeSession.expectedCash != null
+                      ? String(activeSession.expectedCash)
+                      : "",
+                  );
+                }}
+                disabled={isClosingShift}
+              >
+                {isClosingShift ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Tutup Shift
+              </Button>
+            ) : (
+              <Button
+                onClick={() => setOpenShiftModalOpen(true)}
+                disabled={isOpeningShift || isShiftLoading || !activeOutletId}
+              >
+                {isOpeningShift ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Buka Shift
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1075,6 +1250,151 @@ export default function CashierPage() {
       </div>
     </div>
 
+      <Dialog open={isOpenShiftModalOpen} onOpenChange={setOpenShiftModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Buka Shift Kasir</DialogTitle>
+            <DialogDescription>
+              Catat kas awal untuk memudahkan rekonsiliasi saat tutup shift.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="opening-cash" className="text-sm">
+                Kas awal (IDR)
+              </Label>
+              <Input
+                id="opening-cash"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                value={openingCashInput}
+                onChange={(event) => setOpeningCashInput(event.target.value)}
+                autoFocus
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Nilai ini menjadi baseline perhitungan selisih kas saat shift ditutup.
+            </p>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpenShiftModalOpen(false)}
+              disabled={isOpeningShift}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={() => void handleOpenShift()}
+              disabled={isOpeningShift || !activeOutletId}
+            >
+              {isOpeningShift ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Buka Shift
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCloseShiftModalOpen} onOpenChange={setCloseShiftModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Tutup Shift Kasir</DialogTitle>
+            <DialogDescription>
+              Konfirmasi kas akhir dan catat selisih dibandingkan pencatatan sistem.
+            </DialogDescription>
+          </DialogHeader>
+          {closeSummary ? (
+            <div className="space-y-4 text-sm">
+              <div className="rounded-md border bg-muted/30 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Target Kas</span>
+                  <span className="font-semibold text-foreground">
+                    {formatCurrency(closeSummary.expectedCash ?? 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Kas Aktual</span>
+                  <span className="font-semibold text-foreground">
+                    {formatCurrency(closeSummary.closingCash ?? 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Transaksi Tunai</span>
+                  <span>{formatCurrency(closeSummary.cashSalesTotal)}</span>
+                </div>
+              </div>
+              <p
+                className={`text-sm font-medium ${
+                  (closeSummary.difference ?? 0) >= 0
+                    ? "text-emerald-600"
+                    : "text-destructive"
+                }`}
+              >
+                Selisih kas {formatCurrency(closeSummary.difference ?? 0)}.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="closing-cash" className="text-sm">
+                  Kas akhir (IDR)
+                </Label>
+                <Input
+                  id="closing-cash"
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  value={closingCashInput}
+                  onChange={(event) => setClosingCashInput(event.target.value)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Masukkan nominal kas di laci untuk menghitung selisih dengan catatan sistem.
+              </p>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            {closeSummary ? (
+              <Button
+                type="button"
+                onClick={() => {
+                  setCloseSummary(null);
+                  setCloseShiftModalOpen(false);
+                }}
+              >
+                Selesai
+              </Button>
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCloseShiftModalOpen(false)}
+                  disabled={isClosingShift}
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void handleCloseShift()}
+                  disabled={isClosingShift || !activeSession}
+                >
+                  {isClosingShift ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  Tutup Shift
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog
         open={Boolean(afterSalesAction)}
         onOpenChange={(open) => {
@@ -1136,7 +1456,7 @@ export default function CashierPage() {
 
                 <section className="space-y-1">
                   <Label htmlFor="after-sales-note" className="text-xs font-semibold text-muted-foreground">
-                    Catatan (opsional)
+                    Catatan (wajib untuk void)
                   </Label>
                   <textarea
                     id="after-sales-note"

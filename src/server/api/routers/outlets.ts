@@ -83,7 +83,8 @@ export const outletsRouter = router({
         note: z.string().optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
       return await db.$transaction(async (tx) => {
         const inventory = await tx.inventory.upsert({
           where: {
@@ -110,6 +111,7 @@ export const outletsRouter = router({
             type: input.quantity >= 0 ? "ADJUSTMENT" : "ADJUSTMENT",
             quantity: input.quantity,
             note: input.note,
+            createdById: userId,
           },
         });
 
@@ -126,7 +128,8 @@ export const outletsRouter = router({
         note: z.string().optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
       if (input.fromOutletId === input.toOutletId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -186,12 +189,14 @@ export const outletsRouter = router({
               type: "TRANSFER_OUT",
               quantity: -input.quantity,
               note: input.note,
+              createdById: userId,
             },
             {
               inventoryId: target.id,
               type: "TRANSFER_IN",
               quantity: input.quantity,
               note: input.note,
+              createdById: userId,
             },
           ],
         });
@@ -217,7 +222,8 @@ export const outletsRouter = router({
           .min(1),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
       return await db.$transaction(async (tx) => {
         const results: Array<{ productId: string; quantity: number; difference: number }> = [];
 
@@ -257,6 +263,7 @@ export const outletsRouter = router({
                 type: "ADJUSTMENT",
                 quantity: delta,
                 note: entry.note,
+                createdById: userId,
               },
             });
           }

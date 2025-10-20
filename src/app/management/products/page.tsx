@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { format } from "date-fns";
 
 import { MotionButton as Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useUndoToast } from "@/components/ui/undo-toast";
 import {
   Card,
@@ -162,6 +164,7 @@ export default function ProductManagementPage() {
   const deleteSupplier = api.products.deleteSupplier.useMutation({
     // noop: we handle scheduling manually in handler
   });
+  const outletsQuery = api.outlets.list.useQuery();
   
   type ProductRow = NonNullable<typeof productsQuery.data>[number];
 
@@ -202,6 +205,11 @@ export default function ProductManagementPage() {
   const [categoryDraft, setCategoryDraft] = useState(emptyCategoryDraft);
   const [supplierDraft, setSupplierDraft] = useState(emptySupplierDraft);
   const [taxDraft, setTaxDraft] = useState(emptyTaxDraft);
+  const [movementProductId, setMovementProductId] = useState<string>("");
+  const [movementOutletId, setMovementOutletId] = useState<string>("");
+  const [movementType, setMovementType] = useState<"IN" | "OUT">("IN");
+  const [movementQuantity, setMovementQuantity] = useState("");
+  const [movementNote, setMovementNote] = useState("");
 
   const resetForm = () => {
     setFormState(emptyProductForm);
@@ -226,6 +234,37 @@ export default function ProductManagementPage() {
       return matchCategory && matchSupplier;
     });
   }, [productsQuery.data, selectedCategory, selectedSupplier]);
+  const productOptions = productsQuery.data ?? [];
+
+  useEffect(() => {
+    if (!movementProductId && productOptions.length > 0) {
+      setMovementProductId(productOptions[0].id);
+    }
+  }, [movementProductId, productOptions]);
+
+  useEffect(() => {
+    if (!movementOutletId && outletsQuery.data?.length) {
+      setMovementOutletId(outletsQuery.data[0].id);
+    }
+  }, [movementOutletId, outletsQuery.data]);
+
+  const inventoryQuery = api.products.getInventoryByProduct.useQuery(
+    { productId: movementProductId },
+    { enabled: Boolean(movementProductId) },
+  );
+  const stockMovementsQuery = api.products.getStockMovements.useQuery(
+    { productId: movementProductId, limit: 25 },
+    { enabled: Boolean(movementProductId), refetchInterval: 60_000 },
+  );
+  const createStockAdjustment = api.products.createStockAdjustment.useMutation();
+
+  const selectedMovementProduct = useMemo(
+    () => productOptions.find((product) => product.id === movementProductId) ?? null,
+    [movementProductId, productOptions],
+  );
+  const inventoryRecords = inventoryQuery.data ?? [];
+  const movementRecords = stockMovementsQuery.data ?? [];
+  const isPostingAdjustment = createStockAdjustment.isPending;
 
   const columns = useMemo<ColumnDef<ProductRow>[]>(() => {
     const baseColumns: ColumnDef<ProductRow>[] = PRODUCT_COLUMNS.map((column) => {
@@ -543,6 +582,42 @@ export default function ProductManagementPage() {
     }
   };
 
+  const handleSubmitStockAdjustment = async () => {
+    if (!movementProductId) {
+      toast.error("Pilih produk terlebih dahulu");
+      return;
+    }
+
+    if (!movementOutletId) {
+      toast.error("Pilih outlet untuk penyesuaian stok");
+      return;
+    }
+
+    const parsedQuantity = Number(movementQuantity);
+
+    if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) {
+      toast.error("Jumlah penyesuaian minimal 1 dan harus bilangan bulat");
+      return;
+    }
+
+    try {
+      await createStockAdjustment.mutateAsync({
+        productId: movementProductId,
+        outletId: movementOutletId,
+        type: movementType,
+        quantity: parsedQuantity,
+        note: movementNote.trim() || undefined,
+      });
+      toast.success("Pergerakan stok berhasil dicatat");
+      setMovementQuantity("");
+      setMovementNote("");
+      await Promise.all([inventoryQuery.refetch(), stockMovementsQuery.refetch()]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal mencatat pergerakan stok.";
+      toast.error(message);
+    }
+  };
+
   const handleCategorySubmit = async () => {
     if (!categoryDraft.name.trim()) {
       toast.error("Nama kategori wajib diisi");
@@ -732,6 +807,16 @@ export default function ProductManagementPage() {
           }`}
         >
           PPN
+        </button>
+        <button
+          onClick={() => setActiveTab("movements")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+            activeTab === "movements"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Pergerakan Stok
         </button>
       </nav>
 
@@ -1410,6 +1495,226 @@ export default function ProductManagementPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {activeTab === "movements" && (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Penyesuaian Stok Manual</CardTitle>
+              <CardDescription>
+                Catat pergerakan stok masuk/keluar dengan alasan yang jelas untuk audit harian.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="movement-product">Produk</Label>
+                  <select
+                    id="movement-product"
+                    value={movementProductId}
+                    onChange={(event) => setMovementProductId(event.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    {productOptions.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                    {productOptions.length === 0 && <option value="">Belum ada produk</option>}
+                  </select>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="movement-outlet">Outlet</Label>
+                  <select
+                    id="movement-outlet"
+                    value={movementOutletId}
+                    onChange={(event) => setMovementOutletId(event.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    {(outletsQuery.data ?? []).map((outlet) => (
+                      <option key={outlet.id} value={outlet.id}>
+                        {outlet.name}
+                      </option>
+                    ))}
+                    {(!outletsQuery.data || outletsQuery.data.length === 0) && (
+                      <option value="">Belum ada outlet</option>
+                    )}
+                  </select>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="movement-type">Tipe Penyesuaian</Label>
+                  <select
+                    id="movement-type"
+                    value={movementType}
+                    onChange={(event) => setMovementType(event.target.value as "IN" | "OUT")}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring"
+                  >
+                    <option value="IN">IN · Tambah stok</option>
+                    <option value="OUT">OUT · Kurangi stok</option>
+                  </select>
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="movement-qty">Jumlah</Label>
+                  <Input
+                    id="movement-qty"
+                    type="number"
+                    min={1}
+                    value={movementQuantity}
+                    onChange={(event) => setMovementQuantity(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="movement-note">Alasan / Catatan</Label>
+                <Input
+                  id="movement-note"
+                  value={movementNote}
+                  onChange={(event) => setMovementNote(event.target.value)}
+                  placeholder="Opsional, contoh: Penyesuaian stok fisik"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  onClick={() => void handleSubmitStockAdjustment()}
+                  disabled={
+                    isPostingAdjustment ||
+                    !movementProductId ||
+                    !movementOutletId ||
+                    productOptions.length === 0 ||
+                    (outletsQuery.data?.length ?? 0) === 0
+                  }
+                >
+                  {isPostingAdjustment ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  Tambah Penyesuaian
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Ringkasan Stok</CardTitle>
+                <CardDescription>
+                  {selectedMovementProduct
+                    ? `Stok per outlet untuk ${selectedMovementProduct.name}.`
+                    : "Pilih produk untuk melihat stok."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {inventoryQuery.isLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Memuat data stok…
+                  </div>
+                ) : inventoryRecords.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Belum ada stok tercatat untuk produk ini.</p>
+                ) : (
+                  <div className="overflow-hidden rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Outlet</TableHead>
+                          <TableHead className="w-24 text-right">Stok</TableHead>
+                          <TableHead className="w-48">Terakhir</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <MotionTableBody>
+                        {inventoryRecords.map((record) => (
+                          <MotionTableRow key={record.outletId} className="border-b">
+                            <TableCell className="font-medium">{record.outletName}</TableCell>
+                            <TableCell className="text-right">{record.quantity}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {format(new Date(record.updatedAt), "dd MMM yyyy HH:mm")}
+                            </TableCell>
+                          </MotionTableRow>
+                        ))}
+                      </MotionTableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <CardTitle>Riwayat Pergerakan</CardTitle>
+                  <CardDescription>25 aktivitas stok terbaru untuk produk terpilih.</CardDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => stockMovementsQuery.refetch()}
+                  disabled={stockMovementsQuery.isFetching}
+                >
+                  {stockMovementsQuery.isFetching ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {stockMovementsQuery.isLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Memuat pergerakan stok…
+                  </div>
+                ) : movementRecords.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Belum ada pergerakan stok untuk produk ini.</p>
+                ) : (
+                  <div className="overflow-hidden rounded-md border">
+                    <Table className="[&_tbody]:block [&_tbody]:max-h-[360px] [&_tbody]:overflow-auto">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-44">Waktu</TableHead>
+                          <TableHead>Outlet</TableHead>
+                          <TableHead className="w-24 text-center">Tipe</TableHead>
+                          <TableHead className="w-24 text-right">Qty</TableHead>
+                          <TableHead>Catatan</TableHead>
+                          <TableHead className="w-36">Petugas</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <MotionTableBody>
+                        {movementRecords.map((movement) => {
+                          const quantity = movement.quantity;
+                          const quantityLabel = `${quantity > 0 ? "+" : ""}${quantity}`;
+                          return (
+                            <MotionTableRow key={movement.id} className="border-b">
+                              <TableCell className="text-sm text-muted-foreground">
+                                {format(new Date(movement.occurredAt), "dd MMM yyyy HH:mm")}
+                              </TableCell>
+                              <TableCell>{movement.outletName}</TableCell>
+                              <TableCell className="text-center">
+                                <Badge variant="outline" className="text-xs uppercase">
+                                  {movement.type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className={`text-right font-medium ${quantity >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                                {quantityLabel}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {movement.note ?? "-"}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {movement.createdBy ?? "Sistem"}
+                              </TableCell>
+                            </MotionTableRow>
+                          );
+                        })}
+                      </MotionTableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
     </div>

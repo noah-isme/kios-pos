@@ -123,3 +123,56 @@ export const deleteSupplierInputSchema = z.object({
 export const simpleSuccessSchema = z.object({ success: z.literal(true) });
 export const categoryListOutputSchema = z.array(categorySchema);
 export const supplierListOutputSchema = z.array(supplierSchema);
+
+export const productInventorySchema = z.object({
+  outletId: z.string(),
+  outletName: z.string(),
+  quantity: z.number(),
+  updatedAt: z.string(),
+});
+
+export const productInventoryListSchema = z.array(productInventorySchema);
+
+export const productInventoryInputSchema = z.object({
+  productId: z.string().min(1, { message: "Produk wajib dipilih" }),
+});
+
+export const stockMovementEntrySchema = z.object({
+  id: z.string(),
+  type: z.enum(["IN", "OUT", "ADJUSTMENT", "SALE", "RETURN", "TRANSFER_IN", "TRANSFER_OUT", "INITIAL", "PURCHASE"]),
+  quantity: z.number(),
+  note: z.string().nullable(),
+  reference: z.string().nullable(),
+  occurredAt: z.string(),
+  outletName: z.string(),
+  createdBy: z.string().nullable(),
+});
+
+export const stockMovementListOutputSchema = z.array(stockMovementEntrySchema);
+
+export const stockMovementListInputSchema = z.object({
+  productId: z.string().min(1, { message: "Produk wajib dipilih" }),
+  limit: z
+    .number()
+    .int({ message: "Batas harus bilangan bulat" })
+    .min(1, { message: "Minimal 1 pergerakan" })
+    .max(100, { message: "Maksimal 100 pergerakan" })
+    .default(20),
+});
+
+export const stockAdjustmentInputSchema = z.object({
+  productId: z.string().min(1, { message: "Produk wajib dipilih" }),
+  outletId: z.string().min(1, { message: "Outlet wajib dipilih" }),
+  type: z.enum(["IN", "OUT", "ADJUSTMENT"]).default("IN"),
+  quantity: z
+    .number()
+    .int({ message: "Jumlah harus bilangan bulat" })
+    .positive({ message: "Jumlah minimal 1" }),
+  note: z.string().max(200).optional(),
+});
+
+export const stockAdjustmentOutputSchema = z.object({
+  inventoryId: z.string(),
+  quantity: z.number(),
+  movement: stockMovementEntrySchema,
+});
