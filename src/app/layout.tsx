@@ -1,11 +1,10 @@
 import * as React from "react";
 import type { Metadata } from "next";
-import ClientSidebarLoader from "@/components/layout/client-sidebar-loader";
 import { Providers } from "@/app/providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getServerAuthSession } from "@/server/auth";
-import PageTransition from '@/components/ui/page-transition';
-import PageProgress from '@/components/ui/page-progress';
+import PageTransition from "@/components/ui/page-transition";
+import PageProgress from "@/components/ui/page-progress";
 
 import "./globals.css";
 
@@ -33,22 +32,18 @@ export default async function RootLayout({
             >
               Lewati ke konten utama
             </a>
-            <div className="fixed inset-x-0 top-0 z-50">
-              <SiteHeader />
-            </div>
-
-            <div className="mx-auto mt-16 grid max-w-7xl grid-cols-1 gap-6 px-4 py-8 lg:grid-cols-12">
-              <div className="hidden lg:col-span-3 lg:block">
-                <ClientSidebarLoader />
-              </div>
-
-              <main id="main-content" className="col-span-1 lg:col-span-9">
-                <PageProgress />
-                <PageTransition keyProp={typeof children === 'object' ? undefined : undefined}>
-                  {children}
-                </PageTransition>
-              </main>
-            </div>
+            <SiteHeader />
+            <main
+              id="main-content"
+              className="mx-auto mt-20 w-full max-w-screen-2xl px-6 pb-10 pt-6 sm:px-8 lg:px-12"
+            >
+              <PageProgress />
+              <PageTransition
+                keyProp={typeof children === "object" ? undefined : undefined}
+              >
+                {children}
+              </PageTransition>
+            </main>
           </div>
         </Providers>
       </body>

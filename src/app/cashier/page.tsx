@@ -50,6 +50,9 @@ const DISCOUNT_LIMIT_PERCENT = Number(
 const STORE_NPWP =
   process.env.NEXT_PUBLIC_STORE_NPWP ?? "NPWP belum ditetapkan";
 
+const QRIS_FALLBACK_BASE64 =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABGUlEQVR42u3SQQ2AIBAEwRz/6bzfFPRsp1gChX1kxqcoP8N9jwELyhl725LLJo0vvArkC5AOIDMDEwMTAzMBnARkBnYGdAZ2BnQGdgZ0BnYGdAZ2BnYGdAZ2BnYGdAZ2BnYGdAZ2BnYGdAZ2BnYGdARnAzMBmQGZAZkBmQGZAZkBmQGZAZkBmQGZAZkBmQGZAZkBmcDMwGcgMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMyAzIDMgMwMTAzMBmQGaAV5AO8B2iCmgAAAABJRU5ErkJggg==";
+
 const RECEIPT_WIDTH_CLASS: Record<"58" | "80", string> = {
   "58": "w-[220px]",
   "80": "w-[320px]",
@@ -67,7 +70,7 @@ type CartItem = {
   name: string;
   quantity: number;
   price: number;
-  discount: number;
+  discountPercent: number;
 };
 
 type ReceiptPreviewState = {
@@ -76,6 +79,11 @@ type ReceiptPreviewState = {
   paymentMethod: PaymentMethod;
   paymentReference?: string;
 };
+
+type CheckoutState = "idle" | "review" | "processing" | "success";
+
+const calculateItemDiscount = (item: CartItem) =>
+  (item.price * item.quantity * item.discountPercent) / 100;
 
 export default function CashierPage() {
   const { activeOutlet, outlets, setActiveOutlet } = useActiveOutlet();
@@ -95,10 +103,18 @@ export default function CashierPage() {
   const [receiptWidth, setReceiptWidth] = useState<"58" | "80">("58");
   const [receiptQr, setReceiptQr] = useState<string | null>(null);
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
-  const [checkoutState, setCheckoutState] = useState<"idle" | "review" | "success">("idle");
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>("idle");
+  const [qrisCode, setQrisCode] = useState<string | null>(null);
   const [isExpressMode, setIsExpressMode] = useState(false);
 
   const barcodeInputRef = useRef<HTMLInputElement>(null);
+  const qrisTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearQrisTimeout = useCallback(() => {
+    if (qrisTimeoutRef.current) {
+      clearTimeout(qrisTimeoutRef.current);
+      qrisTimeoutRef.current = null;
+    }
+  }, []);
 
   const productLookup = api.products.getByBarcode.useQuery(
     { barcode },
@@ -199,6 +215,8 @@ export default function CashierPage() {
       setReceiptUrl(null);
     }
   }, [isPaymentDialogOpen, receiptUrl]);
+
+  useEffect(() => () => clearQrisTimeout(), [clearQrisTimeout]);
 
   const isProcessingAfterSales = voidSaleMutation.isPending || refundSaleMutation.isPending;
   const isOpeningShift = openCashSession.isPending;
@@ -318,7 +336,10 @@ export default function CashierPage() {
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
-    const itemDiscounts = cart.reduce((sum, item) => sum + item.discount, 0);
+    const itemDiscounts = cart.reduce((sum, item) => {
+      const discountAmount = (item.price * item.quantity * item.discountPercent) / 100;
+      return sum + discountAmount;
+    }, 0);
     const totalDiscount = itemDiscounts + manualDiscount;
     const totalNet = Math.max(totalGross - totalDiscount, 0);
 
@@ -329,6 +350,36 @@ export default function CashierPage() {
       itemDiscounts,
     };
   }, [cart, manualDiscount]);
+
+  useEffect(() => {
+    if (paymentMethod !== QRIS_PAYMENT_METHOD) {
+      setQrisCode(null);
+      return;
+    }
+
+    let cancelled = false;
+    const payload = `QRIS-SIM|${totals.totalNet}|${Date.now()}`;
+
+    QRCode.toDataURL(payload, {
+      errorCorrectionLevel: "M",
+      width: 220,
+      margin: 1,
+    })
+      .then((url) => {
+        if (!cancelled) {
+          setQrisCode(url);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setQrisCode(QRIS_FALLBACK_BASE64);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [paymentMethod, totals.totalNet]);
 
   const addProductToCart = useCallback(async () => {
     const code = barcode.trim();
@@ -373,7 +424,7 @@ export default function CashierPage() {
             name: product!.name,
             price: product!.price,
             quantity: 1,
-            discount: 0,
+            discountPercent: 0,
           },
         ];
       });
@@ -399,12 +450,13 @@ export default function CashierPage() {
     );
   }, []);
 
-  const updateItemDiscount = useCallback((productId: string, discount: number) => {
-    const safeDiscount = Number.isNaN(discount) ? 0 : discount;
+  const updateItemDiscountPercent = useCallback((productId: string, discountPercent: number) => {
+    const safeDiscount = Number.isNaN(discountPercent) ? 0 : discountPercent;
+    const clamped = Math.min(Math.max(safeDiscount, 0), 100);
     setCart((prev) =>
       prev.map((item) =>
         item.productId === productId
-          ? { ...item, discount: Math.max(safeDiscount, 0) }
+          ? { ...item, discountPercent: clamped }
           : item,
       ),
     );
@@ -441,11 +493,27 @@ export default function CashierPage() {
       toast.error("Keranjang masih kosong");
       return;
     }
-    const isNonCash = paymentMethod !== DEFAULT_PAYMENT_METHOD;
+    const isQris = paymentMethod === QRIS_PAYMENT_METHOD;
+    const requiresReference =
+      paymentMethod !== DEFAULT_PAYMENT_METHOD && !isQris;
     const trimmedReference = paymentReference.trim();
-    if (isNonCash && !trimmedReference) {
+    let resolvedReference: string | undefined;
+
+    if (requiresReference && !trimmedReference) {
       toast.error("Masukkan referensi pembayaran non-tunai");
       return;
+    }
+
+    if (isQris) {
+      resolvedReference =
+        trimmedReference.length > 0
+          ? trimmedReference
+          : `QR-${Date.now()}`;
+      if (trimmedReference.length === 0) {
+        setPaymentReference(resolvedReference);
+      }
+    } else if (requiresReference) {
+      resolvedReference = trimmedReference;
     }
 
     const receiptNumber = `POS-${Date.now()}`;
@@ -453,7 +521,7 @@ export default function CashierPage() {
       receiptNumber,
       soldAt: new Date(),
       paymentMethod,
-      paymentReference: isNonCash ? trimmedReference : undefined,
+      paymentReference: resolvedReference,
     });
     setCheckoutState("review");
     setPaymentDialogOpen(true);
@@ -488,6 +556,7 @@ export default function CashierPage() {
   }, [cart.length, openPaymentDialog]);
 
   const finalizeCheckout = useCallback(async () => {
+    clearQrisTimeout();
     if (!activeOutletId || !receiptPreview) {
       toast.error("Outlet atau data struk belum siap");
       return;
@@ -500,6 +569,9 @@ export default function CashierPage() {
     }
 
     const isNonCash = paymentMethod !== DEFAULT_PAYMENT_METHOD;
+    const trimmedReference = paymentReference.trim();
+    const resolvedReference =
+      isNonCash && trimmedReference.length > 0 ? trimmedReference : undefined;
 
     try {
       const sale = await recordSale.mutateAsync({
@@ -510,13 +582,13 @@ export default function CashierPage() {
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: item.price,
-          discount: item.discount,
+          discount: calculateItemDiscount(item),
         })),
         payments: [
           {
             method: paymentMethod,
             amount: totals.totalNet,
-            reference: isNonCash ? paymentReference.trim() : undefined,
+            reference: resolvedReference,
           },
         ],
       });
@@ -542,6 +614,7 @@ export default function CashierPage() {
       console.error(error);
       toast.error("Gagal menyelesaikan transaksi");
       setLiveMessage("Gagal menyelesaikan transaksi.");
+      setCheckoutState("review");
     }
   }, [
     activeOutletId,
@@ -554,6 +627,7 @@ export default function CashierPage() {
     printReceipt,
     paymentReference,
     activeSession,
+    clearQrisTimeout,
   ]);
 
   const downloadReceipt = () => {
@@ -570,6 +644,33 @@ export default function CashierPage() {
     if (!receiptUrl) return;
     window.open(receiptUrl, "_blank", "noopener");
   };
+
+  const handleProcessPayment = useCallback(() => {
+    if (checkoutState === "processing") return;
+
+    if (paymentMethod === QRIS_PAYMENT_METHOD) {
+      setCheckoutState("processing");
+      setLiveMessage("Menunggu pembayaran QRIS…");
+      clearQrisTimeout();
+      qrisTimeoutRef.current = setTimeout(() => {
+        void finalizeCheckout();
+      }, 3000);
+      return;
+    }
+
+    void finalizeCheckout();
+  }, [
+    checkoutState,
+    paymentMethod,
+    clearQrisTimeout,
+    finalizeCheckout,
+  ]);
+
+  const handleCancelQrisWaiting = useCallback(() => {
+    clearQrisTimeout();
+    setCheckoutState("review");
+    setLiveMessage("Simulasi QRIS dibatalkan.");
+  }, [clearQrisTimeout]);
 
   return (
     <div className="space-y-6">
@@ -679,6 +780,17 @@ export default function CashierPage() {
                 <span className="font-medium text-foreground">Shortcut</span>
                 <span>F1 tambah baris · F2 bayar · Esc batal</span>
               </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t bg-muted/20 px-4 py-3 text-sm">
+                <div className="font-medium text-muted-foreground">
+                  Total Item: {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                </div>
+                <div className="text-right text-foreground">
+                  Total Belanja:
+                  <span className="ml-2 text-base font-semibold">
+                    {formatCurrency(totals.totalNet)}
+                  </span>
+                </div>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
@@ -729,19 +841,20 @@ export default function CashierPage() {
             </div>
 
             <div className="overflow-hidden rounded-md border">
-              <Table className="[&_tbody]:block [&_tbody]:max-h-[340px] [&_tbody]:overflow-auto [&_thead]:sticky [&_thead]:top-0 [&_thead]:z-10 [&_thead]:bg-background">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[180px]">Produk</TableHead>
-                    <TableHead className="w-24 text-right">Qty</TableHead>
-                    <TableHead className="w-28 text-right">Harga</TableHead>
-                    <TableHead className="w-28 text-right">Diskon</TableHead>
-                    <TableHead className="w-28 text-right">Total</TableHead>
-                    <TableHead className="w-20 text-center">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <MotionTableBody>
-                  {cart.map((item) => (
+              <div className="max-h-[360px] overflow-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-background">
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">Produk</TableHead>
+                      <TableHead className="w-24 text-right">Qty</TableHead>
+                      <TableHead className="w-28 text-right">Harga</TableHead>
+                      <TableHead className="w-28 text-right">Diskon</TableHead>
+                      <TableHead className="w-28 text-right">Total</TableHead>
+                      <TableHead className="w-20 text-center">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <MotionTableBody>
+                    {cart.map((item) => (
                     <MotionTableRow key={item.productId} className="border-b">
                       <TableCell className="font-medium">
                         {item.name}
@@ -766,24 +879,31 @@ export default function CashierPage() {
                         {formatCurrency(item.price)}
                       </TableCell>
                       <TableCell>
-                        <Input
-                          type="number"
-                          min={0}
-                          inputMode="numeric"
-                          value={item.discount}
-                          onChange={(event) =>
-                            updateItemDiscount(
-                              item.productId,
-                              Number(event.target.value),
-                            )
-                          }
-                          className="h-9 text-right"
-                          aria-label={`Diskon untuk ${item.name}`}
-                        />
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              inputMode="numeric"
+                              value={item.discountPercent}
+                              onChange={(event) =>
+                                updateItemDiscountPercent(
+                                  item.productId,
+                                  Number(event.target.value),
+                                )
+                              }
+                              className="h-9 w-20 text-right"
+                              aria-label={`Diskon untuk ${item.name}`}
+                            />
+                            <span className="text-sm text-muted-foreground">%</span>
+                          </div>
+                          <p className="mt-1 text-right text-xs text-muted-foreground">
+                            -{formatCurrency(calculateItemDiscount(item))}
+                          </p>
                       </TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(
-                          item.price * item.quantity - item.discount,
+                          item.price * item.quantity - calculateItemDiscount(item),
                         )}
                       </TableCell>
                       <TableCell className="text-center">
@@ -797,8 +917,8 @@ export default function CashierPage() {
                         </Button>
                       </TableCell>
                     </MotionTableRow>
-                  ))}
-                  {cart.length === 0 && (
+                    ))}
+                    {cart.length === 0 && (
                     <MotionTableRow>
                       <TableCell
                         colSpan={6}
@@ -807,9 +927,10 @@ export default function CashierPage() {
                         Keranjang kosong. Scan barcode atau cari produk.
                       </TableCell>
                     </MotionTableRow>
-                  )}
-                </MotionTableBody>
-              </Table>
+                    )}
+                  </MotionTableBody>
+                </Table>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -890,7 +1011,8 @@ export default function CashierPage() {
                       </Button>
                     ))}
                   </div>
-                  {paymentMethod !== DEFAULT_PAYMENT_METHOD && (
+                  {paymentMethod !== DEFAULT_PAYMENT_METHOD &&
+                    paymentMethod !== QRIS_PAYMENT_METHOD && (
                     <div className="grid gap-1.5">
                       <Label htmlFor="payment-reference" className="text-xs">
                         Referensi Pembayaran
@@ -910,19 +1032,56 @@ export default function CashierPage() {
                 <Badge variant="secondary" className="w-fit">
                   {paymentMethod === DEFAULT_PAYMENT_METHOD
                     ? "Pembayaran: Tunai"
-                    : `Pembayaran: Non-Tunai${
-                        paymentReference.trim()
-                          ? ` · Ref ${paymentReference.trim()}`
-                          : ""
-                      }`}
+                    : paymentMethod === QRIS_PAYMENT_METHOD
+                      ? `Pembayaran: QRIS${
+                          paymentReference.trim()
+                            ? ` · Ref ${paymentReference.trim()}`
+                            : ""
+                        }`
+                      : `Pembayaran: Non-Tunai${
+                          paymentReference.trim()
+                            ? ` · Ref ${paymentReference.trim()}`
+                            : ""
+                        }`}
                 </Badge>
               </div>
+
+              {paymentMethod === QRIS_PAYMENT_METHOD && (
+                <div className="space-y-3 rounded-lg border border-dashed border-border bg-muted/10 p-4 text-center">
+                  <p className="text-sm font-semibold text-foreground">
+                    QRIS Simulator
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Tunjukkan kode ini ke pelanggan untuk pembayaran non-tunai.
+                  </p>
+                  <div className="flex justify-center">
+                    {qrisCode ? (
+                      <Image
+                        src={qrisCode}
+                        alt="QRIS Simulation"
+                        width={176}
+                        height={176}
+                        className="h-44 w-44 rounded-md border bg-white p-3"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-44 w-44 items-center justify-center rounded-md border border-dashed bg-muted/20">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Nominal {formatCurrency(totals.totalNet)} · Simulasi QRIS
+                  </p>
+                </div>
+              )}
 
               <Dialog
                 open={isPaymentDialogOpen}
                 onOpenChange={(open) => {
                   setPaymentDialogOpen(open);
                   if (!open) {
+                    clearQrisTimeout();
                     setReceiptPreview(null);
                     setCheckoutState("idle");
                   }
@@ -934,7 +1093,7 @@ export default function CashierPage() {
                     variant="default"
                     onClick={openPaymentDialog}
                   >
-                    Tinjau Pembayaran (F2)
+                    Bayar (F2)
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -962,13 +1121,45 @@ export default function CashierPage() {
                           <span className="font-semibold text-foreground">
                             {paymentMethod === DEFAULT_PAYMENT_METHOD
                               ? "Tunai"
-                              : "QRIS / Non-Tunai"}
+                              : paymentMethod === QRIS_PAYMENT_METHOD
+                                ? "QRIS (Simulasi)"
+                                : "Non-Tunai"}
                           </span>
                           {receiptPreview.paymentReference
                             ? ` · Ref ${receiptPreview.paymentReference}`
                             : ""}
                         </p>
                       </section>
+
+                      {paymentMethod === QRIS_PAYMENT_METHOD && (
+                        <section className="space-y-3 rounded-lg border border-dashed border-border bg-muted/20 p-4 text-center">
+                          <h3 className="text-sm font-medium text-foreground">
+                            QRIS Pembeli
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            Simulasikan pemindaian QR oleh pelanggan.
+                          </p>
+                          <div className="flex justify-center">
+                            {qrisCode ? (
+                              <Image
+                                src={qrisCode}
+                                alt="QRIS Simulation"
+                                width={192}
+                                height={192}
+                                className="h-48 w-48 rounded-md border bg-white p-3 shadow-sm"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="flex h-48 w-48 items-center justify-center rounded-md border border-dashed bg-muted/20">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Total {formatCurrency(totals.totalNet)} · Otomatis sukses dalam 3 detik setelah Bayar.
+                          </p>
+                        </section>
+                      )}
 
                       <section className="space-y-3">
                         <div className="flex items-center justify-between">
@@ -1023,7 +1214,7 @@ export default function CashierPage() {
                                 </span>
                                 <span>
                                   {formatCurrency(
-                                    item.price * item.quantity - item.discount,
+                                    item.price * item.quantity - calculateItemDiscount(item),
                                   )}
                                 </span>
                               </div>
@@ -1064,6 +1255,39 @@ export default function CashierPage() {
                     </div>
                   )}
 
+                  {checkoutState === "processing" && (
+                    <div className="space-y-4 text-center">
+                      <div className="flex flex-col items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-6 text-sm text-blue-900">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <div className="space-y-1">
+                          <p className="text-base font-semibold">Menunggu Pembayaran QRIS…</p>
+                          <p className="text-xs text-blue-900/80">
+                            Simulasi akan menyelesaikan pembayaran secara otomatis.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        {qrisCode ? (
+                          <Image
+                            src={qrisCode}
+                            alt="QRIS Simulation"
+                            width={192}
+                            height={192}
+                            className="h-48 w-48 rounded-md border bg-white p-3 shadow-sm"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="flex h-48 w-48 items-center justify-center rounded-md border border-dashed bg-muted/20">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Tidak perlu konfirmasi manual — kasir dapat menunggu hingga transaksi tersimpan.
+                      </p>
+                    </div>
+                  )}
+
                   {checkoutState === "success" && receiptPreview && (
                     <div className="space-y-4">
                       <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
@@ -1100,12 +1324,27 @@ export default function CashierPage() {
                         </Button>
                         <Button
                           type="button"
-                          onClick={() => void finalizeCheckout()}
+                          onClick={handleProcessPayment}
                           disabled={recordSale.isPending || printReceipt.isPending}
                         >
                           {recordSale.isPending || printReceipt.isPending
                             ? "Memproses..."
-                            : "Proses Pembayaran"}
+                            : "Bayar Sekarang"}
+                        </Button>
+                      </>
+                    )}
+                    {checkoutState === "processing" && (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelQrisWaiting}
+                        >
+                          Batalkan
+                        </Button>
+                        <Button type="button" disabled className="flex-1">
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Menunggu Pembayaran
                         </Button>
                       </>
                     )}

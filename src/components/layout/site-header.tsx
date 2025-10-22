@@ -4,18 +4,13 @@ import React from 'react';
 import Link from "next/link";
 import { LogIn, LogOut, Menu } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { MotionButton as Button } from "@/components/ui/button";
 import MotionList, { MotionItem } from "@/components/ui/motion-list";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import Sidebar from "@/components/layout/sidebar";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { OutletSelector } from "@/components/ui/outlet-selector";
 import { useOutlet } from "@/lib/outlet-context";
 
@@ -27,11 +22,12 @@ const navItems = [
 
 export function SiteHeader({ className }: { className?: string }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const { currentOutlet } = useOutlet();
   const [time, setTime] = React.useState(() => new Date());
   const [mounted, setMounted] = React.useState(false);
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
 
   React.useEffect(() => {
     const id = setInterval(() => setTime(new Date()), 1000);
@@ -81,7 +77,7 @@ export function SiteHeader({ className }: { className?: string }) {
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
           {isAuthenticated && (
-            <Dialog open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <Dialog open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
@@ -93,7 +89,24 @@ export function SiteHeader({ className }: { className?: string }) {
                 </Button>
               </DialogTrigger>
               <DialogContent className="w-80 p-0">
-                <Sidebar />
+                <nav className="flex flex-col gap-1 p-3" aria-label="Navigasi utama">
+                  {navItems.map((item) => {
+                    const isActive = pathname?.startsWith(item.href);
+                    return (
+                      <Button
+                        key={item.href}
+                        variant={isActive ? "secondary" : "ghost"}
+                        size="lg"
+                        className="justify-start"
+                        asChild
+                      >
+                        <Link href={item.href} onClick={() => setMobileNavOpen(false)}>
+                          {item.label}
+                        </Link>
+                      </Button>
+                    );
+                  })}
+                </nav>
               </DialogContent>
             </Dialog>
           )}
@@ -103,13 +116,16 @@ export function SiteHeader({ className }: { className?: string }) {
           {isAuthenticated ? (
             <nav className="hidden gap-1 lg:flex" aria-label="Navigasi utama">
               <MotionList as="div" className="flex gap-1">
-                {navItems.map((item) => (
-                  <MotionItem key={item.href} as="div" className="inline-block">
-                    <Button variant="ghost" asChild>
-                      <Link href={item.href}>{item.label}</Link>
-                    </Button>
-                  </MotionItem>
-                ))}
+                {navItems.map((item) => {
+                  const isActive = pathname?.startsWith(item.href);
+                  return (
+                    <MotionItem key={item.href} as="div" className="inline-block">
+                      <Button variant={isActive ? "secondary" : "ghost"} asChild>
+                        <Link href={item.href}>{item.label}</Link>
+                      </Button>
+                    </MotionItem>
+                  );
+                })}
               </MotionList>
             </nav>
           ) : null}
